@@ -1,0 +1,287 @@
+TX payload:
+5aa5 - Start
+0002 - 2 bytes
+4a43 - Ping!
+eded - End
+RX payload:
+5aa5 - Start
+0002 - 2 bytes
+ca43 - Pong!
+eded - End/Sum
+Console:
+Radio answered ping
+
+TX payload:
+5aa5 - Start
+0002 - 2 bytes
+4a44 - Firmware
+eded - End
+RX payload:
+5aa5 - Start
+0009 - 9 bytes
+ca64312e3130204100 - Firmware 1.10 A
+eded - End/Sum
+Console:
+Radio firmware version 1.10 A
+
+TX payload:
+5aa5 - Start
+0005 - 5 bytes
+0010101001 - All description sizes 10, expect loss of power
+eded - End
+Console: Sending Power Up to Radio
+RX payload:
+5aa5 - Start
+001b - 27 bytes
+800309003311062003010000000812022004084142434431323334 - Inactive radio, RX v51 (6 Nov 2003), CMB v8 (2 Dec 2004), ID length 8, ABCD1234
+0467 - Sum
+Console: Radio confirmed power up command
+Console: Radio serial number: ABCD1234
+
+RX payload:
+5aa5 - Start
+0013 - 19 bytes
+ff010020202020202020202020202020202020 - what???
+0412 - Sum
+
+TX payload:
+5aa5 - Start
+0001 - 1 byte
+43 - Get signal data
+eded - End
+RX payload:
+5aa5 - Start
+001a - 26 bytes
+c30100000001000000000000154015401a90000000007f7f0d0d - No signal, antenna not connected
+044a - Sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+110100 - Channel 1 exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+9101000100 - It does, ch 1
+0197 - Sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+100201000001 - Audio tune to Ch 1
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 Bytes
+900410010100 - OK, ch 1, ch 1 is subscribed
+01ab - Sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11f001 - Channel 240 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100f001 - It does, ch 240
+0287 - Sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001f0010002 - Data tune channel 240 (XMWX)
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309f0f001 - OK, ch 240, ch 240 is not subscribed
+0382 - Sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11e600 - Channel 230 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100e600 - It does, ch 230
+027c -  Sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001e6000001 - Data tune channel 230 (XMWX)
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309e62401 - OK, ch 230, ch 230 is not subscribed
+02ac - Sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11e700 - Channel 231 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100e700 - It does, ch 231
+027d - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001e7000001 - Data tune channel 231 (XMWX)
+eded - end
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309e71301 - OK, ch 231, ch 231 is not subscribed
+029c - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11e800 - Channel 232 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100e800 - It does, ch 232
+027e - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001e8000001 - Data tune channel 232 (XMWX)
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309e8e101 - OK, ch 232, ch 232 is not subscribed
+036b - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11ea00 - Channel 234 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100ea00 - It does, ch 234
+0280 - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001ea000001 - Data tune channel 234 (XMWX)
+eded - end
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309ea1f01 - OK, ch 234, ch 234 is not subscribed
+02ab - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11eb00 - Channel 235 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100eb00 - It does, ch 235
+0281 - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001eb000001 - Data tune channel 235 (XMWX)
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309eb3f01 - OK, ch 235, ch 235 is not subscribed
+02cc - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11ec00 - Channel 236 (XMWX) exists?
+eded - End
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100ec00 - It does, ch 236
+0282 - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001ec000001 - Data tune channel 236 (XMWX)
+eded - End
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309ec2601 - OK, ch 236, ch 236 is not subscribed
+02b4 - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11ed00 - Channel 237 (XMWX) exists?
+eded - end
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100ed00 - It does, ch 237
+0283 - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001ed000001 - Data tune channel 237 (XMWX)
+eded - end
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309ed4501 - OK, ch 237, ch 237 is not subscribed
+02d4 - sum
+
+TX payload:
+5aa5 - Start
+0003 - 3 bytes
+11ee00 - Channel 238 (XMWX) exists?
+eded - end
+RX payload:
+5aa5 - Start
+0005 - 5 bytes
+910100ee00 - It does, ch 238
+0284 - sum
+
+TX payload:
+5aa5 - Start
+0006 - 6 bytes
+1001ee000001 - Data tune channel 238 (XMWX)
+eded - end
+RX payload:
+5aa5 - Start
+0006 - 6 bytes
+900309ee3d01 - OK, ch 238, ch 238 is not subscribed
+02cd - sum
+
+TX payload:
+5aa5 - start
+0002 - 2 bytes
+0100 - Power off, power save mode off (nap)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+81010000 - Powering off, napping. Goodnight!
+0185 - sum
