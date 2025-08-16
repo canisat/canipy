@@ -463,7 +463,7 @@ class xmapp_tk(Tkinter.Tk):
         
 if __name__ == "__main__":
     app = xmapp_tk(None)
-    app.title('PyXM')
+    app.title('CaniPy')
     app.mainloop()
         
               

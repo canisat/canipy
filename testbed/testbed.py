@@ -1,7 +1,7 @@
 import serial
 import time
 
-class PyPCR:
+class PCRdevice:
     def __init__(self, port, baud):
         self.serial_port = serial.Serial(port=port, baudrate=baud, timeout=1)
         self.header = bytes([0x5A, 0xA5])
@@ -14,12 +14,12 @@ class PyPCR:
 
     def power_up(self):
         payload = bytes([0x00, 0x10, 0x10, 0x10, 0x01])
-        print("PCR powering up")
+        print("Powering up")
         self.pcr_tx(payload)
 
     def power_down(self):
         payload = bytes([0x01, 0x00])
-        print("PCR powering down")
+        print("Powering down")
         self.pcr_tx(payload)
 
     def change_channel(self, channel):
@@ -41,6 +41,25 @@ class PyPCR:
         payload = bytes([0x43])
         self.pcr_tx(payload)
         print("Check pcap for signal info")
+    
+    def direct_enable(self):
+        payload = bytes([0x74, 0x00, 0x01])
+        print("Direct listening mode")
+        self.pcr_tx(payload)
+
+        time.sleep(5)
+
+        payload = bytes([0x74, 0x02, 0x01, 0x01])
+        print("Direct voltage on")
+        self.pcr_tx(payload)
+
+        time.sleep(5)
+
+        payload = bytes([0x74, 0x0B, 0x00])
+        print("Direct unmute DAC")
+        self.pcr_tx(payload)
+
+        time.sleep(5)
 
     def close(self):
         self.serial_port.close()
@@ -55,7 +74,41 @@ def get_option():
     return -1
 
 def main():
-    pcr_control = PyPCR(port="COM3", baud=38400)
+    # Default to PCR
+    baud_rate = 9600
+    is_direct = False
+
+    print("=Supported Devices=")
+    print("1. PCR")
+    print("2. Direct/Commander")
+    print("3. WX")
+    print("4. WX (Certified)")
+    print("0. Exit")
+
+    while True:
+        print("Select device:")
+
+        choice = get_option()
+        match choice:
+            case 1:
+                break
+            case 2:
+                is_direct = True
+                break
+            case 3:
+                baud_rate = 38400
+                break
+            case 4:
+                baud_rate = 115200
+                break
+            case 0:
+                return
+
+    # COM3 used for this test, change if necessary
+    pcr_control = PCRdevice(port="COM3", baud=baud_rate)
+
+    if is_direct:
+        pcr_control.direct_enable()
 
     print("=XM Menu=")
     print("1. Power on")
@@ -65,6 +118,9 @@ def main():
     print("5. Fetch radio ID")
     print("6. Fetch signal info")
     print("0. Exit")
+
+    # Pauses are used to pace the commands for this test
+    time.sleep(5)
 
     while True:
         print("Select option:")
