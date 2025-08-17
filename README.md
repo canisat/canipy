@@ -8,7 +8,7 @@ The project at this time is comprised of both a prototype GUI and auxiliary test
 ## Devices
 The current version contains implementations that support these devices using Sirius XM Radio LLC's **XM network**.
 
-Further support for other devices may be implemetned in the future.
+Further support for other devices may be implemented in the future.
 
 | Device | Baud Rate |
 | :- | -: |
