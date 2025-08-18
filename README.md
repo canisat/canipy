@@ -32,4 +32,4 @@ CaniSat is a non-profit initiative incubated by [NetOtt Solutions, LLC](https://
 
 Sirius, XM, SiriusXM and all related indicia are trademarks of Sirius XM Radio LLC.
 
-CaniSat and NetOtt are not affiliated with Sirius XM Radio LLC nor its products or partners.
+CaniSat and NetOtt are not affiliated with Sirius XM Radio LLC or its products & partners.

@@ -1,7 +1,7 @@
 import serial
 import time
 
-class PCRdevice:
+class CaniPy:
     def __init__(self, port, baud):
         self.serial_port = serial.Serial(port=port, baudrate=baud, timeout=1)
 
@@ -35,6 +35,8 @@ class PCRdevice:
         # Noting these cus these may still be valid
         # Might implement something here later
         # maybe lambdas for curr/next/prev too?
+        # I think 0 can be used as code word for no channel
+        #
         # self.pcr_tx(bytes([0x25, 0x08])) Curr ch
         # self.pcr_tx(bytes([0x25, 0x09])) Next ch
         # self.pcr_tx(bytes([0x25, 0x10])) Prev ch
@@ -43,7 +45,9 @@ class PCRdevice:
     def audio_info(self, channel):
         # AKA "Extended" info; returns full artist+title info of playing content
         # I think just sending 22 would imply current channel
-        # Need to know what channel these things default to for tracking purposes..
+        #
+        # TODO: Need to know what channel these things default to for tracking purposes..
+        # Like have a self.channel
         self.pcr_tx(bytes([0x22, channel]))
         print(f"Check pcap for info on channel {channel}")
 
@@ -70,6 +74,9 @@ class PCRdevice:
 
     # Kept here for reference, but is event driven
     # So it's left unimplemented until handled
+    # TODO: Eventually implement handling of RX
+    # Commands are just sent blind at this stage
+    # and rely on pcap to check what gets sent in
     # def monitor_channel(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False):
     #     self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
     #     print("Monitoring channel")
@@ -77,6 +84,7 @@ class PCRdevice:
     def direct_enable(self):
         print("Direct listening mode")
         self.pcr_tx(bytes([0x74, 0x00, 0x01]))
+        # These sleeps should be event driven instead
         time.sleep(5)
 
         print("Direct voltage on")
@@ -85,99 +93,9 @@ class PCRdevice:
 
         print("Direct unmute DAC")
         self.pcr_tx(bytes([0x74, 0x0B, 0x00]))
+        # No response would be received for this one
+        # Just pretend it's all good after this
         time.sleep(5)
 
     def close(self):
         self.serial_port.close()
-
-def get_option():
-    choice = input().strip()
-    if choice.isdigit():
-        number = int(choice)
-        if number >= 0 and number < 256:
-            return number
-    print("Invalid option.")
-    return -1
-
-def main():
-    # Default to PCR
-    baud_rate = 9600
-    is_direct = False
-
-    print("=Supported Devices=")
-    print("1. PCR")
-    print("2. Direct/Commander")
-    print("3. WX")
-    print("4. WX (Certified)")
-    print("0. Exit")
-
-    while True:
-        print("Select device:")
-
-        choice = get_option()
-        match choice:
-            case 1:
-                break
-            case 2:
-                is_direct = True
-                break
-            case 3:
-                baud_rate = 38400
-                break
-            case 4:
-                baud_rate = 115200
-                break
-            case 0:
-                return
-
-    # COM3 used for this test, change if necessary
-    pcr_control = PCRdevice(port="COM3", baud=baud_rate)
-
-    if is_direct:
-        pcr_control.direct_enable()
-
-    print("=XM Menu=")
-    print("1. Power on")
-    print("2. Power off")
-    print("3. Tune channel")
-    print("4. Fetch channel info")
-    print("5. Fetch radio ID")
-    print("6. Fetch signal info")
-    print("0. Exit")
-
-    # Pauses are used to pace the commands for this test
-    time.sleep(5)
-
-    while True:
-        print("Select option:")
-
-        choice = get_option()
-        match choice:
-            case 1:
-                pcr_control.power_up()
-            case 2:
-                pcr_control.power_down()
-            case 3:
-                print("Channel #:")
-                chnum = get_option()
-                if chnum > 0 :
-                    pcr_control.change_channel(chnum)
-            case 4:
-                print("Channel #:")
-                chnum = get_option()
-                if chnum > 0 :
-                    pcr_control.channel_info(chnum)
-            case 5:
-                pcr_control.radio_id()
-            case 6:
-                pcr_control.signal_info()
-            case 0:
-                time.sleep(5)
-                break
-
-        time.sleep(5)
-
-    pcr_control.close()
-
-if __name__ == "__main__":
-    main()
