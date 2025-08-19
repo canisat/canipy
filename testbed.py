@@ -1,6 +1,6 @@
 import time
 
-from canipy import CaniPy
+from utils.canipy import CaniPy
 
 def get_option():
     choice = input().strip()

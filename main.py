@@ -8,6 +8,8 @@ except:
 import time
 import threading
 
+from utils.canipy import CaniPy
+
 xm_cmd_header = b"\x5A\xA5"
 xm_cmd_footer = b"\xED\xED" 
 
@@ -186,11 +188,7 @@ class xmapp_tk(Tkinter.Tk):
         self.logText.insert(Tkinter.END,"COM thread killed.\n",("Activity"))    
             
     def print_bin(self,buf,tag):
-        # bin_text = "".join(f"{b:02X}" for b in buf) + "\n"
-        bin_text = ""
-        for byte in range(len(buf)):
-            bin_text += "%02X "%buf[byte]
-        bin_text += "\n"
+        bin_text = " ".join(f"{b:02X}" for b in buf) + "\n"
         self.ioText.insert(Tkinter.END,bin_text,tag)
     
     def sendXMPacket(self,cmd):
@@ -199,7 +197,12 @@ class xmapp_tk(Tkinter.Tk):
         packet += cmd
         packet += xm_cmd_footer
         if self.serialPort != None:
-            self.serialPort.write(packet)
+            # TODO: move to pcr_tx() instead
+            # However, this script has the byte lengths baked
+            # rather than calculating them on demand.
+            # That will gradually be installed here later.
+            # For now, write directly to the port.
+            self.serialPort.serial_port.write(packet)
         if (self.ioText != None):
             self.print_bin(packet,("SentBytes")) 
         
@@ -219,7 +222,7 @@ class xmapp_tk(Tkinter.Tk):
         while read_so_far < 5:
             chunk = b""
             try:
-                chunk = self.serialPort.read(5-read_so_far)
+                chunk = self.serialPort.serial_port.read(5-read_so_far)
             except:
                 self.logText.insert(Tkinter.END,"No serial port to read\n",("Warning"))
                 # wait for port to be connected
@@ -243,7 +246,7 @@ class xmapp_tk(Tkinter.Tk):
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
-            rest_of_packet = self.serialPort.read(size+1)
+            rest_of_packet = self.serialPort.serial_port.read(size+1)
         except:
             self.logText.insert(Tkinter.END,"No serial port to read\n",("Warning"))
             # wait for port to be connected
@@ -389,7 +392,8 @@ class xmapp_tk(Tkinter.Tk):
     def open_com_port(self):
         # get com port
         comPort = self.comEntry.get()
-        self.serialPort = serial.Serial(port=comPort,baudrate=baud_rate,timeout=0.5)
+        # Begin to gently transplant CaniPy
+        self.serialPort = CaniPy(port=comPort, baud=baud_rate)
 
     def close_com_port(self):
         if self.serialPort != None:
