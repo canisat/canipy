@@ -1,15 +1,4 @@
-import time
-
 from utils.canipy import CaniPy
-
-def get_option():
-    choice = input().strip()
-    if choice.isdigit():
-        number = int(choice)
-        if number >= 0 and number < 256:
-            return number
-    print("Invalid option.")
-    return -1
 
 def main():
     # Default to PCR
@@ -24,10 +13,7 @@ def main():
     print("0. Exit")
 
     while True:
-        print("Select device:")
-
-        choice = get_option()
-        match choice:
+        match input("Select device: "):
             case 1:
                 break
             case 2:
@@ -41,6 +27,7 @@ def main():
                 break
             case 0:
                 return
+        print("Invalid option")
 
     # COM3 used for this test, change if necessary
     pcr_control = CaniPy(port="COM3", baud=baud_rate)
@@ -48,7 +35,7 @@ def main():
     if is_direct:
         pcr_control.direct_enable()
 
-    print("=XM Menu=")
+    print("=Main Menu=")
     print("1. Power on")
     print("2. Power off")
     print("3. Tune channel")
@@ -57,37 +44,29 @@ def main():
     print("6. Fetch signal info")
     print("0. Exit")
 
-    # Pauses are used to pace the commands for this test
-    time.sleep(5)
-
     while True:
-        print("Select option:")
-
-        choice = get_option()
-        match choice:
+        match input("Select option: "):
             case 1:
                 pcr_control.power_up()
+                continue
             case 2:
                 pcr_control.power_down()
+                continue
             case 3:
-                print("Channel #:")
-                chnum = get_option()
-                if chnum > 0 :
-                    pcr_control.change_channel(chnum)
+                pcr_control.change_channel(input("Channel #: "))
+                continue
             case 4:
-                print("Channel #:")
-                chnum = get_option()
-                if chnum > 0 :
-                    pcr_control.channel_info(chnum)
+                pcr_control.channel_info(input("Channel #: "))
+                continue
             case 5:
                 pcr_control.radio_id()
+                continue
             case 6:
                 pcr_control.signal_info()
+                continue
             case 0:
-                time.sleep(5)
                 break
-
-        time.sleep(5)
+        print("Invalid option")
 
     pcr_control.close()
 

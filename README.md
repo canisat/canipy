@@ -18,12 +18,14 @@ Further support for other devices may be implemented in the future.
 | [WxWorx](https://www.wxworx.com/) (Portable) | 38400 |
 | WxWorx (Certified) | 115200 |
 
+## Why Python?
+CaniPy is intended to provide a legible foundation for understanding the control commands and behavior applicable to the supported SDARS serial devices.
+
 ## Libraries
 * [tkinter](https://docs.python.org/3/library/tkinter.html)
 * [pySerial](https://pypi.org/project/pyserial/)
 
 ## Notice
-
 This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timothy Canham, under the Apache 2.0 license.
 
 Serial commands were documented from past research conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the former XM Fan forums.
