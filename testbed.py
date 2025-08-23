@@ -42,6 +42,7 @@ def main():
     print("4. Fetch channel info")
     print("5. Fetch radio ID")
     print("6. Fetch signal info")
+    print("7. Enter debug command")
     print("0. Exit")
 
     while True:
@@ -64,6 +65,8 @@ def main():
             case 6:
                 pcr_control.signal_info()
                 continue
+            case 7:
+                pcr_control.crash_override()
             case 0:
                 break
         print("Invalid option")

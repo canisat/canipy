@@ -18,11 +18,11 @@ class CaniPy:
         self.curr_channel_info = lambda: self.channel_info(self.channel)
         self.curr_audio_info = lambda: self.audio_info(self.channel)
 
-        self.set_port = lambda new_port: self.set_port_baud(new_port, self.baud_rate)  # "Are you smoking yet??"
-        self.set_baud:Callable[[int], None] = lambda new_baud: self.set_port_baud(self.port_name, new_baud)
+        self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)  # "Are you smoking yet??"
+        self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
 
         self.serial_port = None
-        self.set_port_baud(port, baud)
+        self.set_serial_params(port, baud)
 
     def pcr_tx(self, payload:bytes):
         if self.serial_port == None:
@@ -53,7 +53,8 @@ class CaniPy:
     def channel_info(self, channel:int):
         # Noting these cus they may still be valid.
         # These cmds are usually reserved for headunits
-        # that look ahead/behind the current ch.
+        # that look ahead/behind the current ch, and
+        # when brute listing available channels
         #
         # self.pcr_tx(bytes([0x25, 0x08])) Curr ch
         # self.pcr_tx(bytes([0x25, 0x09])) Next ch
@@ -63,6 +64,14 @@ class CaniPy:
             return
         self.pcr_tx(bytes([0x25, 0x08, channel, 0x00]))
         print(f"Check pcap for info on channel {channel}")
+
+    def channel_status(self, channel:int):
+        if channel not in range(256):
+            print("Invalid channel value")
+            return
+        # For checking sub status?
+        self.pcr_tx(bytes([0x11, channel, 0x00]))
+        print(f"Check pcap for status of channel {channel}")
 
     def audio_info(self, channel:int):
         # AKA "Extended" info; returns full artist+title info of playing content
@@ -94,12 +103,19 @@ class CaniPy:
         self.pcr_tx(bytes([0x4A, 0x44]))
         print("Check pcap for firmware version")
 
+    # TODO: Eventually implement handling of RX.
+    # main.py implements event-driven RX using a
+    # discrete thread, reading size from header
+    # to distinguish valid command.
+    #
+    # Main code checks if it received at least 5 bytes:
+    # Header, length, & at least 1 byte content.
+    #
+    # Commands here are sent blind at this stage
+    # and rely on pcap to check what gets sent in.
+
     # Kept here for reference, but is event driven
     # So it's left unimplemented until handled
-    # TODO: Eventually implement handling of RX
-    # Commands are just sent blind at this stage
-    # and rely on pcap to check what gets sent in
-    # Check how main code implements event-driven RX
     # def monitor_channel(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False):
     #     self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
     #     print("Monitoring channel")
@@ -119,7 +135,7 @@ class CaniPy:
         print("Direct unmute DAC")
         self.pcr_tx(bytes([0x74, 0x0B, 0x00]))
 
-    def set_port_baud(self, port, baud:int):
+    def set_serial_params(self, port, baud:int):
         try:
             self.serial_port = serial.Serial(port=port, baudrate=baud, timeout=1)
         except:

@@ -415,13 +415,13 @@ class xmapp_tk(Tkinter.Tk):
                 self.logText.insert(Tkinter.END,"Status1 not correct length. Exp: 11 Act: %d\n"%len(data),("Warning"))
             #return
         # if good, print ascii characters
-        status = "Radio Status: "
+        status = "Radio Info"
         if data[0] == 0x3:
-            status + "NOT Activated "
-        status += "Version: %d.%d "%(data[1],data[2])
-        status += "RX Date: %d%d:%d%d:%d%d%d%d "%(data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9])
-        status += "CMB Version: %d "%data[10]
-        status += "%s "%data[12:20]
+            status += " (Not Activated)"
+        status += ":\nVersion: %d.%d\n"%(data[1],data[2])
+        status += "RX Date: %d%d:%d%d:%d%d%d%d\n"%(data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9])
+        status += "CMB Version: %d\n"%data[10]
+        status += "%s"%data[12:20]
         if self.logText != None:
             self.logText.insert(Tkinter.END,status + "\n",("Activity"))
         
@@ -430,25 +430,25 @@ class xmapp_tk(Tkinter.Tk):
             if self.logText != None:
                 self.logText.insert(Tkinter.END,"Signal data not correct length. Exp: 26 Act: %d\n"%len(data),("Warning"))
             #return
-        status = "Receiver: Sat: "
+        status = "Receiver:\nSat: "
         if (data[2] == 0x0):
-            status += "None "
+            status += "None"
         elif (data[2] == 0x1):
-            status += "Fair "
+            status += "Fair"
         elif (data[2] == 0x2):
-            status += "Good "
+            status += "Good"
         elif (data[2] == 0x3):
-            status += "Exc "
+            status += "Excellent"
         else:
             status += "?(%d)" % data[2]
             
-        status += "Ant: "
+        status += "\nAnt: "
         if (data[3] == 0x0):
-            status += "Dis "
+            status += "Disconnected"
         elif (data[3] == 0x1):
-            status += "Con "
+            status += "Connected"
         else:
-            status += "?(%d) " % data[3]
+            status += "?(%d)" % data[3]
             
         if self.logText != None:
             self.logText.insert(Tkinter.END,status + "\n",("Activity"))
