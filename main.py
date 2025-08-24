@@ -10,9 +10,6 @@ import threading
 
 from utils.canipy import CaniPy
 
-xm_cmd_header = b"\x5A\xA5"
-xm_cmd_footer = b"\xED\xED" 
-
 baud_rate = 9600
 
 logWin = None
@@ -192,17 +189,14 @@ class xmapp_tk(Tkinter.Tk):
         self.ioText.insert(Tkinter.END,bin_text,tag)
     
     def sendXMPacket(self,cmd):
+        # At some point move to just calling
+        # the functions in util instead.
+        # Using bytes() here would be better
+        # as shown in the functions.
         packet = b""
-        packet += xm_cmd_header + b'\x00'
         packet += cmd
-        packet += xm_cmd_footer
         if self.serialPort != None:
-            # TODO: move to pcr_tx() instead
-            # However, this script has the byte lengths baked
-            # rather than calculating them on demand.
-            # That will gradually be installed here later.
-            # For now, write directly to the port.
-            self.serialPort.serial_port.write(packet)
+            self.serialPort.pcr_tx(packet)
         if (self.ioText != None):
             self.print_bin(packet,("SentBytes")) 
         
@@ -239,7 +233,7 @@ class xmapp_tk(Tkinter.Tk):
                 self.logText.insert(Tkinter.END,"Packet header size not as expected (5). %d\n"%len(packet),("Warning"))
                 return (None, None)
         # verify it is the header
-        if packet[:2] != xm_cmd_header:
+        if packet[:2] != self.serialPort.header:
             if self.logText != None:
                 self.logText.insert(Tkinter.END,"Packet header not found: %s\n"%packet[:2],("Warning"))
                 return (None, None)
@@ -258,7 +252,7 @@ class xmapp_tk(Tkinter.Tk):
                 return (None, None)
         # return tuple with return code and data
         if self.ioText != None:
-            self.print_bin(packet+rest_of_packet,"ReceivedBytes")
+            self.print_bin(packet[4:]+rest_of_packet[:-2],"ReceivedBytes")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
      
     def set_pcr_device(self):
@@ -277,43 +271,43 @@ class xmapp_tk(Tkinter.Tk):
         self.logText.insert(Tkinter.END,f"Baud rate set to WX Certified ({baud_rate})\n",("Activity"))
     
     def reset_xm(self):
-        cmd = b'\x03\x74\x00\x01'
+        cmd = b'\x74\x00\x01'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Resetting radio\n",("Activity"))
         self.sendXMPacket(cmd)
     
     def turn_on_33V(self):
-        cmd = b'\x04\x74\x02\x01\x01'    
+        cmd = b'\x74\x02\x01\x01'    
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Turning on 3.3\n",("Activity"))
         self.sendXMPacket(cmd)
     
     def unmute_dac(self):
-        cmd = b'\x03\x74\x0B\x00'    
+        cmd = b'\x74\x0B\x00'    
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Unmuting DAC\n",("Activity"))
         self.sendXMPacket(cmd)
     
     def power_on(self):
-        cmd = b'\x05\x00\x16\x16\x24\x01'    
+        cmd = b'\x00\x16\x16\x24\x01'    
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Powering on radio\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def power_off(self):
-        cmd = b'\x02\x01\x01'    
+        cmd = b'\x01\x01'    
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Powering off radio\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_radio_id(self):
-        cmd = b'\x01\x31'    
+        cmd = b'\x31'    
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting Radio ID\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def set_mute(self, on = False):
-        cmd = b'\x02\x13'
+        cmd = b'\x13'
         
         if (on == True):
             logText = "Muting radio\n"
@@ -328,63 +322,63 @@ class xmapp_tk(Tkinter.Tk):
         self.sendXMPacket(cmd)
     
     def change_channel(self,channel):
-        cmd = b'\x06\x10\x02' + channel + b'\x00\x00\x01'
+        cmd = b'\x10\x02' + channel + b'\x00\x00\x01'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Changing Channel to %d\n"%channel,("Activity"))
         self.sendXMPacket(cmd)
 
     def change_data_channel(self,channel):
-        cmd = b'\x06\x10\x01' + channel + b'\x00\x00\x01'
-        #cmd = b'\x06\x10\x01' + channel + b'\x01\x00\x02'
+        cmd = b'\x10\x01' + channel + b'\x00\x00\x01'
+        #cmd = b'\x10\x01' + channel + b'\x01\x00\x02'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Changing Channel to %d in data mode\n"%channel,("Activity"))
         self.sendXMPacket(cmd)
         
     def get_this_channel_info(self):
-        cmd = b'\x02\x25\x08'
-        #cmd = b'\x04\x25\x08' + channel + b'\x00'
+        cmd = b'\x25\x08'
+        #cmd = b'\x25\x08' + channel + b'\x00'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_next_channel_info(self):
-        cmd = b'\x02\x25\x09'
+        cmd = b'\x25\x09'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting next channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_previous_channel_info(self):
-        cmd = b'\x02\x25\x10'
+        cmd = b'\x25\x10'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting previous channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_extended_channel_info(self,channel):
-        cmd = b'\x02\x22' + channel
+        cmd = b'\x22' + channel
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting extended channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_signal_data(self):
-        cmd = b'\x01\x43'
+        cmd = b'\x43'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting signal data\n",("Activity"))
         self.sendXMPacket(cmd)
 
     def ping_radio(self):
-        cmd = b'\x02\x4a\x43'
+        cmd = b'\x4a\x43'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Pinging radio\n",("Activity"))
         self.sendXMPacket(cmd)
 
     def get_firmver(self):
-        cmd = b'\x02\x4a\x44'
+        cmd = b'\x4a\x44'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Getting radio firmware version\n",("Activity"))
         self.sendXMPacket(cmd)
 
     def check_channel_status(self,channel):
-        cmd = b'\x03\x11' + channel + b'\x00'
+        cmd = b'\x11' + channel + b'\x00'
         if self.logText != None:
             self.logText.insert(Tkinter.END,"Checking status for Channel %d\n"%channel,("Activity"))
         self.sendXMPacket(cmd)
@@ -415,10 +409,10 @@ class xmapp_tk(Tkinter.Tk):
                 self.logText.insert(Tkinter.END,"Status1 not correct length. Exp: 11 Act: %d\n"%len(data),("Warning"))
             #return
         # if good, print ascii characters
-        status = "Radio Info"
+        status = "===Radio Info"
         if data[0] == 0x3:
             status += " (Not Activated)"
-        status += ":\nVersion: %d.%d\n"%(data[1],data[2])
+        status += "===\nVersion: %d.%d\n"%(data[1],data[2])
         status += "RX Date: %d%d:%d%d:%d%d%d%d\n"%(data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9])
         status += "CMB Version: %d\n"%data[10]
         status += "%s"%data[12:20]
@@ -430,7 +424,7 @@ class xmapp_tk(Tkinter.Tk):
             if self.logText != None:
                 self.logText.insert(Tkinter.END,"Signal data not correct length. Exp: 26 Act: %d\n"%len(data),("Warning"))
             #return
-        status = "Receiver:\nSat: "
+        status = "===Receiver===\nSat: "
         if (data[2] == 0x0):
             status += "None"
         elif (data[2] == 0x1):

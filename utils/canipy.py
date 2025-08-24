@@ -18,7 +18,7 @@ class CaniPy:
         self.curr_channel_info = lambda: self.channel_info(self.channel)
         self.curr_audio_info = lambda: self.audio_info(self.channel)
 
-        self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)  # "Are you smoking yet??"
+        self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
 
         self.serial_port = None
@@ -151,7 +151,6 @@ class CaniPy:
     def crash_override(self):
         # FOR DEBUG USE
         print("Careful now! You're sending commands directly!")
-        print("Hope you don't screw like you type!")
         self.pcr_tx(
             bytes.fromhex(
                 input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
