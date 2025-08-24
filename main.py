@@ -38,10 +38,16 @@ class xmapp_tk(Tkinter.Tk):
         self.comThread = threading.Thread(None,self.com_thread,"ComThread")
         self.comThread.start()
         
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Stop thread upon window exit
+        self.quitThread = True
+        self.comThread.join(None)
+
     def com_thread(self):
         # Keep calling the read method for the port
-        if self.logText != None:
-            self.logText.insert(Tkinter.END,"COM port thread started\n",("Activity"))
         while True:
             (return_code,data) = self.receiveXMPacket();
             if self.quitThread:
@@ -67,7 +73,7 @@ class xmapp_tk(Tkinter.Tk):
                 self.print_mute_state(data)
             else:
                 if self.logText != None:
-                    self.logText.insert(Tkinter.END,"Unknown return code 0x%02X\n"%code_val,("Warning"))
+                    self.logText.insert(Tkinter.END,f"Unknown return code {hex(code_val)}\n",("Warning"))
                 
 
     def initialize(self):
@@ -160,29 +166,20 @@ class xmapp_tk(Tkinter.Tk):
         self.SetWcDevice = Tkinter.Button(self.buttonFrame,text="WX Certified",command=self.set_wc_device)
         self.SetWcDevice.grid(column=2,row=1)
 
-        # button for killing com thread
-        self.KillThreadButton = Tkinter.Button(self.buttonFrame,text="Kill COM thread",command=self.kill_thread)       
-        self.KillThreadButton.grid(column=3,row=1)
-
         self.resetXmButton = Tkinter.Button(self.buttonFrame,text="Direct Cmd",command=self.reset_xm)       
-        self.resetXmButton.grid(column=4,row=1)
+        self.resetXmButton.grid(column=6,row=1)
 
         self.turnOn33VButton = Tkinter.Button(self.buttonFrame,text="Direct 3.3V",command=self.turn_on_33V)       
-        self.turnOn33VButton.grid(column=5,row=1)
+        self.turnOn33VButton.grid(column=7,row=1)
         
         self.unmuteDacButton = Tkinter.Button(self.buttonFrame,text="Direct DAC",command=self.unmute_dac)       
-        self.unmuteDacButton.grid(column=6,row=1)
+        self.unmuteDacButton.grid(column=8,row=1)
 
         self.buttonFrame.grid(column=0, row=5)
         
         self.resizable(True,False)
         self.update()
         self.geometry(self.geometry())
-    
-    def kill_thread(self):
-        self.quitThread = True
-        self.comThread.join(None)
-        self.logText.insert(Tkinter.END,"COM thread killed.\n",("Activity"))    
             
     def print_bin(self,buf,tag):
         bin_text = " ".join(f"{b:02X}" for b in buf) + "\n"
@@ -230,12 +227,12 @@ class xmapp_tk(Tkinter.Tk):
             
         if len(packet) != 5:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Packet header size not as expected (5). %d\n"%len(packet),("Warning"))
+                self.logText.insert(Tkinter.END,f"Packet header size not as expected (5). {len(packet)}\n",("Warning"))
                 return (None, None)
         # verify it is the header
         if packet[:2] != self.serialPort.header:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Packet header not found: %s\n"%packet[:2],("Warning"))
+                self.logText.insert(Tkinter.END,f"Packet header not found: {packet[:2]}\n",("Warning"))
                 return (None, None)
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
@@ -248,7 +245,7 @@ class xmapp_tk(Tkinter.Tk):
             return (None, None)
         if len(rest_of_packet) != size+1:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Packet payload size not as expected(%d). %d\n"%(size,len(rest_of_packet)),("Warning"))
+                self.logText.insert(Tkinter.END,f"Packet payload size not as expected({size}). {len(rest_of_packet)}\n",("Warning"))
                 return (None, None)
         # return tuple with return code and data
         if self.ioText != None:
@@ -324,14 +321,14 @@ class xmapp_tk(Tkinter.Tk):
     def change_channel(self,channel):
         cmd = b'\x10\x02' + channel + b'\x00\x00\x01'
         if self.logText != None:
-            self.logText.insert(Tkinter.END,"Changing Channel to %d\n"%channel,("Activity"))
+            self.logText.insert(Tkinter.END,f"Changing Channel to {channel}\n",("Activity"))
         self.sendXMPacket(cmd)
 
     def change_data_channel(self,channel):
         cmd = b'\x10\x01' + channel + b'\x00\x00\x01'
         #cmd = b'\x10\x01' + channel + b'\x01\x00\x02'
         if self.logText != None:
-            self.logText.insert(Tkinter.END,"Changing Channel to %d in data mode\n"%channel,("Activity"))
+            self.logText.insert(Tkinter.END,f"Changing Channel to {channel} in data mode\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_this_channel_info(self):
@@ -380,12 +377,14 @@ class xmapp_tk(Tkinter.Tk):
     def check_channel_status(self,channel):
         cmd = b'\x11' + channel + b'\x00'
         if self.logText != None:
-            self.logText.insert(Tkinter.END,"Checking status for Channel %d\n"%channel,("Activity"))
+            self.logText.insert(Tkinter.END,f"Checking status for Channel {channel}\n",("Activity"))
         self.sendXMPacket(cmd)
 
     def open_com_port(self):
         # get com port
         comPort = self.comEntry.get()
+        if self.logText != None:
+            self.logText.insert(Tkinter.END,f"Connecting to {comPort} ({baud_rate})\n",("Activity"))
         # Begin to gently transplant CaniPy
         self.serialPort = CaniPy(port=comPort, baud=baud_rate)
 
@@ -397,32 +396,32 @@ class xmapp_tk(Tkinter.Tk):
     def print_radio_id(self,data):
         if len(data) != 11:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Radio id not correct length. Exp: 14 Act: %d\n"%len(data),("Warning"))
+                self.logText.insert(Tkinter.END,f"Radio id not correct length. Exp: 14 Act: {len(data)}\n",("Warning"))
             return
         # if good, print ascii characters
         if self.logText != None:
-            self.logText.insert(Tkinter.END,"Radio ID: " + data[3:11].decode('ascii') + "\n",("Activity"))
+            self.logText.insert(Tkinter.END,f"Radio ID: {data[3:11].decode('ascii')}\n",("Activity"))
                                 
     def print_status1(self,data):
         if len(data) != 26:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Status1 not correct length. Exp: 11 Act: %d\n"%len(data),("Warning"))
+                self.logText.insert(Tkinter.END,f"Status1 not correct length. Exp: 11 Act: {len(data)}\n",("Warning"))
             #return
         # if good, print ascii characters
         status = "===Radio Info"
         if data[0] == 0x3:
             status += " (Not Activated)"
-        status += "===\nVersion: %d.%d\n"%(data[1],data[2])
-        status += "RX Date: %d%d:%d%d:%d%d%d%d\n"%(data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9])
-        status += "CMB Version: %d\n"%data[10]
+        status += f"===\nVersion: {data[1]}.{data[2]}\n"
+        status += f"RX Date: {data[2]}{data[3]}:{data[4]}{data[5]}:{data[6]}{data[7]}{data[8]}{data[9]}\n"
+        status += f"CMB Version: {data[10]}\n"
         status += "%s"%data[12:20]
         if self.logText != None:
-            self.logText.insert(Tkinter.END,status + "\n",("Activity"))
+            self.logText.insert(Tkinter.END,f"{status}\n",("Activity"))
         
     def print_signal_data(self,data):
         if len(data) != 25:
             if self.logText != None:
-                self.logText.insert(Tkinter.END,"Signal data not correct length. Exp: 26 Act: %d\n"%len(data),("Warning"))
+                self.logText.insert(Tkinter.END,f"Signal data not correct length. Exp: 26 Act: {len(data)}\n",("Warning"))
             #return
         status = "===Receiver===\nSat: "
         if (data[2] == 0x0):
@@ -445,7 +444,7 @@ class xmapp_tk(Tkinter.Tk):
             status += "?(%d)" % data[3]
             
         if self.logText != None:
-            self.logText.insert(Tkinter.END,status + "\n",("Activity"))
+            self.logText.insert(Tkinter.END,f"{status}\n",("Activity"))
 
     def print_mute_state(self,data):
         status = "Mute: "
@@ -457,12 +456,12 @@ class xmapp_tk(Tkinter.Tk):
             status += "?(%d)" % data[2]
             
         if self.logText != None:
-            self.logText.insert(Tkinter.END,status + "\n",("Activity"))
+            self.logText.insert(Tkinter.END,f"{status}\n",("Activity"))
         
 if __name__ == "__main__":
-    app = xmapp_tk(None)
-    app.title('CaniPy')
-    app.mainloop()
+    with xmapp_tk(None) as app:
+        app.title('CaniPy')
+        app.mainloop()
         
               
         

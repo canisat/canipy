@@ -5,7 +5,9 @@ CaniPy provides a modern foundation for allowing continued use of supported SDAR
 
 The project at this time is comprised of both a prototype GUI and auxiliary test-bed code to be implemented, upgrading from older Python 2 syntax over to Python 3.
 
-## Devices
+## Requirements
+Python 3.6 or higher is required to run the code.
+
 The current version contains implementations that support these devices using Sirius XM Radio LLC's **XM network**.
 
 Further support for other devices may be implemented in the future.
@@ -19,7 +21,7 @@ Further support for other devices may be implemented in the future.
 | WxWorx (Certified) | 115200 |
 
 ## Why Python?
-CaniPy is intended to provide a legible foundation for understanding the control commands and behavior applicable to the supported SDARS serial devices.
+CaniPy is intended to provide a legible codebase for understanding the control commands and behavior applicable to the supported SDARS serial devices.
 
 ## Libraries
 * [tkinter](https://docs.python.org/3/library/tkinter.html)
