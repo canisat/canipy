@@ -6,7 +6,7 @@ CaniPy provides a modern foundation for allowing continued use of supported SDAR
 The project at this time is comprised of both a prototype GUI and auxiliary test-bed code to be implemented, upgrading from older Python 2 syntax over to Python 3.
 
 ## Requirements
-Python 3.6 or higher is required to run the code.
+Python 3.10 or higher is required to run the code.
 
 The current version contains implementations that support these devices using Sirius XM Radio LLC's **XM network**.
 

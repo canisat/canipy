@@ -33,6 +33,8 @@ class xmapp_tk(Tkinter.Tk):
         self.quitThread = False
         self.idleFrames = 0
         
+        self.serialPort = None
+        
         # start com port read thread
         
         self.comThread = threading.Thread(None,self.com_thread,"ComThread")
@@ -45,6 +47,10 @@ class xmapp_tk(Tkinter.Tk):
         # Stop thread upon window exit
         self.quitThread = True
         self.comThread.join(None)
+        # Close com if any open
+        if self.serialPort != None:
+            self.serialPort.close()
+            self.serialPort = None
 
     def com_thread(self):
         # Keep calling the read method for the port
@@ -58,29 +64,31 @@ class xmapp_tk(Tkinter.Tk):
             
             # check return codes
 
-            if code_val == 0xF2:
-                self.idleFrames += 1
-            elif code_val == 0xF4:
-                if self.logText != None:
-                    self.logText.insert(Tkinter.END,"Command Acknowledged\n",("Activity"))
-            if code_val == 0xB1:
-                self.print_radio_id(data)
-            elif code_val == 0x80:
-                self.print_status1(data)
-            elif code_val == 0xC3:
-                self.print_signal_data(data)
-            elif code_val == 0x93:
-                self.print_mute_state(data)
-            else:
-                if self.logText != None:
-                    self.logText.insert(Tkinter.END,f"Unknown return code {hex(code_val)}\n",("Warning"))
+            match code_val:
+                case 0x80:
+                    self.print_status1(data)
+                case 0x81:
+                    self.logText.insert(Tkinter.END,"Goodnight\n",("Activity"))
+                case 0x93:
+                    self.print_mute_state(data)
+                case 0xB1:
+                    self.print_radio_id(data)
+                case 0xC3:
+                    self.print_signal_data(data)
+                case 0xF2:
+                    self.idleFrames += 1
+                case 0xF4 | 0xFF:
+                    if self.logText != None:
+                        self.logText.insert(Tkinter.END,"Command Acknowledged\n",("Activity"))
+                case _:
+                    if self.logText != None:
+                        self.logText.insert(Tkinter.END,f"Unknown return code {hex(code_val)}\n",("Warning"))
                 
 
     def initialize(self):
         self.grid()
         
         self.ioText = None
-        self.serialPort = None
 
         # Text window for debugging outpu
         
@@ -129,14 +137,6 @@ class xmapp_tk(Tkinter.Tk):
         self.comEntry.grid(column=0,row=0)
         self.comEntry.insert(Tkinter.END, "COM3")  #self.comEntry.set("COM3")
         
-        # button for opening port
-        self.OpenButton = Tkinter.Button(self.buttonFrame,text="Open",command=self.open_com_port)       
-        self.OpenButton.grid(column=1,row=0)
-        
-        # button for closing port
-        self.CloseButton = Tkinter.Button(self.buttonFrame,text="Close",command=self.close_com_port)       
-        self.CloseButton.grid(column=2,row=0)
-        
         self.powerOnButton = Tkinter.Button(self.buttonFrame,text="Power On",command=self.power_on)       
         self.powerOnButton.grid(column=3,row=0)
         
@@ -157,23 +157,17 @@ class xmapp_tk(Tkinter.Tk):
         self.UnmuteButton = Tkinter.Button(self.buttonFrame,text="Unmute",command=muteoffcmd)       
         self.UnmuteButton.grid(column=8,row=0)
 
-        self.SetPcrDevice = Tkinter.Button(self.buttonFrame,text="PCR/Direct",command=self.set_pcr_device)
-        self.SetPcrDevice.grid(column=0,row=1)
+        self.SetPcrDevice = Tkinter.Button(self.buttonFrame,text="PCR",command=self.set_pcr_device)
+        self.SetPcrDevice.grid(column=1,row=0)
+
+        self.SetPcrDevice = Tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
+        self.SetPcrDevice.grid(column=2,row=0)
 
         self.SetWxDevice = Tkinter.Button(self.buttonFrame,text="WX Portable",command=self.set_wx_device)
         self.SetWxDevice.grid(column=1,row=1)
 
         self.SetWcDevice = Tkinter.Button(self.buttonFrame,text="WX Certified",command=self.set_wc_device)
         self.SetWcDevice.grid(column=2,row=1)
-
-        self.resetXmButton = Tkinter.Button(self.buttonFrame,text="Direct Cmd",command=self.reset_xm)       
-        self.resetXmButton.grid(column=6,row=1)
-
-        self.turnOn33VButton = Tkinter.Button(self.buttonFrame,text="Direct 3.3V",command=self.turn_on_33V)       
-        self.turnOn33VButton.grid(column=7,row=1)
-        
-        self.unmuteDacButton = Tkinter.Button(self.buttonFrame,text="Direct DAC",command=self.unmute_dac)       
-        self.unmuteDacButton.grid(column=8,row=1)
 
         self.buttonFrame.grid(column=0, row=5)
         
@@ -251,39 +245,6 @@ class xmapp_tk(Tkinter.Tk):
         if self.ioText != None:
             self.print_bin(packet[4:]+rest_of_packet[:-2],"ReceivedBytes")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
-     
-    def set_pcr_device(self):
-        global baud_rate
-        baud_rate = 9600
-        self.logText.insert(Tkinter.END,f"Baud rate set to PCR ({baud_rate})\n",("Activity"))
-
-    def set_wx_device(self):
-        global baud_rate
-        baud_rate = 38400
-        self.logText.insert(Tkinter.END,f"Baud rate set to WX Portable ({baud_rate})\n",("Activity"))
-
-    def set_wc_device(self):
-        global baud_rate
-        baud_rate = 115200
-        self.logText.insert(Tkinter.END,f"Baud rate set to WX Certified ({baud_rate})\n",("Activity"))
-    
-    def reset_xm(self):
-        cmd = b'\x74\x00\x01'
-        if self.logText != None:
-            self.logText.insert(Tkinter.END,"Resetting radio\n",("Activity"))
-        self.sendXMPacket(cmd)
-    
-    def turn_on_33V(self):
-        cmd = b'\x74\x02\x01\x01'    
-        if self.logText != None:
-            self.logText.insert(Tkinter.END,"Turning on 3.3\n",("Activity"))
-        self.sendXMPacket(cmd)
-    
-    def unmute_dac(self):
-        cmd = b'\x74\x0B\x00'    
-        if self.logText != None:
-            self.logText.insert(Tkinter.END,"Unmuting DAC\n",("Activity"))
-        self.sendXMPacket(cmd)
     
     def power_on(self):
         cmd = b'\x00\x16\x16\x24\x01'    
@@ -381,17 +342,39 @@ class xmapp_tk(Tkinter.Tk):
         self.sendXMPacket(cmd)
 
     def open_com_port(self):
-        # get com port
-        comPort = self.comEntry.get()
-        if self.logText != None:
-            self.logText.insert(Tkinter.END,f"Connecting to {comPort} ({baud_rate})\n",("Activity"))
-        # Begin to gently transplant CaniPy
-        self.serialPort = CaniPy(port=comPort, baud=baud_rate)
-
-    def close_com_port(self):
+        # Close com if any open
         if self.serialPort != None:
             self.serialPort.close()
             self.serialPort = None
+        # get com port
+        comPort = self.comEntry.get()
+        if self.logText != None:
+            self.logText.insert(Tkinter.END,f"Connect to {comPort} ({baud_rate})\n",("Activity"))
+        # Begin to gently transplant CaniPy
+        self.serialPort = CaniPy(port=comPort, baud=baud_rate)
+
+    def set_pcr_device(self):
+        global baud_rate
+        baud_rate = 9600
+        self.logText.insert(Tkinter.END,f"Baud rate set to PCR ({baud_rate})\n",("Activity"))
+        self.open_com_port()
+    
+    def set_direct_device(self):
+        self.set_pcr_device()
+        self.logText.insert(Tkinter.END,f"Sending Direct enable commands\n",("Activity"))
+        self.serialPort.direct_enable()
+
+    def set_wx_device(self):
+        global baud_rate
+        baud_rate = 38400
+        self.logText.insert(Tkinter.END,f"Baud rate set to WX Portable ({baud_rate})\n",("Activity"))
+        self.open_com_port()
+
+    def set_wc_device(self):
+        global baud_rate
+        baud_rate = 115200
+        self.logText.insert(Tkinter.END,f"Baud rate set to WX Certified ({baud_rate})\n",("Activity"))
+        self.open_com_port()
 
     def print_radio_id(self,data):
         if len(data) != 11:
@@ -408,10 +391,12 @@ class xmapp_tk(Tkinter.Tk):
                 self.logText.insert(Tkinter.END,f"Status1 not correct length. Exp: 11 Act: {len(data)}\n",("Warning"))
             #return
         # if good, print ascii characters
-        status = "===Radio Info"
+        status = "===Radio Info===\nActivated: "
         if data[0] == 0x3:
-            status += " (Not Activated)"
-        status += f"===\nVersion: {data[1]}.{data[2]}\n"
+            status += "No"
+        else:
+            status += "Yes"
+        status += f"\nVersion: {data[1]}.{data[2]}\n"
         status += f"RX Date: {data[2]}{data[3]}:{data[4]}{data[5]}:{data[6]}{data[7]}{data[8]}{data[9]}\n"
         status += f"CMB Version: {data[10]}\n"
         status += "%s"%data[12:20]
