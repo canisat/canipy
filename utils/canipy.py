@@ -40,14 +40,16 @@ class CaniPy:
         print("Powering down")
         self.pcr_tx(bytes([0x01, pwr_sav]))
 
-    def change_channel(self, channel:int, data:bool=False):
+    def change_channel(self, channel:int, data:bool=False, info_flag:bool=False):
         if channel not in range(256):
             print("Invalid channel value")
             return
         print(f"Changing to channel {channel}{' (Data)' if data else ''}")
         # Some data (i.e. channel 240/F0) is tuned with 01 00 02 instead of 00 00 01.
-        # Not sure what those mean yet as other data tracks tune without this.
-        self.pcr_tx(bytes([0x10, 0x01 if data else 0x02, channel, 0x00, 0x00, 0x01]))
+        # Could be to indicate info? Or the actual control track for subscriber
+        # check? Other data tracks tune without this, but implemented anyway as
+        # "info_flag" here and in channel_status.
+        self.pcr_tx(bytes([0x10, 0x01 if data else 0x02, channel, info_flag, 0x00, 0x01 + info_flag]))
         self.channel = channel
 
     def channel_info(self, channel:int):
@@ -65,12 +67,12 @@ class CaniPy:
         self.pcr_tx(bytes([0x25, 0x08, channel, 0x00]))
         print(f"Check pcap for info on channel {channel}")
 
-    def channel_status(self, channel:int):
+    def channel_status(self, channel:int, info_flag:bool=False):
         if channel not in range(256):
             print("Invalid channel value")
             return
-        # For checking sub status?
-        self.pcr_tx(bytes([0x11, channel, 0x00]))
+        # For checking sub status
+        self.pcr_tx(bytes([0x11, channel, info_flag]))
         print(f"Check pcap for status of channel {channel}")
 
     def audio_info(self, channel:int):
