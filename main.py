@@ -122,6 +122,12 @@ class canipy_tk(tkinter.Tk):
         self.comEntry.grid(column=0,row=0)
         self.comEntry.insert(tkinter.END, "COM3")  #self.comEntry.set("COM3")
         
+        self.SetPcrDevice = tkinter.Button(self.buttonFrame,text="PCR",command=self.set_pcr_device)
+        self.SetPcrDevice.grid(column=1,row=0)
+
+        self.SetDirectDevice = tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
+        self.SetDirectDevice.grid(column=2,row=0)
+        
         self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.power_on)       
         self.powerOnButton.grid(column=3,row=0)
         
@@ -142,17 +148,34 @@ class canipy_tk(tkinter.Tk):
         self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=muteoffcmd)       
         self.UnmuteButton.grid(column=8,row=0)
 
-        self.SetPcrDevice = tkinter.Button(self.buttonFrame,text="PCR",command=self.set_pcr_device)
-        self.SetPcrDevice.grid(column=1,row=0)
-
-        self.SetPcrDevice = tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
-        self.SetPcrDevice.grid(column=2,row=0)
+        # channel number 
+        self.chEntry = tkinter.Entry(self.buttonFrame)
+        self.chEntry.grid(column=0,row=1)
+        self.chEntry.insert(tkinter.END, "1")
 
         self.SetWxDevice = tkinter.Button(self.buttonFrame,text="WX Portable",command=self.set_wx_device)
         self.SetWxDevice.grid(column=1,row=1)
 
         self.SetWcDevice = tkinter.Button(self.buttonFrame,text="WX Certified",command=self.set_wc_device)
         self.SetWcDevice.grid(column=2,row=1)
+
+        self.changeChannelButton = tkinter.Button(self.buttonFrame,text="Change Ch",command=self.change_channel)       
+        self.changeChannelButton.grid(column=3,row=1)
+
+        self.getChInfoButton = tkinter.Button(self.buttonFrame,text="Ch Info",command=self.get_channel_info)       
+        self.getChInfoButton.grid(column=4,row=1)
+
+        self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Info",command=self.get_extended_channel_info)       
+        self.extChInfoButton.grid(column=5,row=1)
+
+        self.chStatusButton = tkinter.Button(self.buttonFrame,text="Ch Status",command=self.check_channel_status)       
+        self.chStatusButton.grid(column=6,row=1)
+
+        self.fwVerButton = tkinter.Button(self.buttonFrame,text="Firm Ver",command=self.get_firmver)       
+        self.fwVerButton.grid(column=7,row=1)
+
+        self.pingRadioButton = tkinter.Button(self.buttonFrame,text="Ping Radio",command=self.ping_radio)       
+        self.pingRadioButton.grid(column=8,row=1)
 
         self.buttonFrame.grid(column=0, row=5)
         
@@ -264,17 +287,27 @@ class canipy_tk(tkinter.Tk):
             
         self.sendXMPacket(cmd)
     
-    def change_channel(self,channel):
-        cmd = b'\x10\x02' + channel + b'\x00\x00\x01'
+    def change_channel(self):
+        channel = self.chEntry.get()
+        # better to filter out channels not in range(256)...
+        cmd = b'\x10\x02' + bytes([int(channel)]) + b'\x00\x00\x01'
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Changing Channel to {channel}\n",("Activity"))
         self.sendXMPacket(cmd)
 
-    def change_data_channel(self,channel):
-        cmd = b'\x10\x01' + channel + b'\x00\x00\x01'
+    def change_data_channel(self):
+        channel = self.chEntry.get()
+        cmd = b'\x10\x01' + bytes([int(channel)]) + b'\x00\x00\x01'
         #cmd = b'\x10\x01' + channel + b'\x01\x00\x02'
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Changing Channel to {channel} in data mode\n",("Activity"))
+        self.sendXMPacket(cmd)
+
+    def get_channel_info(self):
+        channel = self.chEntry.get()
+        cmd = b'\x25\x08' + bytes([int(channel)]) + b'\x00'
+        if self.logText != None:
+            self.logText.insert(tkinter.END,"Getting channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
     def get_this_channel_info(self):
@@ -296,8 +329,9 @@ class canipy_tk(tkinter.Tk):
             self.logText.insert(tkinter.END,"Getting previous channel info\n",("Activity"))
         self.sendXMPacket(cmd)
         
-    def get_extended_channel_info(self,channel):
-        cmd = b'\x22' + channel
+    def get_extended_channel_info(self):
+        channel = self.chEntry.get()
+        cmd = b'\x22' + bytes([int(channel)])
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting extended channel info\n",("Activity"))
         self.sendXMPacket(cmd)
@@ -320,8 +354,9 @@ class canipy_tk(tkinter.Tk):
             self.logText.insert(tkinter.END,"Getting radio firmware version\n",("Activity"))
         self.sendXMPacket(cmd)
 
-    def check_channel_status(self,channel):
-        cmd = b'\x11' + channel + b'\x00'
+    def check_channel_status(self):
+        channel = self.chEntry.get()
+        cmd = b'\x11' + bytes([int(channel)]) + b'\x00'
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Checking status for Channel {channel}\n",("Activity"))
         self.sendXMPacket(cmd)
