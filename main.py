@@ -1,10 +1,5 @@
 import tkinter
 
-try:
-    import serial
-except:
-    print("Serial Library not available")
-
 import time
 import threading
 
@@ -19,7 +14,7 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = False
         self.idleFrames = 0
         
-        self.serialPort = None
+        self.canipy = CaniPy()
         self.baud_rate = 9600
         
         # start com port read thread
@@ -35,23 +30,21 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = True
         self.comThread.join(None)
         # Close com if any open
-        if self.serialPort != None:
-            self.serialPort.close()
-            self.serialPort = None
+        if self.canipy.serial_conn != None:
+            self.canipy.close()
 
     def com_thread(self):
         # Keep calling the read method for the port
         while True:
-            (return_code,data) = self.receiveXMPacket();
+            (return_code,data) = self.receiveXMPacket()
             if self.quitThread:
                 return
-            if return_code == None:
-                continue
-            code_val = return_code
             
             # check return codes
 
-            match code_val:
+            match return_code:
+                case None:
+                    continue
                 case 0x80:
                     self.print_status1(data)
                 case 0x81:
@@ -69,7 +62,7 @@ class canipy_tk(tkinter.Tk):
                         self.logText.insert(tkinter.END,"Command Acknowledged\n",("Activity"))
                 case _:
                     if self.logText != None:
-                        self.logText.insert(tkinter.END,f"Unknown return code {hex(code_val)}\n",("Warning"))
+                        self.logText.insert(tkinter.END,f"Unknown return code {hex(return_code)}\n",("Warning"))
                 
 
     def initialize(self):
@@ -184,23 +177,15 @@ class canipy_tk(tkinter.Tk):
         self.geometry(self.geometry())
             
     def print_bin(self,buf,tag):
-        bin_text = " ".join(f"{b:02X}" for b in buf) + "\n"
-        self.ioText.insert(tkinter.END,bin_text,tag)
-    
-    def sendXMPacket(self,cmd):
-        # At some point move to just calling
-        # the functions in util instead.
-        # Using bytes() here would be better
-        # as shown in the functions.
-        packet = b""
-        packet += cmd
-        if self.serialPort != None:
-            self.serialPort.pcr_tx(packet)
-        if (self.ioText != None):
-            self.print_bin(packet,("SentBytes")) 
+        try:
+            bin_text = " ".join(f"{b:02X}" for b in buf) + "\n"
+            self.ioText.insert(tkinter.END,bin_text,tag)
+        except:
+            if self.logText != None:
+                self.logText.insert(tkinter.END,"No command sent!\n",("Warning"))
         
     def receiveXMPacket(self):
-        if self.serialPort == None:
+        if self.canipy.serial_conn == None:
             if self.logText != None:
                 self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
             # wait for port to be connected
@@ -215,7 +200,7 @@ class canipy_tk(tkinter.Tk):
         while read_so_far < 5:
             chunk = b""
             try:
-                chunk = self.serialPort.serial_port.read(5-read_so_far)
+                chunk = self.canipy.serial_conn.read(5-read_so_far)
             except:
                 self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
                 # wait for port to be connected
@@ -232,14 +217,14 @@ class canipy_tk(tkinter.Tk):
                 self.logText.insert(tkinter.END,f"Packet header size not as expected (5). {len(packet)}\n",("Warning"))
                 return (None, None)
         # verify it is the header
-        if packet[:2] != self.serialPort.header:
+        if packet[:2] != self.canipy.header:
             if self.logText != None:
                 self.logText.insert(tkinter.END,f"Packet header not found: {packet[:2]}\n",("Warning"))
                 return (None, None)
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
-            rest_of_packet = self.serialPort.serial_port.read(size+1)
+            rest_of_packet = self.canipy.serial_conn.read(size+1)
         except:
             self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
             # wait for port to be connected
@@ -255,123 +240,98 @@ class canipy_tk(tkinter.Tk):
         return (packet[4],rest_of_packet[:size-1])
     
     def power_on(self):
-        cmd = b'\x00\x16\x16\x24\x01'    
         if self.logText != None:
             self.logText.insert(tkinter.END,"Powering on radio\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.power_up(),("SentBytes"))
         
     def power_off(self):
-        cmd = b'\x01\x01'    
         if self.logText != None:
             self.logText.insert(tkinter.END,"Powering off radio\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.power_down(pwr_sav=True),("SentBytes"))
         
     def get_radio_id(self):
-        cmd = b'\x31'    
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting Radio ID\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.radio_id(),("SentBytes"))
         
     def set_mute(self, on = False):
-        cmd = b'\x13'
-        
         if (on == True):
             logText = "Muting radio\n"
-            cmd += b'\x01'
         else:
             logText = "Unmuting radio\n"
-            cmd += b'\x00'
             
         if self.logText != None:
             self.logText.insert(tkinter.END,logText,("Activity"))
             
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.set_mute(on),("SentBytes"))
     
     def change_channel(self):
-        channel = self.chEntry.get()
-        # better to filter out channels not in range(256)...
-        cmd = b'\x10\x02' + bytes([int(channel)]) + b'\x00\x00\x01'
+        channel = int(self.chEntry.get())
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Changing Channel to {channel}\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.change_channel(channel),("SentBytes"))
 
     def change_data_channel(self):
-        channel = self.chEntry.get()
-        cmd = b'\x10\x01' + bytes([int(channel)]) + b'\x00\x00\x01'
-        #cmd = b'\x10\x01' + channel + b'\x01\x00\x02'
+        channel = int(self.chEntry.get())
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Changing Channel to {channel} in data mode\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.change_channel(channel, data=True),("SentBytes"))
 
     def get_channel_info(self):
-        channel = self.chEntry.get()
-        cmd = b'\x25\x08' + bytes([int(channel)]) + b'\x00'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting channel info\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.channel_info(int(self.chEntry.get())),("SentBytes"))
         
     def get_this_channel_info(self):
-        cmd = b'\x25\x08'
-        #cmd = b'\x25\x08' + channel + b'\x00'
         if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting channel info\n",("Activity"))
-        self.sendXMPacket(cmd)
+            self.logText.insert(tkinter.END,"Getting current channel info\n",("Activity"))
+        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x08])),("SentBytes"))
         
     def get_next_channel_info(self):
-        cmd = b'\x25\x09'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting next channel info\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x09])),("SentBytes"))
         
     def get_previous_channel_info(self):
-        cmd = b'\x25\x10'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting previous channel info\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x10])),("SentBytes"))
         
     def get_extended_channel_info(self):
-        channel = self.chEntry.get()
-        cmd = b'\x22' + bytes([int(channel)])
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting extended channel info\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.audio_info(int(self.chEntry.get())),("SentBytes"))
         
     def get_signal_data(self):
-        cmd = b'\x43'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting signal data\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.signal_info(),("SentBytes"))
 
     def ping_radio(self):
-        cmd = b'\x4a\x43'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Pinging radio\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.ping_radio(),("SentBytes"))
 
     def get_firmver(self):
-        cmd = b'\x4a\x44'
         if self.logText != None:
             self.logText.insert(tkinter.END,"Getting radio firmware version\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.get_firmver(),("SentBytes"))
 
     def check_channel_status(self):
-        channel = self.chEntry.get()
-        cmd = b'\x11' + bytes([int(channel)]) + b'\x00'
+        channel = int(self.chEntry.get())
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Checking status for Channel {channel}\n",("Activity"))
-        self.sendXMPacket(cmd)
+        self.print_bin(self.canipy.channel_status(channel),("SentBytes"))
 
     def open_com_port(self):
         # Close com if any open
-        if self.serialPort != None:
-            self.serialPort.close()
-            self.serialPort = None
+        if self.canipy.serial_conn != None:
+            self.canipy.close()
         # get com port
         comPort = self.comEntry.get()
         if self.logText != None:
             self.logText.insert(tkinter.END,f"Connect to {comPort} ({self.baud_rate})\n",("Activity"))
-        # Begin to gently transplant CaniPy
-        self.serialPort = CaniPy(port=comPort, baud=self.baud_rate)
+        self.canipy.set_serial_params(port=comPort, baud=self.baud_rate)
 
     def set_pcr_device(self):
         self.baud_rate = 9600
@@ -381,7 +341,7 @@ class canipy_tk(tkinter.Tk):
     def set_direct_device(self):
         self.set_pcr_device()
         self.logText.insert(tkinter.END,f"Sending Direct enable commands\n",("Activity"))
-        self.serialPort.direct_enable()
+        self.canipy.direct_enable()
 
     def set_wx_device(self):
         self.baud_rate = 38400
