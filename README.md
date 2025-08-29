@@ -30,7 +30,7 @@ CaniPy is intended to provide a legible codebase for understanding the control c
 ## Notice
 This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timothy Canham, under the Apache 2.0 license.
 
-Serial commands were documented from past research conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the former XM Fan forums.
+Serial commands were documented from past research conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the defunct XM Fan forums.
 
 CaniSat is a non-profit initiative incubated by [NetOtt Solutions, LLC](https://netott.com/).
 

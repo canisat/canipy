@@ -7,6 +7,8 @@ from utils.canipy import CaniPy
 
 class canipy_tk(tkinter.Tk):  
     def __init__(self,parent):
+        self.canipy = CaniPy()
+
         tkinter.Tk.__init__(self,parent)
         self.parent = parent
         self.initialize()
@@ -14,7 +16,6 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = False
         self.idleFrames = 0
         
-        self.canipy = CaniPy()
         self.baud_rate = 9600
         
         # start com port read thread
@@ -48,7 +49,7 @@ class canipy_tk(tkinter.Tk):
                 case 0x80:
                     self.print_status1(data)
                 case 0x81:
-                    self.logText.insert(tkinter.END,"Goodnight\n",("Activity"))
+                    print("Goodnight")
                 case 0x93:
                     self.print_mute_state(data)
                 case 0xB1:
@@ -58,54 +59,13 @@ class canipy_tk(tkinter.Tk):
                 case 0xF2:
                     self.idleFrames += 1
                 case 0xF4 | 0xFF:
-                    if self.logText != None:
-                        self.logText.insert(tkinter.END,"Command Acknowledged\n",("Activity"))
+                    print("Command Acknowledged")
                 case _:
-                    if self.logText != None:
-                        self.logText.insert(tkinter.END,f"Unknown return code {hex(return_code)}\n",("Warning"))
+                    print(f"Unknown return code {hex(return_code)}")
                 
 
     def initialize(self):
         self.grid()
-        
-        self.ioText = None
-
-        # Text window for debugging outpu
-        
-        self.logText = tkinter.Text(self.parent,height=20,width=80,wrap=tkinter.NONE)
-
-        self.logText_vertScrollbar = tkinter.Scrollbar(self.parent,orient=tkinter.VERTICAL)
-        self.logText_vertScrollbar.config(command=self.logText.yview)
-        self.logText_horizScrollbar = tkinter.Scrollbar(self.parent,orient=tkinter.HORIZONTAL)
-        self.logText_horizScrollbar.config(command=self.logText.xview)
-        self.logText.configure(yscrollcommand=self.logText_vertScrollbar.set)
-        self.logText.configure(xscrollcommand=self.logText_horizScrollbar.set)
-        
-        self.logText.grid(column=0,row=0,sticky='EWNS')
-        
-        self.logText_horizScrollbar.grid(column=0,row=1,sticky='EW')
-        self.logText_vertScrollbar.grid(column=1,row=0,sticky='NS')
-
-        self.logText.tag_config("Critical",foreground="red")
-        self.logText.tag_config("Warning",foreground="orange")
-        self.logText.tag_config("Activity",foreground="black")
-        
-        # text field for IO to/from radio
-        self.ioText = tkinter.Text(self.parent,height=10,width=80,wrap=tkinter.NONE)
-        self.ioText_vertScrollbar = tkinter.Scrollbar(self.parent,orient=tkinter.VERTICAL)
-        self.ioText_vertScrollbar.config(command=self.ioText.yview)
-        self.ioText_horizScrollbar = tkinter.Scrollbar(self.parent,orient=tkinter.HORIZONTAL)
-        self.ioText_horizScrollbar.config(command=self.ioText.xview)
-        self.ioText.configure(yscrollcommand=self.ioText_vertScrollbar.set)
-        self.ioText.configure(xscrollcommand=self.ioText_horizScrollbar.set)
-        
-        self.ioText.grid(column=0,row=3,sticky='EWNS')
-        
-        self.ioText_horizScrollbar.grid(column=0,row=4,sticky='EW')
-        self.ioText_vertScrollbar.grid(column=1,row=3,sticky='NS')
-        
-        self.ioText.tag_config("SentBytes",foreground="red")
-        self.ioText.tag_config("ReceivedBytes",foreground="blue")
         
         # frame for command buttons
         self.buttonFrame = tkinter.Frame(self.parent)
@@ -121,24 +81,22 @@ class canipy_tk(tkinter.Tk):
         self.SetDirectDevice = tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
         self.SetDirectDevice.grid(column=2,row=0)
         
-        self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.power_on)       
+        self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.canipy.power_up)       
         self.powerOnButton.grid(column=3,row=0)
         
         self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=self.power_off)       
         self.powerOffButton.grid(column=4,row=0)
         
-        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.get_radio_id)       
+        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.radio_id)       
         self.getRadioIDButton.grid(column=5,row=0)
         
-        self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.get_signal_data)
+        self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.signal_info)
         self.GetSignalDataButton.grid(column=6,row=0)
 
-        muteoncmd = lambda: self.set_mute(True)
-        self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=muteoncmd)       
+        self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.mute)       
         self.MuteButton.grid(column=7,row=0)
 
-        muteoffcmd = lambda: self.set_mute(False)
-        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=muteoffcmd)       
+        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
         self.UnmuteButton.grid(column=8,row=0)
 
         # channel number 
@@ -164,30 +122,20 @@ class canipy_tk(tkinter.Tk):
         self.chStatusButton = tkinter.Button(self.buttonFrame,text="Ch Status",command=self.check_channel_status)       
         self.chStatusButton.grid(column=6,row=1)
 
-        self.fwVerButton = tkinter.Button(self.buttonFrame,text="Firm Ver",command=self.get_firmver)       
+        self.fwVerButton = tkinter.Button(self.buttonFrame,text="Firm Ver",command=self.canipy.get_firmver)       
         self.fwVerButton.grid(column=7,row=1)
 
-        self.pingRadioButton = tkinter.Button(self.buttonFrame,text="Ping Radio",command=self.ping_radio)       
+        self.pingRadioButton = tkinter.Button(self.buttonFrame,text="Ping Radio",command=self.canipy.ping_radio)       
         self.pingRadioButton.grid(column=8,row=1)
 
-        self.buttonFrame.grid(column=0, row=5)
+        self.buttonFrame.grid(column=0, row=0)
         
-        self.resizable(True,False)
+        self.resizable(False,False)
         self.update()
         self.geometry(self.geometry())
-            
-    def print_bin(self,buf,tag):
-        try:
-            bin_text = " ".join(f"{b:02X}" for b in buf) + "\n"
-            self.ioText.insert(tkinter.END,bin_text,tag)
-        except:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,"No command sent!\n",("Warning"))
         
     def receiveXMPacket(self):
         if self.canipy.serial_conn == None:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
             # wait for port to be connected
             time.sleep(1)
             return (None, None)
@@ -202,7 +150,7 @@ class canipy_tk(tkinter.Tk):
             try:
                 chunk = self.canipy.serial_conn.read(5-read_so_far)
             except:
-                self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
+                print("No serial port to read")
                 # wait for port to be connected
                 time.sleep(1)
                 return (None, None)
@@ -213,115 +161,63 @@ class canipy_tk(tkinter.Tk):
                 return (None,None)
             
         if len(packet) != 5:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Packet header size not as expected (5). {len(packet)}\n",("Warning"))
-                return (None, None)
+            print(f"Packet header size not as expected (5). {len(packet)}")
+            return (None, None)
         # verify it is the header
         if packet[:2] != self.canipy.header:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Packet header not found: {packet[:2]}\n",("Warning"))
-                return (None, None)
+            print(f"Packet header not found: {packet[:2]}")
+            return (None, None)
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
             rest_of_packet = self.canipy.serial_conn.read(size+1)
         except:
-            self.logText.insert(tkinter.END,"No serial port to read\n",("Warning"))
+            print("No serial port to read")
             # wait for port to be connected
             time.sleep(1)
             return (None, None)
         if len(rest_of_packet) != size+1:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Packet payload size not as expected({size}). {len(rest_of_packet)}\n",("Warning"))
-                return (None, None)
+            print(f"Packet payload size not as expected({size}). {len(rest_of_packet)}")
+            return (None, None)
         # return tuple with return code and data
-        if self.ioText != None:
-            self.print_bin(packet[4:]+rest_of_packet[:-2],"ReceivedBytes")  #ignore header, length, sum in printout
+        buf = packet[4:]+rest_of_packet[:-2]
+        print(f"Received: {" ".join(f"{b:02X}" for b in buf)}")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
-    
-    def power_on(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Powering on radio\n",("Activity"))
-        self.print_bin(self.canipy.power_up(),("SentBytes"))
         
     def power_off(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Powering off radio\n",("Activity"))
-        self.print_bin(self.canipy.power_down(pwr_sav=True),("SentBytes"))
-        
-    def get_radio_id(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting Radio ID\n",("Activity"))
-        self.print_bin(self.canipy.radio_id(),("SentBytes"))
-        
-    def set_mute(self, on = False):
-        if (on == True):
-            logText = "Muting radio\n"
-        else:
-            logText = "Unmuting radio\n"
-            
-        if self.logText != None:
-            self.logText.insert(tkinter.END,logText,("Activity"))
-            
-        self.print_bin(self.canipy.set_mute(on),("SentBytes"))
+        self.canipy.power_down(pwr_sav=True)
     
     def change_channel(self):
         channel = int(self.chEntry.get())
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"Changing Channel to {channel}\n",("Activity"))
-        self.print_bin(self.canipy.change_channel(channel),("SentBytes"))
+        self.canipy.change_channel(channel)
 
     def change_data_channel(self):
         channel = int(self.chEntry.get())
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"Changing Channel to {channel} in data mode\n",("Activity"))
-        self.print_bin(self.canipy.change_channel(channel, data=True),("SentBytes"))
+        self.canipy.change_channel(channel, data=True)
 
     def get_channel_info(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting channel info\n",("Activity"))
-        self.print_bin(self.canipy.channel_info(int(self.chEntry.get())),("SentBytes"))
+        channel = int(self.chEntry.get())
+        self.canipy.channel_info(channel)
         
     def get_this_channel_info(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting current channel info\n",("Activity"))
-        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x08])),("SentBytes"))
+        print("Getting current channel info")
+        self.canipy.pcr_tx(bytes([0x25, 0x08]))
         
     def get_next_channel_info(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting next channel info\n",("Activity"))
-        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x09])),("SentBytes"))
+        print("Getting next channel info")
+        self.canipy.pcr_tx(bytes([0x25, 0x09]))
         
     def get_previous_channel_info(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting previous channel info\n",("Activity"))
-        self.print_bin(self.canipy.pcr_tx(bytes([0x25, 0x10])),("SentBytes"))
+        print("Getting previous channel info")
+        self.canipy.pcr_tx(bytes([0x25, 0x10]))
         
     def get_extended_channel_info(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting extended channel info\n",("Activity"))
-        self.print_bin(self.canipy.audio_info(int(self.chEntry.get())),("SentBytes"))
-        
-    def get_signal_data(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting signal data\n",("Activity"))
-        self.print_bin(self.canipy.signal_info(),("SentBytes"))
-
-    def ping_radio(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Pinging radio\n",("Activity"))
-        self.print_bin(self.canipy.ping_radio(),("SentBytes"))
-
-    def get_firmver(self):
-        if self.logText != None:
-            self.logText.insert(tkinter.END,"Getting radio firmware version\n",("Activity"))
-        self.print_bin(self.canipy.get_firmver(),("SentBytes"))
+        channel = int(self.chEntry.get())
+        self.canipy.audio_info(channel)
 
     def check_channel_status(self):
         channel = int(self.chEntry.get())
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"Checking status for Channel {channel}\n",("Activity"))
-        self.print_bin(self.canipy.channel_status(channel),("SentBytes"))
+        self.canipy.channel_status(channel)
 
     def open_com_port(self):
         # Close com if any open
@@ -329,43 +225,39 @@ class canipy_tk(tkinter.Tk):
             self.canipy.close()
         # get com port
         comPort = self.comEntry.get()
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"Connect to {comPort} ({self.baud_rate})\n",("Activity"))
+        print(f"Connect to {comPort} ({self.baud_rate})")
         self.canipy.set_serial_params(port=comPort, baud=self.baud_rate)
 
     def set_pcr_device(self):
         self.baud_rate = 9600
-        self.logText.insert(tkinter.END,f"Baud rate set to PCR ({self.baud_rate})\n",("Activity"))
+        print(f"Baud rate set to PCR ({self.baud_rate})")
         self.open_com_port()
     
     def set_direct_device(self):
         self.set_pcr_device()
-        self.logText.insert(tkinter.END,f"Sending Direct enable commands\n",("Activity"))
+        print(f"Sending Direct enable commands")
         self.canipy.direct_enable()
 
     def set_wx_device(self):
         self.baud_rate = 38400
-        self.logText.insert(tkinter.END,f"Baud rate set to WX Portable ({self.baud_rate})\n",("Activity"))
+        print(f"Baud rate set to WX Portable ({self.baud_rate})")
         self.open_com_port()
 
     def set_wc_device(self):
         self.baud_rate = 115200
-        self.logText.insert(tkinter.END,f"Baud rate set to WX Certified ({self.baud_rate})\n",("Activity"))
+        print(f"Baud rate set to WX Certified ({self.baud_rate})")
         self.open_com_port()
 
     def print_radio_id(self,data):
         if len(data) != 11:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Radio id not correct length. Exp: 14 Act: {len(data)}\n",("Warning"))
+            print(f"Radio id not correct length. Exp: 14 Act: {len(data)}")
             return
         # if good, print ascii characters
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"Radio ID: {data[3:11].decode('ascii')}\n",("Activity"))
+        print(f"Radio ID: {data[3:11].decode('ascii')}")
                                 
     def print_status1(self,data):
         if len(data) != 26:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Status1 not correct length. Exp: 11 Act: {len(data)}\n",("Warning"))
+            print(f"Status1 not correct length. Exp: 11 Act: {len(data)}")
             #return
         # if good, print ascii characters
         status = "===Radio Info===\nActivated: "
@@ -377,13 +269,11 @@ class canipy_tk(tkinter.Tk):
         status += f"RX Date: {data[2]}{data[3]}:{data[4]}{data[5]}:{data[6]}{data[7]}{data[8]}{data[9]}\n"
         status += f"CMB Version: {data[10]}\n"
         status += "%s"%data[12:20]
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"{status}\n",("Activity"))
+        print(f"{status}")
         
     def print_signal_data(self,data):
         if len(data) != 25:
-            if self.logText != None:
-                self.logText.insert(tkinter.END,f"Signal data not correct length. Exp: 26 Act: {len(data)}\n",("Warning"))
+            print(f"Signal data not correct length. Exp: 26 Act: {len(data)}")
             #return
         status = "===Receiver===\nSat: "
         if (data[2] == 0x0):
@@ -405,8 +295,7 @@ class canipy_tk(tkinter.Tk):
         else:
             status += "?(%d)" % data[3]
             
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"{status}\n",("Activity"))
+        print(f"{status}")
 
     def print_mute_state(self,data):
         status = "Mute: "
@@ -417,8 +306,7 @@ class canipy_tk(tkinter.Tk):
         else:
             status += "?(%d)" % data[2]
             
-        if self.logText != None:
-            self.logText.insert(tkinter.END,f"{status}\n",("Activity"))
+        print(f"{status}")
         
 if __name__ == "__main__":
     with canipy_tk(None) as app:
