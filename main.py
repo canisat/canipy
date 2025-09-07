@@ -84,7 +84,7 @@ class canipy_tk(tkinter.Tk):
         self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.canipy.power_up)       
         self.powerOnButton.grid(column=3,row=0)
         
-        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=self.power_off)       
+        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.power_down(pwr_sav=True))       
         self.powerOffButton.grid(column=4,row=0)
         
         self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.radio_id)       
@@ -122,11 +122,11 @@ class canipy_tk(tkinter.Tk):
         self.chStatusButton = tkinter.Button(self.buttonFrame,text="Ch Status",command=self.check_channel_status)       
         self.chStatusButton.grid(column=6,row=1)
 
-        self.fwVerButton = tkinter.Button(self.buttonFrame,text="Firm Ver",command=self.canipy.get_firmver)       
-        self.fwVerButton.grid(column=7,row=1)
+        self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx_firmver)       
+        self.wxFwVerButton.grid(column=7,row=1)
 
-        self.pingRadioButton = tkinter.Button(self.buttonFrame,text="Ping Radio",command=self.canipy.ping_radio)       
-        self.pingRadioButton.grid(column=8,row=1)
+        self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx_ping)       
+        self.wxPingButton.grid(column=8,row=1)
 
         self.buttonFrame.grid(column=0, row=0)
         
@@ -183,9 +183,6 @@ class canipy_tk(tkinter.Tk):
         buf = packet[4:]+rest_of_packet[:-2]
         print(f"Received: {" ".join(f"{b:02X}" for b in buf)}")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
-        
-    def power_off(self):
-        self.canipy.power_down(pwr_sav=True)
     
     def change_channel(self):
         channel = int(self.chEntry.get())

@@ -1,0 +1,1862 @@
+TX payload: 5aa5
+Z.
+
+TX payload: 0005
+..
+
+TX payload: 0010101001
+.....
+
+TX payload: eded
+..
+
+RX payload: 5aa5001b800100
+Z......
+
+RX payload: 002510292002010000017404052002
+.%.) .....t.. .
+
+RX payload: 084142434431323334004e5aa50001
+.ABCD1234.NZ...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 7005
+p.
+
+TX payload: eded
+..
+
+RX payload: e000e0
+...
+
+RX payload: 5aa50013e30100851408022002
+Z.......... .
+
+RX payload: 740405200225102920020002
+t.. .%.) ...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 31
+1
+
+TX payload: eded
+..
+
+RX payload: 5aa5000cb10100
+Z......
+
+RX payload: 084142434431323334004e
+.ABCD1234.N
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 4201
+B.
+
+TX payload: eded
+..
+
+RX payload: 5aa5
+Z.
+
+RX payload: 0003c201000000
+.......
+
+RX payload: 5aa50016c1010301010100010100
+Z.............
+
+RX payload: 0534055d1a9000000000d8f500f5
+.4.]..........
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 1300
+..
+
+TX payload: eded
+..
+
+RX payload: 5aa50004930100
+Z......
+
+RX payload: 000000
+...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac3010001030101010001
+Z.............
+
+RX payload: 01000553056f1a9000000000d80829
+...S.o........)
+
+RX payload: 240024
+$.$
+
+RX payload: 5a
+Z
+
+RX payload: a50001e100e1
+......
+
+RX payload: 5aa50016
+Z...
+
+RX payload: c1030301010100010100000c004e1a
+.............N.
+
+RX payload: 9000000000d9f100f1
+.........
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 500000000000
+P.....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d00100000000
+Z.........
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25080100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5004da5010001010153697269757358
+..M......SiriusX
+
+RX payload: 4d20507265766965770113456e7465
+M Preview..Ente
+
+RX payload: 727461696e6d656e74202020014772
+rtainment   .Gr
+
+RX payload: 656174204f66666572204e6f77213834
+eat Offer Now!84
+
+RX payload: 342d3731312d383830302020202013
+4-711-8800    .
+
+RX payload: 0000000000
+.....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 100201000001
+......
+
+TX payload: eded
+..
+
+RX payload: 5aa50006900100010100
+Z.........
+
+RX payload: 0000
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 500101010101
+P.....
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25080100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d00100010001
+Z.........
+
+RX payload: 5a
+Z
+
+RX payload: a5004da50100010101536972697573
+..M......Sirius
+
+RX payload: 584d20507265766965770113456e74
+XM Preview..Ent
+
+RX payload: 65727461696e6d656e74202020014772
+ertainment   .Gr
+
+RX payload: 656174204f66666572204e6f772138
+eat Offer Now!8
+
+RX payload: 34342d3731312d3838303020202020
+44-711-8800    
+
+RX payload: 130000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5
+Z.
+
+RX payload: 001ac3010003030101010001010000
+...............
+
+RX payload: 06004a1a9000000000d8ee2a230023
+..J........*#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001a
+Z...
+
+RX payload: c30100030301010100010100000b00
+...............
+
+RX payload: 3c1a9000000000d8e029230023
+<........)#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 500100000000
+P.....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d0
+Z....
+
+RX payload: 0100010001
+.....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 2508de00
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da50309de6c015369726975
+Z..M....l.Siriu
+
+RX payload: 73584d20507265766965770113456e74
+sXM Preview..Ent
+
+RX payload: 65727461696e6d656e742020200147
+ertainment   .G
+
+RX payload: 72656174204f66666572204e6f7721
+reat Offer Now!
+
+RX payload: 3834342d3731312d3838303020202020
+844-711-8800    
+
+RX payload: 130000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 1001de000001
+......
+
+TX payload: eded
+..
+
+RX payload: 5aa50006900100
+Z......
+
+RX payload: de2a000000
+.*...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d001002a002a
+Z......*.*
+
+RX payload: 5a
+Z
+
+RX payload: a5004da501002ade014d6178696d75
+..M...*..Maximu
+
+RX payload: 6d4d6574616c6c6963610102526f636b
+mMetallica..Rock
+
+RX payload: 202020202020202020202020014d65
+            .Me
+
+RX payload: 74616c6c6963612020202020202053
+tallica       S
+
+RX payload: 65656b20262044657374726f792020
+eek & Destroy  
+
+RX payload: 020000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac3010003030101010001
+Z.............
+
+RX payload: 0100000500231a9000000000d8f32a22
+.....#........*"
+
+RX payload: 0022
+."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5004da501002ade014d6178696d75
+..M...*..Maximu
+
+RX payload: 6d4d6574616c6c6963610102526f63
+mMetallica..Roc
+
+RX payload: 6b202020202020202020202020014d
+k            .M
+
+RX payload: 6574616c6c6963612020202020202053
+etallica       S
+
+RX payload: 65656b20262044657374726f792020
+eek & Destroy  
+
+RX payload: 020000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5001ac3010003030101010001010000
+................
+
+RX payload: 1200541a9000000000d8fc29220022
+..T........)"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090000
+%...
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5004da50100010101536972697573
+..M......Sirius
+
+RX payload: 584d20507265766965770113456e74
+XM Preview..Ent
+
+RX payload: 65727461696e6d656e74202020014772
+ertainment   .Gr
+
+RX payload: 656174204f66666572204e6f772138
+eat Offer Now!8
+
+RX payload: 34342d3731312d3838303020202020
+44-711-8800    
+
+RX payload: 130000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da501002ade014d6178696d
+Z..M...*..Maxim
+
+RX payload: 756d4d6574616c6c6963610102526f
+umMetallica..Ro
+
+RX payload: 636b20202020202020202020202001
+ck            .
+
+RX payload: 4d6574616c6c696361202020202020
+Metallica      
+
+RX payload: 205365656b20262044657374726f7920
+ Seek & Destroy 
+
+RX payload: 20020000000000
+ ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25092a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5004da5040e0061014d6178696d75
+..M....a.Maximu
+
+RX payload: 6d4d6574616c6c6963610102526f63
+mMetallica..Roc
+
+RX payload: 6b202020202020202020202020014d65
+k            .Me
+
+RX payload: 74616c6c6963612020202020202053
+tallica       S
+
+RX payload: 65656b20262044657374726f792020
+eek & Destroy  
+
+RX payload: 020000000000
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d001002a00
+Z......*.
+
+RX payload: 2a
+*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100030301
+Z.........
+
+RX payload: 010100010100000c006c1a90000000
+.........l.....
+
+RX payload: 00d8f728240024
+...($.$
+
+RX payload: 5aa5
+Z.
+
+RX payload: 0017d12a014d6178696d756d4d6574
+...*.MaximumMet
+
+RX payload: 616c6c69636143533f000000
+allicaCS?...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a00000000
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa5
+Z.
+
+RX payload: 0004d001002a002a
+.....*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25080100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004d
+Z..M
+
+RX payload: a50100010101536972697573584d20
+......SiriusXM 
+
+RX payload: 507265766965770113456e74657274
+Preview..Entert
+
+RX payload: 61696e6d656e742020200147726561
+ainment   .Grea
+
+RX payload: 74204f66666572204e6f77213834342d
+t Offer Now!844-
+
+RX payload: 3731312d3838303020202020130000
+711-8800    ...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 100201000001
+......
+
+TX payload: eded
+..
+
+RX payload: 000000
+...
+
+RX payload: 5aa5
+Z.
+
+RX payload: 00069001000101000000
+..........
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 500101010101
+P.....
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25080100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d0
+Z....
+
+RX payload: 0100010001
+.....
+
+RX payload: 5aa5004da50100010101
+Z..M......
+
+RX payload: 536972697573584d20507265766965
+SiriusXM Previe
+
+RX payload: 770113456e7465727461696e6d656e74
+w..Entertainment
+
+RX payload: 202020014772656174204f66666572
+   .Great Offer
+
+RX payload: 204e6f77213834342d3731312d3838
+ Now!844-711-88
+
+RX payload: 303020202020130000000000
+00    ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100
+Z......
+
+RX payload: 030301010100010100000700611a9000
+............a...
+
+RX payload: 000000d8eb29240024
+.....)$.$
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 500100000000
+P.....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d00100010001
+Z.........
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5004da501002ade014d6178696d75
+..M...*..Maximu
+
+RX payload: 6d4d6574616c6c6963610102526f636b
+mMetallica..Rock
+
+RX payload: 202020202020202020202020014d65
+            .Me
+
+RX payload: 74616c6c6963612020202020202053
+tallica       S
+
+RX payload: 65656b20262044657374726f79202002
+eek & Destroy  .
+
+RX payload: 0000000000
+.....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 10022a000001
+..*...
+
+TX payload: eded
+..
+
+RX payload: 5aa50006900100de2a000000
+Z.......*...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d001
+Z.....
+
+RX payload: 002a002a
+.*.*
+
+RX payload: 5aa5004da501002ade014d
+Z..M...*..M
+
+RX payload: 6178696d756d4d6574616c6c69636101
+aximumMetallica.
+
+RX payload: 02526f636b20202020202020202020
+.Rock          
+
+RX payload: 2020014d6574616c6c696361202020
+  .Metallica   
+
+RX payload: 202020205365656b20262044657374
+    Seek & Dest
+
+RX payload: 726f792020020000000000
+roy  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100030301
+Z.........
+
+RX payload: 0101000101000004005b1a9000000000
+.........[......
+
+RX payload: d8f629220022
+..)"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090000
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004d
+Z..M
+
+RX payload: a50100010101536972697573584d20
+......SiriusXM 
+
+RX payload: 507265766965770113456e74657274
+Preview..Entert
+
+RX payload: 61696e6d656e74202020014772656174
+ainment   .Great
+
+RX payload: 204f66666572204e6f77213834342d
+ Offer Now!844-
+
+RX payload: 3731312d3838303020202020130000
+711-8800    ...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090100
+%...
+
+TX payload: eded
+..
+
+RX payload: 000000
+...
+
+RX payload: 5aa5004da501002ade
+Z..M...*.
+
+RX payload: 014d6178696d756d4d6574616c6c69
+.MaximumMetalli
+
+RX payload: 63610102526f636b2020202020202020
+ca..Rock        
+
+RX payload: 20202020014d6574616c6c69636120
+    .Metallica 
+
+RX payload: 2020202020205365656b2026204465
+      Seek & De
+
+RX payload: 7374726f792020020000000000
+stroy  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25092a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da5040e0061014d617869
+Z..M....a.Maxi
+
+RX payload: 6d756d4d6574616c6c696361010252
+mumMetallica..R
+
+RX payload: 6f636b20202020202020202020202001
+ock            .
+
+RX payload: 4d6574616c6c696361202020202020
+Metallica      
+
+RX payload: 205365656b20262044657374726f79
+ Seek & Destroy
+
+RX payload: 2020020000000000
+  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d001
+Z.....
+
+RX payload: 002a002a
+.*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301000303010101010101
+Z..............
+
+RX payload: 00000c00631a9000000000d9f42922
+....c........)"
+
+RX payload: 0022
+."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5a
+Z
+
+RX payload: a5001ac30100030301010100010100
+...............
+
+RX payload: 000800571a9000000000d9e629230023
+...W........)#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac3010003
+Z.......
+
+RX payload: 0301010100010100000d004d1a900000
+...........M....
+
+RX payload: 0000d6cf2a220022
+....*"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301000303010101
+Z...........
+
+RX payload: 00010100000e00651a9000000000db30
+.......e.......0
+
+RX payload: 29230023
+)#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5
+Z.
+
+RX payload: 001ac301000303010101000101000006
+................
+
+RX payload: 005a1a9000000000d8f32a240024
+.Z........*$.$
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301000303010101
+Z...........
+
+RX payload: 01010100000c004a1a9000000000d9
+.......J.......
+
+RX payload: ec28220022
+.("."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001a
+Z...
+
+RX payload: c30100030301010101010100001000
+...............
+
+RX payload: 4d1a9000000000d9f22a220022
+M........*"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301000303010101000101
+Z..............
+
+RX payload: 00001700701a9000000000d7e32a23
+....p........*#
+
+RX payload: 0023
+.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090000
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da5
+Z..M.
+
+RX payload: 0100010101536972697573584d2050
+.....SiriusXM P
+
+RX payload: 7265766965770113456e746572746169
+review..Entertai
+
+RX payload: 6e6d656e7420202001477265617420
+nment   .Great 
+
+RX payload: 4f66666572204e6f77213834342d37
+Offer Now!844-7
+
+RX payload: 31312d383830302020202013000000
+11-8800    ....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090100
+%...
+
+TX payload: eded
+..
+
+RX payload: 0000
+..
+
+RX payload: 5aa5004da501002a
+Z..M...*
+
+RX payload: de014d6178696d756d4d6574616c6c
+..MaximumMetall
+
+RX payload: 6963610102526f636b20202020202020
+ica..Rock       
+
+RX payload: 2020202020014d6574616c6c696361
+     .Metallica
+
+RX payload: 202020202020205365656b20262044
+       Seek & D
+
+RX payload: 657374726f792020020000000000
+estroy  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25092a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da504
+Z..M..
+
+RX payload: 0e0061014d6178696d756d4d657461
+..a.MaximumMeta
+
+RX payload: 6c6c6963610102526f636b20202020
+llica..Rock    
+
+RX payload: 2020202020202020014d6574616c6c
+        .Metall
+
+RX payload: 696361202020202020205365656b2026
+ica       Seek &
+
+RX payload: 2044657374726f7920200200000000
+ Destroy  .....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+RX payload: 00
+.
+
+RX payload: 5aa50004d00100
+Z......
+
+RX payload: 2a002a
+*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100030301
+Z.........
+
+RX payload: 010100010100000800441a9000000000
+.........D......
+
+RX payload: d6b818120012
+......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301
+Z.....
+
+RX payload: 000303010101000101000009005f1a
+............._.
+
+RX payload: 9000000000d9f329230023
+.......)#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac3010003
+Z.......
+
+RX payload: 0301010100010100000700671a9000
+...........g...
+
+RX payload: 000000d80329220022
+.....)"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090000
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da50100010101536972
+Z..M......Sir
+
+RX payload: 697573584d2050726576696577011345
+iusXM Preview..E
+
+RX payload: 6e7465727461696e6d656e74202020
+ntertainment   
+
+RX payload: 014772656174204f66666572204e6f
+.Great Offer No
+
+RX payload: 77213834342d3731312d383830302020
+w!844-711-8800  
+
+RX payload: 2020130000000000
+  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa500
+Z..
+
+RX payload: 4da501002ade014d6178696d756d4d
+M...*..MaximumM
+
+RX payload: 6574616c6c6963610102526f636b20
+etallica..Rock 
+
+RX payload: 2020202020202020202020014d657461
+           .Meta
+
+RX payload: 6c6c69636120202020202020536565
+llica       See
+
+RX payload: 6b20262044657374726f7920200200
+k & Destroy  ..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25092a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 00000000
+....
+
+RX payload: 5a
+Z
+
+RX payload: a5004da5040e0061014d6178696d75
+..M....a.Maximu
+
+RX payload: 6d4d6574616c6c6963610102526f636b
+mMetallica..Rock
+
+RX payload: 202020202020202020202020014d65
+            .Me
+
+RX payload: 74616c6c6963612020202020202053
+tallica       S
+
+RX payload: 65656b20262044657374726f79202002
+eek & Destroy  .
+
+RX payload: 0000000000
+.....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa500
+Z..
+
+RX payload: 04d001002a002a
+....*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac3010003
+Z.......
+
+RX payload: 0301010100010100000800701a900000
+...........p....
+
+RX payload: 0000d91329220022
+....)"."
+
+RX payload: 5aa50009d62a04010134777e1500
+Z....*...4w~..
+
+RX payload: 155aa50023d32a014d6178696d756d
+.Z..#.*.Maximum
+
+RX payload: 204d6574616c6c69634865726f204f
+ MetallicHero O
+
+RX payload: 662054686520446179200020
+f The Day . 
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac301000303010101000101
+Z..............
+
+RX payload: 000017005e1a9000000000d9f2292300
+....^........)#.
+
+RX payload: 23
+#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100030301010100
+Z............
+
+RX payload: 010100000d002e1a9000000000d8f2
+...............
+
+RX payload: 29240024
+)$.$
+
+RX payload: 5aa50009d62a04010135f77e
+Z....*...5.~
+
+RX payload: 1500155aa50023d32a01427269616e20
+...Z..#.*.Brian 
+
+RX payload: 4427536f757a612020204865726f20
+D'Souza   Hero 
+
+RX payload: 4f662054686520446179200020
+Of The Day . 
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090000
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da5010001010153697269
+Z..M......Siri
+
+RX payload: 7573584d2050726576696577011345
+usXM Preview..E
+
+RX payload: 6e7465727461696e6d656e7420202001
+ntertainment   .
+
+RX payload: 4772656174204f66666572204e6f77
+Great Offer Now
+
+RX payload: 213834342d3731312d383830302020
+!844-711-8800  
+
+RX payload: 2020130000000000
+  ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25090100
+%...
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da501
+Z..M..
+
+RX payload: 002ade014d6178696d756d4d657461
+.*..MaximumMeta
+
+RX payload: 6c6c6963610102526f636b2020202020
+llica..Rock     
+
+RX payload: 2020202020202001427269616e2044
+       .Brian D
+
+RX payload: 27536f757a612020204865726f204f
+'Souza   Hero O
+
+RX payload: 662054686520446179200200000000
+f The Day .....
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25092a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 00
+.
+
+RX payload: 5aa5004da5040e0061014d617869
+Z..M....a.Maxi
+
+RX payload: 6d756d4d6574616c6c696361010252
+mumMetallica..R
+
+RX payload: 6f636b20202020202020202020202001
+ock            .
+
+RX payload: 427269616e204427536f757a612020
+Brian D'Souza  
+
+RX payload: 204865726f204f6620546865204461
+ Hero Of The Da
+
+RX payload: 7920020000000000
+y ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d001002a002a
+Z......*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100
+Z......
+
+RX payload: 030301010100010100000400471a90
+............G..
+
+RX payload: 00000000d8ec29220022
+......)"."
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a00000000
+P*....
+
+TX payload: eded
+..
+
+RX payload: 5aa50004d0
+Z....
+
+RX payload: 01002a002a
+..*.*
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa5004da501002ade014d617869
+Z..M...*..Maxi
+
+RX payload: 6d756d4d6574616c6c696361010252
+mumMetallica..R
+
+RX payload: 6f636b20202020202020202020202001
+ock            .
+
+RX payload: 427269616e204427536f757a612020
+Brian D'Souza  
+
+RX payload: 204865726f204f6620546865204461
+ Hero Of The Da
+
+RX payload: 7920020000000000
+y ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 10022a000001
+..*...
+
+TX payload: eded
+..
+
+RX payload: 5aa50006
+Z...
+
+RX payload: 900100de2a000000
+....*...
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0006
+..
+
+TX payload: 502a01010101
+P*....
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0004
+..
+
+TX payload: 25082a00
+%.*.
+
+TX payload: eded
+..
+
+RX payload: 5aa5
+Z.
+
+RX payload: 0004d001002a002a
+.....*.*
+
+RX payload: 5aa5004da501002a
+Z..M...*
+
+RX payload: de014d6178696d756d4d6574616c6c
+..MaximumMetall
+
+RX payload: 6963610102526f636b20202020202020
+ica..Rock       
+
+RX payload: 202020202001427269616e20442753
+     .Brian D'S
+
+RX payload: 6f757a612020204865726f204f6620
+ouza   Hero Of 
+
+RX payload: 5468652044617920020000000000
+The Day ......
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0001
+..
+
+TX payload: 43
+C
+
+TX payload: eded
+..
+
+RX payload: 5aa5001ac30100030301
+Z.........
+
+RX payload: 010101010100001a003e1a90000000
+.........>.....
+
+RX payload: 00d80329230023
+...)#.#
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 1301
+..
+
+TX payload: eded
+..
+
+RX payload: 5aa500049301000100
+Z........
+
+RX payload: 01
+.
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 1301
+..
+
+TX payload: eded
+..
+
+TX payload: 5aa5
+Z.
+
+TX payload: 0002
+..
+
+TX payload: 0100
+..
+
+TX payload: eded
+..
+
+RX payload: 5aa50004930100010001
+Z.........

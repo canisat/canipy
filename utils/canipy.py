@@ -105,12 +105,12 @@ class CaniPy:
         print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.pcr_tx(bytes([0x13, mute]))
 
-    def ping_radio(self) -> bytes:
+    def wx_ping(self) -> bytes:
         # Response of CA 43 expected
         print("Ping")
         return self.pcr_tx(bytes([0x4A, 0x43]))
 
-    def get_firmver(self) -> bytes:
+    def wx_firmver(self) -> bytes:
         print("Check pcap for firmware version")
         return self.pcr_tx(bytes([0x4A, 0x44]))
 
