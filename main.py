@@ -58,8 +58,10 @@ class canipy_tk(tkinter.Tk):
                     self.print_signal_data(data)
                 case 0xF2:
                     self.idleFrames += 1
-                case 0xF4 | 0xFF:
+                case 0xF4:
                     print("Command Acknowledged")
+                case 0xFF:
+                    print(f"Commander Display: {data[2:].decode('ascii')}")
                 case _:
                     print(f"Unknown return code {hex(return_code)}")
                 
@@ -262,10 +264,11 @@ class canipy_tk(tkinter.Tk):
             status += "No"
         else:
             status += "Yes"
-        status += f"\nVersion: {data[1]}.{data[2]}\n"
-        status += f"RX Date: {data[2]}{data[3]}:{data[4]}{data[5]}:{data[6]}{data[7]}{data[8]}{data[9]}\n"
-        status += f"CMB Version: {data[10]}\n"
-        status += "%s"%data[12:20]
+        status += f"\nVersion: {data[3]}\n"
+        status += f"RX Date: {data[4]:02X}/{data[5]:02X}/{data[6]:02X}{data[7]:02X}\n"
+        status += f"CMB Version: {data[12]}\n"
+        status += f"CMB Date: {data[13]:02X}/{data[14]:02X}/{data[15]:02X}{data[16]:02X}\n"
+        status += f"Radio ID: {data[18:26].decode('ascii')}\n================"
         print(f"{status}")
         
     def print_signal_data(self,data):
@@ -292,7 +295,7 @@ class canipy_tk(tkinter.Tk):
         else:
             status += "?(%d)" % data[3]
             
-        print(f"{status}")
+        print(f"{status}\n==============")
 
     def print_mute_state(self,data):
         status = "Mute: "
