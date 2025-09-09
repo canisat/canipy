@@ -42,20 +42,54 @@ class canipy_tk(tkinter.Tk):
                 return
             
             # check return codes
+            # TEMPORARILY UNREFACTORED FUNCTIONS
+            # AS THEY'LL LATER BE MOVED TO MODULE
 
             match return_code:
                 case None:
                     continue
                 case 0x80:
-                    self.print_status1(data)
+                    if len(data) != 26:
+                        print(f"Status1 not correct length. Exp: 11 Act: {len(data)}")
+                        continue
+                    # if good, print ascii characters
+                    print("===Radio Info===")
+                    print(f"Activated: {'No' if data[0] == 0x3 else 'Yes'}")
+                    print(f"RX Version: {data[3]}")
+                    print(f"RX Date: {data[4]:02X}/{data[5]:02X}/{data[6]:02X}{data[7]:02X}")
+                    print(f"CMB Version: {data[12]}")
+                    print(f"CMB Date: {data[13]:02X}/{data[14]:02X}/{data[15]:02X}{data[16]:02X}")
+                    print(f"Radio ID: {data[18:26].decode('ascii')}")
+                    print("================")
                 case 0x81:
                     print("Goodnight")
                 case 0x93:
-                    self.print_mute_state(data)
+                    print(f"Mute: { {0x00:'Off',0x01:'On'}.get(data[2],f'?({data[2]})') }")
                 case 0xB1:
-                    self.print_radio_id(data)
+                    if len(data) != 11:
+                        print(f"Radio id not correct length. Exp: 14 Act: {len(data)}")
+                        continue
+                    # if good, print ascii characters
+                    print(f"Radio ID: {data[3:11].decode('ascii')}")
+                case 0xCA:
+                    # 4A/CA cmds are WX exclusive!
+                    if data[0] == 0x43:
+                        print("WX Pong")
+                    elif data[0] == 0x64:
+                        print(f"WX Version: {data[1:].decode('ascii').rstrip(chr(0))}")
                 case 0xC3:
-                    self.print_signal_data(data)
+                    if len(data) != 25:
+                        print(f"Signal data not correct length. Exp: 26 Act: {len(data)}")
+                        continue
+                    sigstrength = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
+                    antstrength = {0x00:"Disconnected",0x03:"Connected"}
+                    print("===Receiver===")
+                    print(f"Sat: {sigstrength.get(data[2],f'?({data[2]})')}")
+                    print(f"Ant: {antstrength.get(data[3],f'?({data[3]})')}")
+                    print(f"Ter: {sigstrength.get(data[4],f'?({data[4]})')}")
+                    print("==============")
+                case 0xE0:
+                    print("PCR software can now start")
                 case 0xF2:
                     self.idleFrames += 1
                 case 0xF4:
@@ -246,67 +280,6 @@ class canipy_tk(tkinter.Tk):
         self.baud_rate = 115200
         print(f"Baud rate set to WX Certified ({self.baud_rate})")
         self.open_com_port()
-
-    def print_radio_id(self,data):
-        if len(data) != 11:
-            print(f"Radio id not correct length. Exp: 14 Act: {len(data)}")
-            return
-        # if good, print ascii characters
-        print(f"Radio ID: {data[3:11].decode('ascii')}")
-                                
-    def print_status1(self,data):
-        if len(data) != 26:
-            print(f"Status1 not correct length. Exp: 11 Act: {len(data)}")
-            #return
-        # if good, print ascii characters
-        status = "===Radio Info===\nActivated: "
-        if data[0] == 0x3:
-            status += "No"
-        else:
-            status += "Yes"
-        status += f"\nVersion: {data[3]}\n"
-        status += f"RX Date: {data[4]:02X}/{data[5]:02X}/{data[6]:02X}{data[7]:02X}\n"
-        status += f"CMB Version: {data[12]}\n"
-        status += f"CMB Date: {data[13]:02X}/{data[14]:02X}/{data[15]:02X}{data[16]:02X}\n"
-        status += f"Radio ID: {data[18:26].decode('ascii')}\n================"
-        print(f"{status}")
-        
-    def print_signal_data(self,data):
-        if len(data) != 25:
-            print(f"Signal data not correct length. Exp: 26 Act: {len(data)}")
-            #return
-        status = "===Receiver===\nSat: "
-        if (data[2] == 0x0):
-            status += "None"
-        elif (data[2] == 0x1):
-            status += "Fair"
-        elif (data[2] == 0x2):
-            status += "Good"
-        elif (data[2] == 0x3):
-            status += "Excellent"
-        else:
-            status += "?(%d)" % data[2]
-            
-        status += "\nAnt: "
-        if (data[3] == 0x0):
-            status += "Disconnected"
-        elif (data[3] == 0x1):
-            status += "Connected"
-        else:
-            status += "?(%d)" % data[3]
-            
-        print(f"{status}\n==============")
-
-    def print_mute_state(self,data):
-        status = "Mute: "
-        if (data[2] == 0x00):
-            status += "Off"
-        elif (data[2] == 0x01):
-            status += "On"            
-        else:
-            status += "?(%d)" % data[2]
-            
-        print(f"{status}")
         
 if __name__ == "__main__":
     with canipy_tk(None) as app:

@@ -107,10 +107,12 @@ class CaniPy:
 
     def wx_ping(self) -> bytes:
         # Response of CA 43 expected
-        print("Ping")
+        # 4A/CA cmds are WX exclusive!
+        print("WX Ping")
         return self.pcr_tx(bytes([0x4A, 0x43]))
 
     def wx_firmver(self) -> bytes:
+        # 4A/CA cmds are WX exclusive!
         print("Check pcap for firmware version")
         return self.pcr_tx(bytes([0x4A, 0x44]))
 
@@ -133,6 +135,7 @@ class CaniPy:
     #     return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
     
     def direct_enable(self):
+        # 74 cmds are exclusive to Direct!
         print("Direct listening mode")
         self.pcr_tx(bytes([0x74, 0x00, 0x01]))
         # These sleeps should be event driven instead
@@ -142,8 +145,8 @@ class CaniPy:
         self.pcr_tx(bytes([0x74, 0x02, 0x01, 0x01]))
         time.sleep(1)
 
-        # No response would be received for this one
-        # Just pretend it's all good after this
+        # No response would be received here
+        # Let the function finish as-is after this
         print("Direct unmute DAC")
         self.pcr_tx(bytes([0x74, 0x0B, 0x00]))
 
@@ -170,3 +173,80 @@ class CaniPy:
                 input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
             )
         )
+
+def debug():
+    # Default to PCR
+    baud_rate = 9600
+    is_direct = False
+
+    print("=Supported Devices=")
+    print("1. PCR")
+    print("2. Direct/Commander")
+    print("3. WX")
+    print("4. WX (Certified)")
+    print("0. Exit")
+
+    while True:
+        match input("Select device: "):
+            case "1":
+                break
+            case "2":
+                is_direct = True
+                break
+            case "3":
+                baud_rate = 38400
+                break
+            case "4":
+                baud_rate = 115200
+                break
+            case "0":
+                return
+        print("Invalid option")
+
+    # COM3 used for this test, change if necessary
+    pcr_control = CaniPy(port="COM5", baud=baud_rate)
+
+    if is_direct:
+        pcr_control.direct_enable()
+
+    print("=Debug Menu=")
+    print("1. Power on")
+    print("2. Power off")
+    print("3. Tune channel")
+    print("4. Fetch channel info")
+    print("5. Fetch radio ID")
+    print("6. Fetch signal info")
+    print("7. Enter manual command")
+    print("0. Exit")
+
+    while True:
+        match input("Select option: "):
+            case "1":
+                pcr_control.power_up()
+                continue
+            case "2":
+                pcr_control.power_down()
+                continue
+            case "3":
+                pcr_control.change_channel(input("Channel #: "))
+                continue
+            case "4":
+                pcr_control.channel_info(input("Channel #: "))
+                continue
+            case "5":
+                pcr_control.radio_id()
+                continue
+            case "6":
+                pcr_control.signal_info()
+                continue
+            case "7":
+                pcr_control.crash_override()
+                continue
+            case "0":
+                break
+        print("Invalid option")
+
+    pcr_control.close()
+
+if __name__ == "__main__":
+    debug()
