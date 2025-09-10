@@ -16,10 +16,7 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = False
         self.idleFrames = 0
         
-        self.baud_rate = 9600
-        
         # start com port read thread
-        
         self.comThread = threading.Thread(None,self.com_thread,"ComThread")
         self.comThread.start()
         
@@ -31,71 +28,82 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = True
         self.comThread.join(None)
         # Close com if any open
-        if self.canipy.serial_conn != None:
-            self.canipy.close()
+        if self.canipy.serial_conn != None: self.canipy.close()
 
     def com_thread(self):
         # Keep calling the read method for the port
         while True:
             (return_code,data) = self.receiveXMPacket()
-            if self.quitThread:
-                return
+            if self.quitThread: return
             
             # check return codes
-            # TEMPORARILY UNREFACTORED FUNCTIONS
-            # AS THEY'LL LATER BE MOVED TO MODULE
+            # SOME ARE TEMPORARILY UNREFACTORED
+            # AS THIS'LL LATER BE MOVED TO MODULE
 
             match return_code:
                 case None:
                     continue
                 case 0x80:
-                    if len(data) != 26:
-                        print(f"Status1 not correct length. Exp: 11 Act: {len(data)}")
-                        continue
-                    # if good, print ascii characters
-                    print("===Radio Info===")
-                    print(f"Activated: {'No' if data[0] == 0x3 else 'Yes'}")
-                    print(f"RX Version: {data[3]}")
-                    print(f"RX Date: {data[4]:02X}/{data[5]:02X}/{data[6]:02X}{data[7]:02X}")
-                    print(f"CMB Version: {data[12]}")
-                    print(f"CMB Date: {data[13]:02X}/{data[14]:02X}/{data[15]:02X}{data[16]:02X}")
-                    print(f"Radio ID: {data[18:26].decode('ascii')}")
-                    print("================")
+                    self.canipy.rx_startup(bytes([return_code])+data)
                 case 0x81:
                     print("Goodnight")
+                case 0x90:
+                    if data[0] == 0x04:
+                        print("No signal")
+                        if data[1] == 0x10:
+                            print("Check if antenna is connected")
+                            print("and has a clear view of the sky")
+                        continue
+
+                    chnum = data[3] if self.canipy.baud_rate == 9600 else data[2]
+
+                    if data[4]:
+                        print(f"Data mode set on channel {chnum}")
+                    else:
+                        self.canipy.channel_info(chnum)
+                case 0x91:
+                    if data[0] == 0x04:
+                        print("No signal")
+                    else:
+                        print(f"Channel is {'' if data[0] == 0x01 else 'not '}present")
+                        print("You will be tuned out!")
+                        print("Change channel to resume content")
                 case 0x93:
                     print(f"Mute: { {0x00:'Off',0x01:'On'}.get(data[2],f'?({data[2]})') }")
+                case 0xA5:
+                    self.canipy.rx_chan(bytes([return_code])+data)
                 case 0xB1:
                     if len(data) != 11:
-                        print(f"Radio id not correct length. Exp: 14 Act: {len(data)}")
+                        print("Invalid Radio ID length")
+                        if self.canipy.verbose: print(f"Exp 11, got {len(data)}")
                         continue
-                    # if good, print ascii characters
-                    print(f"Radio ID: {data[3:11].decode('ascii')}")
+                    # if good, print characters
+                    print(f"Radio ID: {data[3:11].decode('utf-8')}")
                 case 0xCA:
                     # 4A/CA cmds are WX exclusive!
                     if data[0] == 0x43:
                         print("WX Pong")
                     elif data[0] == 0x64:
-                        print(f"WX Version: {data[1:].decode('ascii').rstrip(chr(0))}")
+                        print(f"WX Version: {data[1:].decode('utf-8').rstrip(chr(0))}")
                 case 0xC3:
-                    if len(data) != 25:
-                        print(f"Signal data not correct length. Exp: 26 Act: {len(data)}")
-                        continue
-                    sigstrength = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
-                    antstrength = {0x00:"Disconnected",0x03:"Connected"}
-                    print("===Receiver===")
-                    print(f"Sat: {sigstrength.get(data[2],f'?({data[2]})')}")
-                    print(f"Ant: {antstrength.get(data[3],f'?({data[3]})')}")
-                    print(f"Ter: {sigstrength.get(data[4],f'?({data[4]})')}")
-                    print("==============")
+                    self.canipy.rx_sig(bytes([return_code])+data)
                 case 0xE0:
-                    print("PCR software can now start")
+                    print("Fetched activation info")
+                case 0xE1:
+                    print("Fetched deactivation info")
                 case 0xF2:
                     self.idleFrames += 1
                 case 0xF4:
                     print("Command Acknowledged")
                 case 0xFF:
-                    print(f"Commander Display: {data[2:].decode('ascii')}")
+                    # These usually can be recovered from
+                    print("Warning! Radio reported an error")
+                    if data[0] == 0x01 and data[1] == 0x00:
+                        print("Antenna not detected, check antenna")
+                    if self.canipy.verbose:
+                        print(f"{data[0]:02X} {data[1]:02X} {data[2:].decode('utf-8')}")
+                    print("Radio may still be operated")
+                    print("If errors persist, check radio")
                 case _:
                     print(f"Unknown return code {hex(return_code)}")
                 
@@ -186,38 +194,41 @@ class canipy_tk(tkinter.Tk):
             try:
                 chunk = self.canipy.serial_conn.read(5-read_so_far)
             except:
-                print("No serial port to read")
+                print("No serial port in use")
                 # wait for port to be connected
                 time.sleep(1)
                 return (None, None)
             packet += chunk
             read_so_far += len(chunk)
-            #print "%d %d:" % (len(chunk),read_so_far)
-            if (self.quitThread):
-                return (None,None)
+            #print(f"{len(chunk)} {read_so_far}:")
+            if (self.quitThread): return (None,None)
             
         if len(packet) != 5:
-            print(f"Packet header size not as expected (5). {len(packet)}")
+            print("Unexpected header size")
+            if self.canipy.verbose: print(f"Exp 5, got {len(packet)}")
             return (None, None)
         # verify it is the header
         if packet[:2] != self.canipy.header:
-            print(f"Packet header not found: {packet[:2]}")
+            print("Header not found")
+            if self.canipy.verbose: print(f"{packet[:2]}")
             return (None, None)
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
             rest_of_packet = self.canipy.serial_conn.read(size+1)
         except:
-            print("No serial port to read")
+            print("No serial port in use")
             # wait for port to be connected
             time.sleep(1)
             return (None, None)
         if len(rest_of_packet) != size+1:
-            print(f"Packet payload size not as expected({size}). {len(rest_of_packet)}")
+            print("Unexpected packet size")
+            if self.canipy.verbose: print(f"Exp {size}, got {len(rest_of_packet)}")
             return (None, None)
         # return tuple with return code and data
         buf = packet[4:]+rest_of_packet[:-2]
-        print(f"Received: {" ".join(f"{b:02X}" for b in buf)}")  #ignore header, length, sum in printout
+        if self.canipy.verbose:
+            print(f"Received: {" ".join(f"{b:02X}" for b in buf)}")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
     
     def change_channel(self):
@@ -232,18 +243,6 @@ class canipy_tk(tkinter.Tk):
         channel = int(self.chEntry.get())
         self.canipy.channel_info(channel)
         
-    def get_this_channel_info(self):
-        print("Getting current channel info")
-        self.canipy.pcr_tx(bytes([0x25, 0x08]))
-        
-    def get_next_channel_info(self):
-        print("Getting next channel info")
-        self.canipy.pcr_tx(bytes([0x25, 0x09]))
-        
-    def get_previous_channel_info(self):
-        print("Getting previous channel info")
-        self.canipy.pcr_tx(bytes([0x25, 0x10]))
-        
     def get_extended_channel_info(self):
         channel = int(self.chEntry.get())
         self.canipy.audio_info(channel)
@@ -252,34 +251,30 @@ class canipy_tk(tkinter.Tk):
         channel = int(self.chEntry.get())
         self.canipy.channel_status(channel)
 
-    def open_com_port(self):
+    def open_com_port(self, baud:int=9600):
         # Close com if any open
-        if self.canipy.serial_conn != None:
-            self.canipy.close()
+        if self.canipy.serial_conn != None: self.canipy.close()
         # get com port
         comPort = self.comEntry.get()
-        print(f"Connect to {comPort} ({self.baud_rate})")
-        self.canipy.set_serial_params(port=comPort, baud=self.baud_rate)
+        print(f"Connect to {comPort} ({baud})")
+        self.canipy.set_serial_params(port=comPort, baud=baud)
 
     def set_pcr_device(self):
-        self.baud_rate = 9600
-        print(f"Baud rate set to PCR ({self.baud_rate})")
+        print("Device set to PCR")
         self.open_com_port()
     
     def set_direct_device(self):
         self.set_pcr_device()
-        print(f"Sending Direct enable commands")
+        print("Sending Direct enable commands")
         self.canipy.direct_enable()
 
     def set_wx_device(self):
-        self.baud_rate = 38400
-        print(f"Baud rate set to WX Portable ({self.baud_rate})")
-        self.open_com_port()
+        print("Device set to WX (Portable)")
+        self.open_com_port(baud=38400)
 
     def set_wc_device(self):
-        self.baud_rate = 115200
-        print(f"Baud rate set to WX Certified ({self.baud_rate})")
-        self.open_com_port()
+        print("Device set to WX (Certified)")
+        self.open_com_port(baud=115200)
         
 if __name__ == "__main__":
     with canipy_tk(None) as app:

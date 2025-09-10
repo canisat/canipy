@@ -41,7 +41,7 @@ Console: Radio serial number: ABCD1234
 RX payload:
 5aa5 - Start
 0013 - 19 bytes
-ff010020202020202020202020202020202020 - Update commander display with all spaces (i.e. Blank the screen)
+ff010020202020202020202020202020202020 - Radio reported an error: check antenna
 0412 - Sum
 
 TX payload:
@@ -74,7 +74,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 Bytes
-900410010100 - OK, ch 1, ch 1 is subscribed
+900410010100 - OK, ch 1, no signal, check if antenna is connected
 01ab - Sum
 
 TX payload:
