@@ -124,14 +124,14 @@ class canipy_tk(tkinter.Tk):
         self.SetPcrDevice = tkinter.Button(self.buttonFrame,text="PCR",command=self.set_pcr_device)
         self.SetPcrDevice.grid(column=1,row=0)
 
-        self.SetDirectDevice = tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
-        self.SetDirectDevice.grid(column=2,row=0)
+        self.SetWxDevice = tkinter.Button(self.buttonFrame,text="WX Portable",command=self.set_wx_device)
+        self.SetWxDevice.grid(column=2,row=0)
         
         self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.canipy.power_up)       
         self.powerOnButton.grid(column=3,row=0)
         
-        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.power_down(pwr_sav=True))       
-        self.powerOffButton.grid(column=4,row=0)
+        self.changeChannelButton = tkinter.Button(self.buttonFrame,text="Change Ch",command=self.change_channel)       
+        self.changeChannelButton.grid(column=4,row=0)
         
         self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.radio_id)       
         self.getRadioIDButton.grid(column=5,row=0)
@@ -147,19 +147,19 @@ class canipy_tk(tkinter.Tk):
         self.chEntry.grid(column=0,row=1)
         self.chEntry.insert(tkinter.END, "1")
 
-        self.SetWxDevice = tkinter.Button(self.buttonFrame,text="WX Portable",command=self.set_wx_device)
-        self.SetWxDevice.grid(column=1,row=1)
+        self.SetDirectDevice = tkinter.Button(self.buttonFrame,text="Direct",command=self.set_direct_device)
+        self.SetDirectDevice.grid(column=1,row=1)
 
         self.SetWcDevice = tkinter.Button(self.buttonFrame,text="WX Certified",command=self.set_wc_device)
         self.SetWcDevice.grid(column=2,row=1)
 
-        self.changeChannelButton = tkinter.Button(self.buttonFrame,text="Change Ch",command=self.change_channel)       
-        self.changeChannelButton.grid(column=3,row=1)
+        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.power_down(pwr_sav=True))       
+        self.powerOffButton.grid(column=3,row=1)
 
         self.getChInfoButton = tkinter.Button(self.buttonFrame,text="Ch Info",command=self.get_channel_info)       
         self.getChInfoButton.grid(column=4,row=1)
 
-        self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Info",command=self.get_extended_channel_info)       
+        self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Ch Info",command=self.get_extended_channel_info)       
         self.extChInfoButton.grid(column=5,row=1)
 
         self.chStatusButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.sigmon_enable)       
