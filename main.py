@@ -79,14 +79,16 @@ class canipy_tk(tkinter.Tk):
                         continue
                     # if good, print characters
                     print(f"Radio ID: {data[3:11].decode('utf-8')}")
+                case 0xC1 | 0xC3:
+                    self.canipy.rx_sig(bytes([return_code])+data)
+                case 0xC2:
+                    print("Signal strength monitoring status updated")
                 case 0xCA:
-                    # 4A/CA cmds are WX exclusive!
+                    # 'A' cmds are WX specific!
                     if data[0] == 0x43:
                         print("WX Pong")
                     elif data[0] == 0x64:
                         print(f"WX Version: {data[1:].decode('utf-8').rstrip(chr(0))}")
-                case 0xC3:
-                    self.canipy.rx_sig(bytes([return_code])+data)
                 case 0xE0:
                     print("Fetched activation info")
                 case 0xE1:
@@ -140,9 +142,6 @@ class canipy_tk(tkinter.Tk):
         self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.mute)       
         self.MuteButton.grid(column=7,row=0)
 
-        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
-        self.UnmuteButton.grid(column=8,row=0)
-
         # channel number 
         self.chEntry = tkinter.Entry(self.buttonFrame)
         self.chEntry.grid(column=0,row=1)
@@ -163,14 +162,18 @@ class canipy_tk(tkinter.Tk):
         self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Info",command=self.get_extended_channel_info)       
         self.extChInfoButton.grid(column=5,row=1)
 
-        self.chStatusButton = tkinter.Button(self.buttonFrame,text="Ch Status",command=self.check_channel_status)       
+        self.chStatusButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.sigmon_enable)       
         self.chStatusButton.grid(column=6,row=1)
 
-        self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx_firmver)       
-        self.wxFwVerButton.grid(column=7,row=1)
-
-        self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx_ping)       
-        self.wxPingButton.grid(column=8,row=1)
+        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
+        self.UnmuteButton.grid(column=7,row=1)
+        
+        # Might repurpose these buttons for someting else down the road...
+        #
+        # self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx_firmver)       
+        # self.wxFwVerButton.grid(column=7,row=1)
+        # self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx_ping)       
+        # self.wxPingButton.grid(column=8,row=1)
 
         self.buttonFrame.grid(column=0, row=0)
         
@@ -246,10 +249,6 @@ class canipy_tk(tkinter.Tk):
     def get_extended_channel_info(self):
         channel = int(self.chEntry.get())
         self.canipy.audio_info(channel)
-
-    def check_channel_status(self):
-        channel = int(self.chEntry.get())
-        self.canipy.channel_status(channel)
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open

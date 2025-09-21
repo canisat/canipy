@@ -22,6 +22,9 @@ class CaniPy:
         self.mute = lambda: self.set_mute(True)
         self.unmute = lambda: self.set_mute(False)
 
+        self.sigmon_enable = lambda: self.signal_mon(True)
+        self.sigmon_disable = lambda: self.signal_mon(False)
+
         # These may be valid
         self.curr_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x08]))
         self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09]))
@@ -92,7 +95,10 @@ class CaniPy:
             if self.verbose: print(f"Exp 77, got {len(payload)}")
 
     def rx_sig(self, payload:bytes):
-        if len(payload) == 26:
+        if len(payload) in (22, 26):
+            if len(payload) == 22:
+                # If C1 event-driven poll, pad it to conform
+                payload = payload[:1] + bytes([1,0]) + payload[1:] + bytes(2)
             sigstrength = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
             antstrength = {0x00:"Disconnected",0x03:"Connected"}
             print("===Receiver===")
@@ -115,13 +121,14 @@ class CaniPy:
                 print("=====AGC!=====")
                 print(f"Sat: {payload[22]}")
                 print(f"Ter: {payload[23]}")
-                print("======CN======")
-                print(f"Sat1: {payload[24]}")
-                print(f"Sat2: {payload[25]}")
+                if payload[0] == 0xC3:
+                    print("======CN======")
+                    print(f"Sat1: {payload[24]}")
+                    print(f"Sat2: {payload[25]}")
             print("==============")
         else:
             print("Payload not of correct length")
-            if self.verbose: print(f"Exp 26, got {len(payload)}")
+            if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
 
     def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=24, loss_exp:bool=True) -> bytes:
         print("Powering up")
@@ -176,19 +183,23 @@ class CaniPy:
         if self.verbose: print("Check RX for signal info")
         return self.pcr_tx(bytes([0x43]))
 
+    def signal_mon(self, toggle:bool) -> bytes:
+        if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
+        return self.pcr_tx(bytes([0x42, toggle]))
+
     def set_mute(self, mute:bool) -> bytes:
         print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.pcr_tx(bytes([0x13, mute]))
 
     def wx_ping(self) -> bytes:
         # Response of CA 43 expected
-        # 4A/CA cmds are WX exclusive!
+        # 'A' cmds are WX specific!
         print("WX Ping")
         return self.pcr_tx(bytes([0x4A, 0x43]))
 
     def wx_firmver(self) -> bytes:
-        # 4A/CA cmds are WX exclusive!
-        if self.verbose: print("Check RX for firmware version")
+        # 'A' cmds are WX specific!
+        if self.verbose: print("Check RX for WX firmware version")
         return self.pcr_tx(bytes([0x4A, 0x44]))
 
     # TODO: Eventually implement handling of RX.
