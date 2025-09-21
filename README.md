@@ -32,8 +32,6 @@ This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timot
 
 Serial commands were documented from past research conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the defunct XM Fan forums.
 
-CaniSat is a non-profit initiative incubated by [NetOtt Solutions, LLC](https://netott.com/).
+CaniSat, a non-profit initiative, and its incubator [NetOtt Solutions, LLC](https://netott.com/) are not affiliated with either Sirius XM Radio LLC or its products & partners. Sirius, XM, SiriusXM and all related indicia are trademarks of Sirius XM Radio LLC.
 
-Sirius, XM, SiriusXM and all related indicia are trademarks of Sirius XM Radio LLC.
-
-CaniSat and NetOtt are not affiliated with Sirius XM Radio LLC or its products & partners.
+CaniSat does not condone or encourage the use of the software suite for unauthorized copying, duplication, or distribution of copyrighted materials received through the supported services. The end user is solely responsible for ensuring their activities comply with applicable copyright laws and service terms. Don't steal music.
