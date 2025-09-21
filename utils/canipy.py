@@ -56,9 +56,9 @@ class CaniPy:
             # payload[2] and/or payload[3] might correspond
             # to subscribed tier and other status messages
             if self.verbose:
-                print(f"RX Version: {payload[4]}")
+                print(f"RX Version: {'.'.join(list(str(payload[4])))}")
                 print(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-                print(f"CMB Version: {payload[13]}")
+                print(f"CMB Version: {'.'.join(list(str(payload[13])))}")
                 print(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
             print(f"Radio ID: {payload[19:27].decode('utf-8')}")
             print("================")
@@ -141,7 +141,7 @@ class CaniPy:
         # Could be to indicate info? Or the actual control track for subscriber
         # check? Other data tracks tune without this, but implemented anyway as
         # "info_flag" here and in channel_status.
-        return self.pcr_tx(bytes([0x10, 0x01 if data else 0x02, channel, info_flag, 0x00, 0x01 + info_flag]))
+        return self.pcr_tx(bytes([0x10, 0x02 - data, channel, info_flag, 0x00, 0x01 + info_flag]))
 
     def channel_info(self, channel:int) -> bytes:
         if channel not in range(256):

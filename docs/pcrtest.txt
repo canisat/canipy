@@ -1,443 +1,240 @@
-TX payload: 5aa5
-Z.
-
-TX payload: 0005
-..
-
-TX payload: 0010101001
-.....
-
-TX payload: eded
-..
-
-RX payload: 5aa5001b800100
-Z......
-
-RX payload: 002510292002010000017404052002
-.%.) .....t.. .
-
-RX payload: 084142434431323334004e5aa50001
-.ABCD1234.NZ...
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0002
-..
-
-TX payload: 7005
-p.
-
-TX payload: eded
-..
-
-RX payload: e000e0
-...
-
-RX payload: 5aa50013e30100851408022002
-Z.......... .
-
-RX payload: 740405200225102920020002
-t.. .%.) ...
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0001
-..
-
-TX payload: 31
-1
-
-TX payload: eded
-..
-
-RX payload: 5aa5000cb10100
-Z......
-
-RX payload: 084142434431323334004e
-.ABCD1234.N
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0002
-..
-
-TX payload: 4201
-B.
-
-TX payload: eded
-..
-
-RX payload: 5aa5
-Z.
-
-RX payload: 0003c201000000
-.......
-
-RX payload: 5aa50016c1010301010100010100
-Z.............
-
-RX payload: 0534055d1a9000000000d8f500f5
-.4.]..........
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0002
-..
-
-TX payload: 1300
-..
-
-TX payload: eded
-..
-
-RX payload: 5aa50004930100
-Z......
-
-RX payload: 000000
-...
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0001
-..
-
-TX payload: 43
-C
-
-TX payload: eded
-..
-
-RX payload: 5aa5001ac3010001030101010001
-Z.............
-
-RX payload: 01000553056f1a9000000000d80829
-...S.o........)
-
-RX payload: 240024
-$.$
-
-RX payload: 5a
-Z
-
-RX payload: a50001e100e1
-......
-
-RX payload: 5aa50016
-Z...
-
-RX payload: c1030301010100010100000c004e1a
-.............N.
-
-RX payload: 9000000000d9f100f1
-.........
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 500000000000
-P.....
-
-TX payload: eded
-..
-
-RX payload: 5aa50004d00100000000
-Z.........
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0004
-..
-
-TX payload: 25080100
-%...
-
-TX payload: eded
-..
-
-RX payload: 5a
-Z
-
-RX payload: a5004da5010001010153697269757358
-..M......SiriusX
-
-RX payload: 4d20507265766965770113456e7465
-M Preview..Ente
-
-RX payload: 727461696e6d656e74202020014772
-rtainment   .Gr
-
-RX payload: 656174204f66666572204e6f77213834
-eat Offer Now!84
-
-RX payload: 342d3731312d383830302020202013
-4-711-8800    .
-
-RX payload: 0000000000
-.....
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 100201000001
-......
-
-TX payload: eded
-..
-
-RX payload: 5aa50006900100010100
-Z.........
-
-RX payload: 0000
-..
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 500101010101
-P.....
-
-TX payload: eded
-..
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0004
-..
-
-TX payload: 25080100
-%...
-
-TX payload: eded
-..
-
-RX payload: 5aa50004d00100010001
-Z.........
-
-RX payload: 5a
-Z
-
-RX payload: a5004da50100010101536972697573
-..M......Sirius
-
-RX payload: 584d20507265766965770113456e74
-XM Preview..Ent
-
-RX payload: 65727461696e6d656e74202020014772
-ertainment   .Gr
-
-RX payload: 656174204f66666572204e6f772138
-eat Offer Now!8
-
-RX payload: 34342d3731312d3838303020202020
-44-711-8800    
-
-RX payload: 130000000000
-......
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0001
-..
-
-TX payload: 43
-C
-
-TX payload: eded
-..
-
-RX payload: 5aa5
-Z.
-
-RX payload: 001ac3010003030101010001010000
-...............
-
-RX payload: 06004a1a9000000000d8ee2a230023
-..J........*#.#
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0001
-..
-
-TX payload: 43
-C
-
-TX payload: eded
-..
-
-RX payload: 5aa5001a
-Z...
-
-RX payload: c30100030301010100010100000b00
-...............
-
-RX payload: 3c1a9000000000d8e029230023
-<........)#.#
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 500100000000
-P.....
-
-TX payload: eded
-..
-
-RX payload: 5aa50004d0
-Z....
-
-RX payload: 0100010001
-.....
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0004
-..
-
-TX payload: 2508de00
-%...
-
-TX payload: eded
-..
-
-RX payload: 5aa5004da50309de6c015369726975
-Z..M....l.Siriu
-
-RX payload: 73584d20507265766965770113456e74
-sXM Preview..Ent
-
-RX payload: 65727461696e6d656e742020200147
-ertainment   .G
-
-RX payload: 72656174204f66666572204e6f7721
-reat Offer Now!
-
-RX payload: 3834342d3731312d3838303020202020
-844-711-8800    
-
-RX payload: 130000000000
-......
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 1001de000001
-......
-
-TX payload: eded
-..
-
-RX payload: 5aa50006900100
-Z......
-
-RX payload: de2a000000
-.*...
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0006
-..
-
-TX payload: 502a01010101
-P*....
-
-TX payload: eded
-..
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0004
-..
-
-TX payload: 25082a00
-%.*.
-
-TX payload: eded
-..
-
-RX payload: 5aa50004d001002a002a
-Z......*.*
-
-RX payload: 5a
-Z
-
-RX payload: a5004da501002ade014d6178696d75
-..M...*..Maximu
-
-RX payload: 6d4d6574616c6c6963610102526f636b
-mMetallica..Rock
-
-RX payload: 202020202020202020202020014d65
-            .Me
-
-RX payload: 74616c6c6963612020202020202053
-tallica       S
-
-RX payload: 65656b20262044657374726f792020
-eek & Destroy  
-
-RX payload: 020000000000
-......
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0001
-..
-
-TX payload: 43
-C
-
-TX payload: eded
-..
-
-RX payload: 5aa5001ac3010003030101010001
-Z.............
-
-RX payload: 0100000500231a9000000000d8f32a22
-.....#........*"
-
-RX payload: 0022
-."
-
-TX payload: 5aa5
-Z.
-
-TX payload: 0004
-..
-
-TX payload: 25082a00
-%.*.
-
-TX payload: eded
-..
+TX payload:
+5aa5 - Start
+0005 - 5 bytes
+0010101001 - All description sizes 16 chars, expect loss of power
+eded - End
+RX payload:
+5aa5 - Start
+001b - 27 bytes
+800100002510292002010000017404052002084142434431323334 - Active radio, RX v3.7 (29 Oct 2002), CMB v1.1.6 (5 Apr 2002), ID length 8, ABCD1234
+004e - Sum
+
+RX payload:
+5aa5 - Start
+0001 - 1 byte
+e0 - Fetched activation info
+00e0 - Sum
+
+TX payload:
+5aa5 - Start
+0002 - 2 bytes
+7005 - Fetch firmware versions??
+eded - end
+RX payload:
+5aa5 - start
+0013 - 19 bytes
+e3010085140802200274040520022510292002 - 85??, something 2.0, or 85 14?? (2 Aug 2002), CMB v1.1.6 (5 Apr 2002), RX v3.7 (29 Oct 2002)
+0002 - sum
+
+TX payload:
+5aa5 - Start
+0001 - 1 byte
+31 - Get radio ID
+eded - end
+RX payload:
+5aa5 - Start
+000c - 12 bytes
+b10100084142434431323334 - ID length 8, ABCD1234
+004e - sum
+
+TX payload:
+5aa5 - Start
+0002 - 2 byte
+4201 - monitor signal data, event driven (same format as C3, but will not report 2 bytes right after C3 AKA status bytes like 0100 OK, nor last 2 bytes i.e. sat 1+2 CN)
+eded - end
+RX payload:
+5aa5 - start
+0003 - 3 bytes
+c20100 - acknowledged, will periodically report signal
+0000 - sum
+
+RX payload:
+5aa5 - Start
+0016 - 22 bytes
+c10103010101000101000534055d1a9000000000d8f5 - signal poll (Fair signal, antenna hooked up, fair terrestrial)
+00f5 - sum
+
+TX payload:
+5aa5 - start
+0002 - 2 bytes
+1300 - Mute off
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+93010000 - Unmuted
+0000 - sum
+
+TX payload:
+5aa5 - start
+0001 - 1 byte
+43 - get signal data
+eded - end
+RX payload:
+5aa5 - start
+001a - 26 bytes
+c301000103010101000101000553056f1a9000000000d8082924 - Fair signal, antenna hooked up, fair terrestrial
+0024 - sum
+
+RX payload:
+5aa5 - start
+0001 - 1 byte
+e1 - Fetched deactivation info
+00e1 - sum
+
+RX payload:
+5aa5 - start
+0016 - 22 bytes
+c1030301010100010100000c004e1a9000000000d9f1 - signal poll (excellent signal, antenna hooked up, fair terrestrial)
+00f1
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500000000000 - monitor channel data (all 0's, pretty much stop monitoring)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010000 - watching (nothing, 0)
+0000 - sum
+
+TX payload:
+5aa5 - start
+0004 - 4 bytes
+25080100 - channel info, for channel 1
+eded - end
+RX payload:
+5aa5 - start
+004d - 77 bytes
+a50100010101536972697573584d20507265766965770113456e7465727461696e6d656e74202020014772656174204f66666572204e6f77213834342d3731312d383830302020202013000000 - Channel 1, service ID 1, Channel:[SiriusXM Preview], Category:[Entertainment   ], Artist:[Great Offer Now!], Song:[844-711-8800    ]
+0000 - sum
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+100201000001 - Audio tune to channel 1
+eded - end
+RX payload:
+5aa5 - start
+0006 - 6 bytes
+900100010100 - OK, ch 1, serviceID 1
+0000 - sum
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500101010101 - monitor channel data (ch1, monitor service ID, prog type, info, and extended)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010001 - watching (channel 1)
+0001 - sum
+
+TX payload:
+5aa5 - start
+0004 - 4 bytes
+25080100 - channel info, for channel 1
+edededed - end
+RX payload:
+5aa5 - start
+004d - 77 bytes
+a50100010101536972697573584d20507265766965770113456e7465727461696e6d656e74202020014772656174204f66666572204e6f77213834342d3731312d383830302020202013000000 - Channel 1, service ID 1, Channel:[SiriusXM Preview], Category:[Entertainment   ], Artist:[Great Offer Now!], Song:[844-711-8800    ]
+0000 - sum
+
+TX payload:
+5aa5 - start
+0001 - 1 byte
+43 - get signal data
+eded - end
+RX payload:
+5aa5 - start
+001a - 26 bytes
+c301000303010101000101000006004a1a9000000000d8ee2a23 - Excellent signal, antenna hooked up, fair terrestrial
+0023 - sum
+
+TX payload:
+5aa5 - start
+0001 - 1 byte
+43 - get signal data
+eded - end
+RX payload:
+5aa5 - start
+001a - 26 bytes
+c30100030301010100010100000b003c1a9000000000d8e02923 - Excellent signal, antenna hooked up, fair terrestrial
+0023 - sum
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500100000000 - monitor channel data (ch1)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010001 - watching (channel 1)
+0001 - sum
+
+TX payload:
+5aa5 - start
+0004 - 4 bytes
+2508de00 - get info for channel 222 (Service???)
+eded
+RX payload:
+5aa5 - start
+004d - 77 bytes
+a50309de6c01536972697573584d20507265766965770113456e7465727461696e6d656e74202020014772656174204f66666572204e6f77213834342d3731312d383830302020202013000000 - Cannot tune, channel 222 with service ID 108 not subscribed for audio. Printing current channel info instead. Channel:[SiriusXM Preview], Category:[Entertainment   ], Artist:[Great Offer Now!], Song:[844-711-8800    ]
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+1001de000001 - Data tune to channel 222
+eded - end
+RX payload:
+5aa5 - start
+0006 - 6 bytes
+900100de2a00 - OK, ch 222
+0000
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+502a01010101 - monitor channel data (ch42, monitor service ID, prog type, info, and extended)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d001002a - watching (channel 42)
+002a - sum
+
+TX payload:
+5aa5 - start
+0004 - 4 bytes
+25082a00 - get info for channel 42
+eded - end
+RX payload:
+5aa5 - start
+004d - 77 bytes
+a501002ade014d6178696d756d4d6574616c6c6963610102526f636b202020202020202020202020014d6574616c6c696361202020202020205365656b20262044657374726f79202002000000 - Channel 42, service ID 222, Channel:[MaximumMetallica], Category:[Rock            ], Artist:[Metallica       ], Song:[Seek & Destroy  ]
+0000 - sum
+
+TX payload:
+5aa5 - start
+0001 - 1 byte
+43 - get signal data
+eded - end
+RX payload:
+5aa5 - start
+001a - 26 bytes
+c30100030301010100010100000500231a9000000000d8f32a22 - Excellent signal, antenna hooked up, fair terrestrial
+0022 - sum
+
+TX payload:
+5aa5
+0004
+25082a00
+eded
 
 RX payload: 5a
 Z
