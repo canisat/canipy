@@ -189,7 +189,7 @@ a50309de6c01536972697573584d20507265766965770113456e7465727461696e6d656e74202020
 TX payload:
 5aa5 - start
 0006 - 6 bytes
-1001de000001 - Data tune to channel 222
+1001de000001 - Tune to channel 222, method 1 (might be the same as 0x11????)
 eded - end
 RX payload:
 5aa5 - start

@@ -16,8 +16,20 @@ class CaniPy:
         # Verbose output toggle
         self.verbose = False
 
+        # Audio and signal info
         # Assume radios start at 0
-        self.channel = 0
+        self.ch_num = 0
+        self.ch_sid = 0
+        self.ch_name = ""
+
+        self.artist_name = ""
+        self.title_name = ""
+
+        self.cat_name = ""
+        self.cat_id = 0
+
+        self.sig_strength = -1
+        self.ter_strength = -1
 
         self.mute = lambda: self.set_mute(True)
         self.unmute = lambda: self.set_mute(False)
@@ -99,12 +111,14 @@ class CaniPy:
             if len(payload) == 22:
                 # If C1 event-driven poll, pad it to conform
                 payload = payload[:1] + bytes([1,0]) + payload[1:] + bytes(2)
-            sigstrength = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
-            antstrength = {0x00:"Disconnected",0x03:"Connected"}
+            self.sig_strength = -1 if not payload[4] else payload[3]
+            self.ter_strength = -1 if not payload[4] else payload[3]
+            siglabel = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
+            antlabel = {0x00:"Disconnected",0x03:"Connected"}
             print("===Receiver===")
-            print(f"Sat: {sigstrength.get(payload[3],f'?({payload[3]})')}")
-            print(f"Ant: {antstrength.get(payload[4],f'?({payload[4]})')}")
-            print(f"Ter: {sigstrength.get(payload[5],f'?({payload[5]})')}")
+            print(f"Sat: {siglabel.get(payload[3],f'?({payload[3]})')}")
+            print(f"Ant: {antlabel.get(payload[4],f'?({payload[4]})')}")
+            print(f"Ter: {siglabel.get(payload[5],f'?({payload[5]})')}")
             if self.verbose:
                 print("===QPSK/MCM===")
                 print(f"Sat1: {payload[6]}")
@@ -143,12 +157,19 @@ class CaniPy:
             print("Invalid channel value")
             return
         print(f"Changing to channel {channel}{' (Data)' if data else ''}")
-        self.channel = channel
-        # Some data (i.e. channel 240/F0) is tuned with 01 00 02 instead of 00 00 01.
-        # Could be to indicate info? Or the actual control track for subscriber
-        # check? Other data tracks tune without this, but implemented anyway as
-        # "info_flag" here and in channel_status.
-        return self.pcr_tx(bytes([0x10, 0x02 - data, channel, info_flag, 0x00, 0x01 + info_flag]))
+        self.ch_num = channel
+        # I was wrong... Dead frickin wrong at how data mode was implemented.
+        # Have to reference nsayer's Java Radio Commander source more.
+        #
+        # "Some data (i.e. channel 240/F0) is tuned with 01 00 02"
+        # THIS SEEMS TO BE THE CASE FOR MOST IF NOT ALL DATA!
+        # BUT ONLY ONE WAY TO FIND OUT IF THIS IS 100% TRUE!
+        # 
+        # As for method 1... Could be for status like 0x11?
+        # Or the actual control track for subscriber check?
+        # Method 1 is assumed to be "info_flag", but might be renamed
+        # in the future...
+        return self.pcr_tx(bytes([0x10, 0x01 if info_flag or data else 0x02, channel, data, 0x00, 0x01 + data]))
 
     def channel_info(self, channel:int) -> bytes:
         if channel not in range(256):
@@ -157,14 +178,16 @@ class CaniPy:
         if self.verbose: print(f"Check RX for info on {channel}")
         return self.pcr_tx(bytes([0x25, 0x08, channel, 0x00]))
 
-    def channel_status(self, channel:int, info_flag:bool=False) -> bytes:
+    def channel_status(self, channel:int, data:bool=False) -> bytes:
         if channel not in range(256):
             print("Invalid channel value")
             return
         if self.verbose: print(f"Check RX for status of {channel}")
         # For checking if channel exists
         # Will tune out of currently listening channel!
-        return self.pcr_tx(bytes([0x11, channel, info_flag]))
+        # This MIGHT be similar to tuning in method 1 (10 01)?
+        # I really dont know... Fairly undocumented
+        return self.pcr_tx(bytes([0x11, channel, data]))
 
     def audio_info(self, channel:int) -> bytes:
         # AKA "Extended" info; returns full artist+title info of playing content
@@ -182,6 +205,23 @@ class CaniPy:
     def signal_info(self) -> bytes:
         if self.verbose: print("Check RX for signal info")
         return self.pcr_tx(bytes([0x43]))
+
+    # TODO: Continue implementation of RX handling.
+    # main.py implements event-driven RX using a
+    # discrete thread, reading size from header
+    # to distinguish valid command.
+    #
+    # Main code checks if it received at least 5 bytes:
+    # Header, length, & at least 1 byte content.
+    #
+    # This thread code is to be moved as a util script.
+
+    # Kept here for reference, handling will need to be
+    # implemented first. Also gotta figure out how to
+    # then stop monitoring. I believe this is just setting ch0?
+    # def monitor_channel(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False) -> bytes:
+    #     print("Monitoring channel")
+    #     return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
     def signal_mon(self, toggle:bool) -> bytes:
         if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
@@ -201,24 +241,6 @@ class CaniPy:
         # 'A' cmds are WX specific!
         if self.verbose: print("Check RX for WX firmware version")
         return self.pcr_tx(bytes([0x4A, 0x44]))
-
-    # TODO: Eventually implement handling of RX.
-    # main.py implements event-driven RX using a
-    # discrete thread, reading size from header
-    # to distinguish valid command.
-    #
-    # Main code checks if it received at least 5 bytes:
-    # Header, length, & at least 1 byte content.
-    #
-    # Commands here are sent blind at this stage
-    # and rely on RX to check what gets sent in.
-
-    # Kept here for reference, but is event driven
-    # So it's left unimplemented until handled
-    # Also gotta figure out how to then stop monitoring
-    # def monitor_channel(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False) -> bytes:
-    #     print("Monitoring channel")
-    #     return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
     
     def direct_enable(self):
         # 74 cmds are exclusive to Direct!

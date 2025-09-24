@@ -58,12 +58,12 @@ c30100000001000000000000154015401a90000000007f7f0d0d - No signal, antenna not co
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-110100 - Channel 1 exists?
+110100 - Channel 1 exists? Soft check of some kind like changing ch's in method 1 (10 01)? No idea...
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-9101000100 - It does, ch 1
+9101000100 - ch 1
 0197 - Sum
 
 TX payload:
@@ -80,18 +80,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11f001 - Channel 240 (XMWX) exists?
+11f001 - Channel 240 (XMWX) exists? In data mode?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100f001 - It does, ch 240
+910100f001 - ch 240, via data mode
 0287 - Sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001f0010002 - Data tune channel 240 (XMWX), plus info flags??
+1001f0010002 - Tune channel 240, method 1, DATA MODE (XMWX?), route to 2 (data port?)
 eded - End
 RX payload:
 5aa5 - Start
@@ -102,7 +102,7 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e600 - Channel 230 (XMWX) exists?
+11e600 - Channel 230 exists? I think this and all following channels are XMWX?
 eded - End
 RX payload:
 5aa5 - Start
@@ -113,7 +113,7 @@ RX payload:
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e6000001 - Data tune channel 230 (XMWX)
+1001e6000001 - Tune channel 230, method 1
 eded - End
 RX payload:
 5aa5 - Start
@@ -124,18 +124,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e700 - Channel 231 (XMWX) exists?
+11e700 - Channel 231 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e700 - It does, ch 231
+910100e700 - ch 231
 027d - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e7000001 - Data tune channel 231 (XMWX)
+1001e7000001 - tune channel 231, method 1
 eded - end
 RX payload:
 5aa5 - Start
@@ -146,18 +146,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e800 - Channel 232 (XMWX) exists?
+11e800 - Channel 232 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e800 - It does, ch 232
+910100e800 - ch 232
 027e - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e8000001 - Data tune channel 232 (XMWX)
+1001e8000001 - tune channel 232, method 1
 eded - End
 RX payload:
 5aa5 - Start
@@ -168,18 +168,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ea00 - Channel 234 (XMWX) exists?
+11ea00 - Channel 234 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ea00 - It does, ch 234
+910100ea00 - ch 234
 0280 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ea000001 - Data tune channel 234 (XMWX)
+1001ea000001 - tune channel 234, method 1
 eded - end
 RX payload:
 5aa5 - Start
@@ -190,18 +190,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11eb00 - Channel 235 (XMWX) exists?
+11eb00 - Channel 235 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100eb00 - It does, ch 235
+910100eb00 - ch 235
 0281 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001eb000001 - Data tune channel 235 (XMWX)
+1001eb000001 - tune channel 235, method 1
 eded - End
 RX payload:
 5aa5 - Start
@@ -212,18 +212,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ec00 - Channel 236 (XMWX) exists?
+11ec00 - Channel 236 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ec00 - It does, ch 236
+910100ec00 - ch 236
 0282 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ec000001 - Data tune channel 236 (XMWX)
+1001ec000001 - tune channel 236, method 1
 eded - End
 RX payload:
 5aa5 - Start
@@ -234,18 +234,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ed00 - Channel 237 (XMWX) exists?
+11ed00 - Channel 237 exists?
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ed00 - It does, ch 237
+910100ed00 - ch 237
 0283 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ed000001 - Data tune channel 237 (XMWX)
+1001ed000001 - tune channel 237, method 1
 eded - end
 RX payload:
 5aa5 - Start
@@ -256,18 +256,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ee00 - Channel 238 (XMWX) exists?
+11ee00 - Channel 238 exists?
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ee00 - It does, ch 238
+910100ee00 - ch 238
 0284 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ee000001 - Data tune channel 238 (XMWX)
+1001ee000001 - tune channel 238, method 1
 eded - end
 RX payload:
 5aa5 - Start
