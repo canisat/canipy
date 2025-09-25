@@ -68,11 +68,14 @@ class CaniPy:
         if len(payload) == 27:
             print("===Radio Info===")
             print(f"Activated: {'No' if payload[1] == 0x3 else 'Yes'}")
-            # payload[2] and/or payload[3] might correspond
-            # to subscribed tier and other status messages
+            # No idea what payload[3] might be yet, always 0 in pcaps.
+            # Ignoring it for now.
             if self.verbose:
                 print(f"RX Version: {'.'.join(list(str(payload[4])))}")
                 print(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
+                # In this project, data will be tackled (Eventually).
+                print(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
+                print(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
                 print(f"CMB Version: {'.'.join(list(str(payload[13])))}")
                 print(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
             print(f"Radio ID: {payload[19:27].decode('utf-8')}")
@@ -129,22 +132,25 @@ class CaniPy:
                 print(f"Sat2: {payload[10]}")
                 print(f"Terr: {payload[11]}")
                 print("=====BER!=====")
-                print(f"Sat1: {payload[12]} {payload[13]}")
-                print(f"Sat2: {payload[14]} {payload[15]}")
-                print(f"Terr: {payload[16]} {payload[17]}")
+                # Bit error rate is two bytes big,
+                # 68ths, not exceeding 100%
+                print(f"Sat1: {min(((payload[12] << 8) | payload[13]) / 68, 100):.2f}%")
+                print(f"Sat2: {min(((payload[14] << 8) | payload[15]) / 68, 100):.2f}%")
+                print(f"Terr: {min(((payload[16] << 8) | payload[17]) / 68, 100):.2f}%")
                 print("=====AGC!=====")
                 print(f"Sat: {payload[22]}")
                 print(f"Ter: {payload[23]}")
                 if payload[0] == 0xC3:
                     print("======CN======")
-                    print(f"Sat1: {payload[24]}")
-                    print(f"Sat2: {payload[25]}")
+                    # C:N's are stored in 1/4 dB
+                    print(f"Sat1: {payload[24]/4}")
+                    print(f"Sat2: {payload[25]/4}")
             print("==============")
         else:
             print("Payload not of correct length")
             if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
 
-    def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=24, loss_exp:bool=True) -> bytes:
+    def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
         print("Powering up")
         return self.pcr_tx(bytes([0x00, ch_lbl, cat_lbl, title_lbl, loss_exp]))
 
@@ -152,15 +158,12 @@ class CaniPy:
         print("Powering down")
         return self.pcr_tx(bytes([0x01, pwr_sav]))
 
-    def change_channel(self, channel:int, data:bool=False, info_flag:bool=False) -> bytes:
+    def change_channel(self, channel:int, data:bool=False, info_flag:bool=False, prg_type:int=0) -> bytes:
         if channel not in range(256):
             print("Invalid channel value")
             return
         print(f"Changing to channel {channel}{' (Data)' if data else ''}")
         self.ch_num = channel
-        # I was wrong... Dead frickin wrong at how data mode was implemented.
-        # Have to reference nsayer's Java Radio Commander source more.
-        #
         # "Some data (i.e. channel 240/F0) is tuned with 01 00 02"
         # THIS SEEMS TO BE THE CASE FOR MOST IF NOT ALL DATA!
         # BUT ONLY ONE WAY TO FIND OUT IF THIS IS 100% TRUE!
@@ -169,14 +172,18 @@ class CaniPy:
         # Or the actual control track for subscriber check?
         # Method 1 is assumed to be "info_flag", but might be renamed
         # in the future...
-        return self.pcr_tx(bytes([0x10, 0x01 if info_flag or data else 0x02, channel, data, 0x00, 0x01 + data]))
+        #
+        # No idea what program type is all about, assume 0
+        # for now cus none of the pcaps used it thus far.
+        return self.pcr_tx(bytes([0x10, 0x01 if info_flag or data else 0x02, channel, data, prg_type, 0x01 + data]))
 
-    def channel_info(self, channel:int) -> bytes:
+    def channel_info(self, channel:int, is_sid:bool=False, prg_type:int=0) -> bytes:
         if channel not in range(256):
             print("Invalid channel value")
             return
         if self.verbose: print(f"Check RX for info on {channel}")
-        return self.pcr_tx(bytes([0x25, 0x08, channel, 0x00]))
+        # 07 allows for tuning by service ID, essentially the raw index, instead of assigned num
+        return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 
     def channel_status(self, channel:int, data:bool=False) -> bytes:
         if channel not in range(256):
@@ -191,7 +198,8 @@ class CaniPy:
 
     def audio_info(self, channel:int) -> bytes:
         # AKA "Extended" info; returns full artist+title info of playing content
-        # Output tends to be botched during testing, not sure why
+        # Output might look botched, i think it was supposed to be set to an
+        # expected value. I set title size to 0x24 to see if this fixes it.
         if channel not in range(256):
             print("Invalid channel value")
             return
@@ -202,7 +210,20 @@ class CaniPy:
         if self.verbose: print("Check RX for ID")
         return self.pcr_tx(bytes([0x31]))
 
+    def firm_ver(self, magic:int=5) -> bytes:
+        # Fetches radio version numbers and dates
+        # Not sure what the first two bytes correspond to,
+        # then that build date. Followed by CMB and RX versions.
+        # Not sure what the other TX byte is for, it's always
+        # noted with 5 during testing. Only send 5 for now,
+        # override if you dare...
+        if self.verbose: print("Check RX for radio firmware version")
+        return self.pcr_tx(bytes[0x70, magic])
+
     def signal_info(self) -> bytes:
+        # Sometimes referred as "extended" signal quality.
+        # It's known that 42 is monitor, but these two are
+        # the only ones documented. idk if theres a 41 or 40...
         if self.verbose: print("Check RX for signal info")
         return self.pcr_tx(bytes([0x43]))
 
@@ -219,7 +240,7 @@ class CaniPy:
     # Kept here for reference, handling will need to be
     # implemented first. Also gotta figure out how to
     # then stop monitoring. I believe this is just setting ch0?
-    # def monitor_channel(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False) -> bytes:
+    # def chan_mon(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False) -> bytes:
     #     print("Monitoring channel")
     #     return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
@@ -244,6 +265,9 @@ class CaniPy:
     
     def direct_enable(self):
         # 74 cmds are exclusive to Direct!
+        # There's also hint at 74 0D,
+        # no idea what 0D does at the moment,
+        # assuming this sequence works regardless
         print("Direct listening mode")
         self.pcr_tx(bytes([0x74, 0x00, 0x01]))
         # These sleeps should be event driven instead
@@ -253,7 +277,7 @@ class CaniPy:
         self.pcr_tx(bytes([0x74, 0x02, 0x01, 0x01]))
         time.sleep(1)
 
-        # No response would be received here
+        # RX might not be received when unmuting,
         # Let the function finish as-is after this
         print("Direct unmute DAC")
         self.pcr_tx(bytes([0x74, 0x0B, 0x00]))

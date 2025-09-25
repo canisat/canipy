@@ -40,6 +40,9 @@ class canipy_tk(tkinter.Tk):
             # SOME ARE TEMPORARILY UNREFACTORED
             # AS THIS'LL LATER BE MOVED TO MODULE
 
+            # data[0] and data[1] appear to always be
+            # status code and detail respectively
+
             match return_code:
                 case None:
                     continue
@@ -94,8 +97,12 @@ class canipy_tk(tkinter.Tk):
                 case 0xE1:
                     print("Fetched deactivation info")
                 case 0xF2:
+                    # Direct idle frames.
+                    # Counted, but generally just ignored.
                     self.idleFrames += 1
                 case 0xF4:
+                    # Acknowledgement of Direct responses.
+                    # nsayer ref mistakenly listens to E4??
                     print("Command Acknowledged")
                 case 0xFF:
                     # These usually can be recovered from
