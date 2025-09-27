@@ -158,20 +158,19 @@ class CaniPy:
         print("Powering down")
         return self.pcr_tx(bytes([0x01, pwr_sav]))
 
-    def change_channel(self, channel:int, data:bool=False, is_sid:bool=False, prg_type:int=0) -> bytes:
+    def change_channel(self, channel:int, is_sid:bool=False, data:bool=False, prg_type:int=0) -> bytes:
         if channel not in range(256):
             print("Invalid channel value")
             return
         print(f"Changing to channel {channel}{' (Data)' if data else ''}")
-        self.ch_num = channel
+        if not is_sid: self.ch_num = channel
         # "Some data (i.e. SID 240/F0) is tuned with 01 00 02"
         # THIS SEEMS TO BE THE CASE FOR MOST IF NOT ALL DATA!
         # BUT ONLY ONE WAY TO FIND OUT IF THIS IS 100% TRUE!
-        # 
-        # As for method 1... I thiiiiink that's SID tune??
-        # Method is assumed to be "is_sid", but might be renamed
-        # in the future...
         #
+        # 02 is for tuning by assigned "virtual" number
+        # 01 tunes based on service ID, essentially the raw index
+        # 
         # No idea what program type is all about, assume 0
         # for now cus none of the pcaps used it thus far.
         return self.pcr_tx(bytes([0x10, 0x02 - is_sid, channel, data, prg_type, 0x01 + data]))
@@ -181,7 +180,7 @@ class CaniPy:
             print("Invalid channel value")
             return
         if self.verbose: print(f"Check RX for info on {channel}")
-        # 07 allows for checking by service ID, essentially the raw index, instead of assigned num
+        # 07 allows for checking by SID
         return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 
     def channel_status(self, channel:int, data:bool=False) -> bytes:

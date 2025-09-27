@@ -57,6 +57,7 @@ class canipy_tk(tkinter.Tk):
                             print("Check if antenna is connected")
                             print("and has a clear view of the sky")
                         continue
+                    if self.canipy.verbose: print(f"Channel SID: {data[2]}")
                     if data[4]:
                         print(f"Data mode set on channel {data[3]}")
                     else:
