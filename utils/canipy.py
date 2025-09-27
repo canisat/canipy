@@ -188,10 +188,12 @@ class CaniPy:
             print("Invalid channel value")
             return
         if self.verbose: print(f"Check RX for status of {channel}")
-        # For checking if channel exists
+        # For checking if channel exists??
         # Will tune out of currently listening channel!
-        # This MIGHT be similar to tuning in method 1 (10 01)?
-        # I really dont know... Fairly undocumented
+        # Need to be sure what 11/91 actually does...
+        # I really dont know given it's undocumented.
+        # Is it SID only? Assigned channe number?
+        # I did notice the 3rd byte may be a data flag
         return self.pcr_tx(bytes([0x11, channel, data]))
 
     def audio_info(self, channel:int) -> bytes:

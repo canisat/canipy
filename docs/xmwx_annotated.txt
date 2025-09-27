@@ -41,7 +41,7 @@ Console: Radio serial number: ABCD1234
 RX payload:
 5aa5 - Start
 0013 - 19 bytes
-ff010020202020202020202020202020202020 - Radio reported an error: check antenna
+ff010020202020202020202020202020202020 - Radio reported an error (blank error message with OK, usually means to check antenna)
 0412 - Sum
 
 TX payload:
@@ -58,7 +58,7 @@ c30100000001000000000000154015401a90000000007f7f0d0d - No signal, antenna not co
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-110100 - Channel 1 exists? Soft check of some kind like changing ch's in method 1 (10 01)? No idea...
+110100 - Channel 1 exists? Soft check of some kind? Prep work? listening? No idea...
 eded - End
 RX payload:
 5aa5 - Start
@@ -91,188 +91,188 @@ RX payload:
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001f0010002 - Tune channel 240, method 1, DATA MODE (XMWX?), route to 2 (data port?)
+1001f0010002 - Tune SID 240, DATA MODE (XMWX?), route to 2 (data port?)
 eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309f0f001 - OK, ch 240, ch 240 is not subscribed
+900309f0f001 - OK, sid 240, sid 240 is not subscribed
 0382 - Sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e600 - Channel 230 exists? I think this and all following channels are XMWX?
+11e600 - App 230 exists? I think this and all following channels are XMWX "apps"?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e600 - It does, ch 230
+910100e600 - It does, App 230
 027c -  Sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e6000001 - Tune channel 230, method 1
+1001e6000001 - Tune App 230, method 1
 eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e62401 - OK, ch 230, ch 230 is not subscribed
+900309e62401 - OK, App 230, App 230 is not subscribed
 02ac - Sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e700 - Channel 231 exists?
+11e700 - App 231 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e700 - ch 231
+910100e700 - App 231
 027d - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e7000001 - tune channel 231, method 1
+1001e7000001 - tune App 231, method 1
 eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e71301 - OK, ch 231, ch 231 is not subscribed
+900309e71301 - OK, App 231, App 231 is not subscribed
 029c - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e800 - Channel 232 exists?
+11e800 - App 232 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e800 - ch 232
+910100e800 - App 232
 027e - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e8000001 - tune channel 232, method 1
+1001e8000001 - tune App 232, method 1
 eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e8e101 - OK, ch 232, ch 232 is not subscribed
+900309e8e101 - OK, App 232, App 232 is not subscribed
 036b - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ea00 - Channel 234 exists?
+11ea00 - App 234 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ea00 - ch 234
+910100ea00 - App 234
 0280 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ea000001 - tune channel 234, method 1
+1001ea000001 - tune App 234, method 1
 eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ea1f01 - OK, ch 234, ch 234 is not subscribed
+900309ea1f01 - OK, App 234, App 234 is not subscribed
 02ab - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11eb00 - Channel 235 exists?
+11eb00 - App 235 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100eb00 - ch 235
+910100eb00 - App 235
 0281 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001eb000001 - tune channel 235, method 1
+1001eb000001 - tune App 235, method 1
 eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309eb3f01 - OK, ch 235, ch 235 is not subscribed
+900309eb3f01 - OK, App 235, App 235 is not subscribed
 02cc - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ec00 - Channel 236 exists?
+11ec00 - App 236 exists?
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ec00 - ch 236
+910100ec00 - App 236
 0282 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ec000001 - tune channel 236, method 1
+1001ec000001 - tune App 236, method 1
 eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ec2601 - OK, ch 236, ch 236 is not subscribed
+900309ec2601 - OK, App 236, App 236 is not subscribed
 02b4 - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ed00 - Channel 237 exists?
+11ed00 - App 237 exists?
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ed00 - ch 237
+910100ed00 - App 237
 0283 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ed000001 - tune channel 237, method 1
+1001ed000001 - tune App 237, method 1
 eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ed4501 - OK, ch 237, ch 237 is not subscribed
+900309ed4501 - OK, App 237, App 237 is not subscribed
 02d4 - sum
 
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ee00 - Channel 238 exists?
+11ee00 - App 238 exists?
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ee00 - ch 238
+910100ee00 - App 238
 0284 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ee000001 - tune channel 238, method 1
+1001ee000001 - tune App 238, method 1
 eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ee3d01 - OK, ch 238, ch 238 is not subscribed
+900309ee3d01 - OK, App 238, App 238 is not subscribed
 02cd - sum
 
 TX payload:
@@ -286,7 +286,7 @@ RX payload:
 81010000 - Powering off, napping. Goodnight!
 0185 - sum
 
-Console supposed to send these after before data download begins.
+Console supposed to send these after confirming and before data download begins.
 Activated indicator is likely just be 0xE0?
 Console: Activated indicator received
 Console: SID 240 selected

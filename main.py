@@ -63,6 +63,7 @@ class canipy_tk(tkinter.Tk):
                     else:
                         self.canipy.channel_info(data[3])
                 case 0x91:
+                    # Need to be sure what 11/91 actually does...
                     if data[0] == 0x04:
                         print("No signal")
                     else:
@@ -106,6 +107,7 @@ class canipy_tk(tkinter.Tk):
                     # These usually can be recovered from
                     print("Warning! Radio reported an error")
                     if data[0] == 0x01 and data[1] == 0x00:
+                        # 01 00 (aka OK) on error, typically corresponds to antenna
                         print("Antenna not detected, check antenna")
                     if self.canipy.verbose:
                         print(f"{data[0]:02X} {data[1]:02X} {data[2:].decode('utf-8')}")
