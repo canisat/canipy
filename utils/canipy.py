@@ -248,6 +248,15 @@ class CaniPy:
         if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
         return self.pcr_tx(bytes([0x42, toggle]))
 
+    def diag_mon(self, toggle:bool) -> bytes:
+        if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor extra info")
+        # Sending 60 prompts the radio to send what might be diagnostics info.
+        # F0 returned when command is acknowledged.
+        # Messages will be received periodically as F1, followed by the info.
+        # No idea what this info specifically corresponds to at the moment.
+        # Would 63 designate to return this info ad-hoc? Who knows!
+        return self.pcr_tx(bytes([0x60, toggle]))
+
     def set_mute(self, mute:bool) -> bytes:
         print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.pcr_tx(bytes([0x13, mute]))

@@ -1,0 +1,635 @@
+TX payload:
+5aa5 - Start
+0005 - 5 bytes
+0010101001 - All description sizes 16 chars, expect loss of power
+eded - End
+RX payload:
+5aa5 - Start
+001b - 27 bytes
+800100002510292002010000017404052002084142434431323334 - Active radio, RX v3.7 (29 Oct 2002), CMB v1.1.6 (5 Apr 2002), ID length 8, ABCD1234
+004e - Sum
+
+RX payload:
+5aa5 - Start
+0001 - 1 byte
+e0 - Fetched activation info
+00e0 - Sum
+
+TX payload:
+5aa5 - Start
+0002 - 2 bytes
+7005 - Fetch firmware versions??
+eded - end
+RX payload:
+5aa5 - start
+0013 - 19 bytes
+e3010085140802200274040520022510292002 - 1.3.3??, 2.0??, not sure what this versioning is for... (2 Aug 2002), CMB v1.1.6 (5 Apr 2002), RX v3.7 (29 Oct 2002)
+0002 - sum
+
+TX payload:
+5aa5 - Start
+0002 - 2 byte
+4201 - monitor signal data, event driven (same format as C3, but will not report 2 bytes right after C3 AKA status bytes like 0100 OK, nor last 2 bytes i.e. sat 1+2 CN)
+eded - end
+RX payload:
+5aa5 - start
+0003 - 3 bytes
+c20100 - acknowledged, will periodically report signal
+0000 - sum
+
+RX payload:
+5aa5 - Start
+0016 - 22 bytes
+c10103010101000101000534055d1a9000000000d8f5 - signal poll (Fair signal, antenna hooked up, fair terrestrial)
+00f5 - sum
+
+RX payload:
+5aa5 - start
+0001 - 1 byte
+e1 - Fetched deactivation info
+00e1 - sum
+
+RX payload:
+5aa5 - start
+0016 - 22 bytes
+c1030301010100010100000c004e1a9000000000d9f1 - signal poll (excellent signal, antenna hooked up, fair terrestrial)
+00f1
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500000000000 - monitor channel data (all 0's, pretty much stop monitoring)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010000 - watching (nothing, 0)
+0000 - sum
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500101010101 - monitor channel data (ch1, monitor service ID, prog type, info, and extended)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010001 - watching (channel 1)
+0001 - sum
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+500100000000 - monitor channel data (ch1)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d0010001 - watching (channel 1)
+0001 - sum
+
+TX payload:
+5aa5 - start
+0004 - 4 bytes
+2508de00 - get info for channel 222 (Service???)
+eded
+RX payload:
+5aa5 - start
+004d - 77 bytes
+a50309de6c01536972697573584d20507265766965770113456e7465727461696e6d656e74202020014772656174204f66666572204e6f77213834342d3731312d383830302020202013000000 - Cannot tune, channel 222 with service ID 108 not subscribed for audio. Printing current channel info instead. Channel:[SiriusXM Preview], Category:[Entertainment   ], Artist:[Great Offer Now!], Song:[844-711-8800    ]
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+1001de000001 - Tune to channel 222, method 1 (might be the same as 0x11????)
+eded - end
+RX payload:
+5aa5 - start
+0006 - 6 bytes
+900100de2a00 - OK, ch 222
+0000
+
+TX payload:
+5aa5 - start
+0006 - 6 bytes
+502a01010101 - monitor channel data (ch42, monitor service ID, prog type, info, and extended)
+eded - end
+RX payload:
+5aa5 - start
+0004 - 4 bytes
+d001002a - watching (channel 42)
+002a - sum
+
+RX payload:
+5aa5 - start
+0017 - 23 bytes
+d10101536972697573584d205072657669657700000000 - Channel name change on ch1, [SiriusXM Preview], not sure whats with the extra padding?? hinting at extended names???
+0000 - sum
+
+RX payload:
+5aa5 - start
+0014 - 20 bytes
+d2011301456e7465727461696e6d656e74202020 - category change on ch1, cat ID 13, [Entertainment   ]
+0020 - sum
+
+RX payload:
+5aa5 - start
+0023 - 35 bytes
+d301014772656174204f66666572204e6f77213834342d3731312d3838303020202020 - artist/title change on ch1, [Great Offer Now!] [844-711-8800    ]
+0020 - sum
+
+RX payload:
+5aa5 - start
+0009 - 9 bytes
+d60104010129987e15 - song time change on ch1, time format 4 (might be for debug use), started 10648s (177.467m) ago, will end in 32277s (8.96583h)
+0015 - sum
+
+TX payload:
+5aa5 - start
+0002 - 2 bytes
+6001 - 0x60 looks new... passes 1 to enable monitoring
+eded - end
+RX payload:
+5aa5 - start
+0003 - 3 bytes
+f00100 - monitoring whatever this reports
+0000 - sum
+
+RX payload:
+5aa5 - start
+0048 - 72 bytes
+f1314e532d2d2d2d3032444e533030303033542d2d3030303034542d2d30303030354c442d2d2d2d2d3653303030303030372d303030303030382d2d2d30303231392d2d2d30303230 - 1NS----02DNS00003T--00004T--00005LD-----6S0000007-0000008---00219---0020
+0030 - sum
+
+RX payload:
+5aa5 - start
+0048 - 72 bytes
+f1314e532d2d2d2d30324e4e533030303033542d2d3030303034542d2d30303030354c442d2d2d2d2d3653303030303030372d303030303030382d2d2d30303231392d2d2d30303230 - 1NS----02NNS00003T--00004T--00005LD-----6S0000007-0000008---00219---0020
+0030 - sum
+
+TX payload:
+5aa5 - start
+0002 - 2 bytes
+6000 - pass 0 to stop monitoring
+eded - end
+RX payload:
+5aa5 - start
+0003 - 3 bytes
+f00100 - acknowledged
+0000 - sum
+
+RX payload: 5aa5
+Z.
+
+RX payload: 0048f1314e532d2d2d2d30324e4e53
+.H.1NS----02NNS
+
+RX payload: 3030303033542d2d3030303034542d2d
+00003T--00004T--
+
+RX payload: 30303030354c442d2d2d2d2d365330
+00005LD-----6S0
+
+RX payload: 3030303030372d303030303030382d
+000007-0000008-
+
+RX payload: 2d2d30303231392d2d2d303032300030
+--00219---0020.0
+
+RX payload: 5aa50048f1314e532d2d2d2d30324e
+Z..H.1NS----02N
+
+RX payload: 4e533030303033542d2d3030303034
+NS00003T--00004
+
+RX payload: 542d2d30303030354c442d2d2d2d2d36
+T--00005LD-----6
+
+RX payload: 53303030303030372d303030303030
+S0000007-000000
+
+RX payload: 382d2d2d30303231392d2d2d303032
+8---00219---002
+
+RX payload: 300030
+0.0
+
+RX payload: 5aa50048f1314e532d2d2d2d30
+Z..H.1NS----0
+
+RX payload: 324e4e533030303033542d2d303030
+2NNS00003T--000
+
+RX payload: 3034542d2d30303030354c442d2d2d
+04T--00005LD---
+
+RX payload: 2d2d3653303030303030372d303030
+--6S0000007-000
+
+RX payload: 303030382d2d2d30303231392d2d2d30
+0008---00219---0
+
+RX payload: 3032300030
+020.0
+
+RX payload: 5aa50048f1314e532d2d
+Z..H.1NS--
+
+RX payload: 2d2d30324e4e533030303033542d2d
+--02NNS00003T--
+
+RX payload: 3030303034542d2d30303030354c442d
+00004T--00005LD-
+
+RX payload: 2d2d2d2d3653303030303030372d30
+----6S0000007-0
+
+RX payload: 3030303030382d2d2d30303231392d
+000008---00219-
+
+RX payload: 2d2d303032300030
+--0020.0
+
+RX payload: 5aa50048f1314e53
+Z..H.1NS
+
+RX payload: 2d2d2d2d30324e4e53303030303354
+----02NNS00003T
+
+RX payload: 2d2d3030303034542d2d3030303035
+--00004T--00005
+
+RX payload: 4c442d2d2d2d2d3653303030303030
+LD-----6S000000
+
+RX payload: 372d303030303030382d2d2d30303231
+7-0000008---0021
+
+RX payload: 392d2d2d303032300030
+9---0020.0
+
+RX payload: 5aa50048f1
+Z..H.
+
+RX payload: 314e532d2d2d2d30324e4e53303030
+1NS----02NNS000
+
+RX payload: 3033542d2d3030303034542d2d303030
+03T--00004T--000
+
+RX payload: 30354c442d2d2d2d2d365330303030
+05LD-----6S0000
+
+RX payload: 3030372d303030303030382d2d2d30
+007-0000008---0
+
+RX payload: 303231392d2d2d303032300030
+0219---0020.0
+
+RX payload: 5aa500
+Z..
+
+RX payload: 48f1314e532d2d2d2d30324e4e5330
+H.1NS----02NNS0
+
+RX payload: 30303033542d2d3030303034542d2d
+0003T--00004T--
+
+RX payload: 30303030354c442d2d2d2d2d365330
+00005LD-----6S0
+
+RX payload: 3030303030372d303030303030382d2d
+000007-0000008--
+
+RX payload: 2d30303231392d2d2d303032300030
+-00219---0020.0
+
+RX payload: 5aa50048f1314e532d2d2d2d30324e
+Z..H.1NS----02N
+
+RX payload: 4e533030303033542d2d303030303454
+NS00003T--00004T
+
+RX payload: 2d2d30303030354c442d2d2d2d2d36
+--00005LD-----6
+
+RX payload: 53303030303030372d303030303030
+S0000007-000000
+
+RX payload: 382d2d2d30303231392d2d2d30303230
+8---00219---0020
+
+RX payload: 0030
+.0
+
+RX payload: 5aa50048f1314e532d2d2d2d30
+Z..H.1NS----0
+
+RX payload: 324e4e533030303033542d2d303030
+2NNS00003T--000
+
+RX payload: 3034542d2d30303030354c442d2d2d
+04T--00005LD---
+
+RX payload: 2d2d3653303030303030372d30303030
+--6S0000007-0000
+
+RX payload: 3030382d2d2d30303231392d2d2d30
+008---00219---0
+
+RX payload: 3032300030
+020.0
+
+RX payload: 5aa50048f1314e532d2d
+Z..H.1NS--
+
+RX payload: 2d2d30324e4e533030303033542d2d30
+--02NNS00003T--0
+
+RX payload: 30303034542d2d30303030354c442d
+0004T--00005LD-
+
+RX payload: 2d2d2d2d3653303030303030372d30
+----6S0000007-0
+
+RX payload: 3030303030382d2d2d30303231392d2d
+000008---00219--
+
+RX payload: 2d303032300030
+-0020.0
+
+RX payload: 5aa50048f1314e53
+Z..H.1NS
+
+RX payload: 2d2d2d2d30324e4e53303030303354
+----02NNS00003T
+
+RX payload: 2d2d3030303034542d2d30303030354c
+--00004T--00005L
+
+RX payload: 442d2d2d2d2d365330303030303037
+D-----6S0000007
+
+RX payload: 2d303030303030382d2d2d30303231
+-0000008---0021
+
+RX payload: 392d2d2d303032300030
+9---0020.0
+
+RX payload: 5aa50048f131
+Z..H.1
+
+RX payload: 4e532d2d2d2d30324e4e5330303030
+NS----02NNS0000
+
+RX payload: 33542d2d3030303034542d2d303030
+3T--00004T--000
+
+RX payload: 30354c442d2d2d2d2d365330303030
+05LD-----6S0000
+
+RX payload: 3030372d303030303030382d2d2d3030
+007-0000008---00
+
+RX payload: 3231392d2d2d303032300030
+219---0020.0
+
+RX payload: 5aa500
+Z..
+
+RX payload: 48f1314e532d2d2d2d30324e4e5330
+H.1NS----02NNS0
+
+RX payload: 30303033542d2d3030303034542d2d30
+0003T--00004T--0
+
+RX payload: 303030354c442d2d2d2d2d36533030
+0005LD-----6S00
+
+RX payload: 30303030372d303030303030382d2d
+00007-0000008--
+
+RX payload: 2d30303231392d2d2d303032300030
+-00219---0020.0
+
+RX payload: 5a
+Z
+
+RX payload: a50048f1314e532d2d2d2d30324e4e
+..H.1NS----02NN
+
+RX payload: 533030303033542d2d303030303454
+S00003T--00004T
+
+RX payload: 2d2d30303030354c442d2d2d2d2d36
+--00005LD-----6
+
+RX payload: 53303030303030372d30303030303038
+S0000007-0000008
+
+RX payload: 2d2d2d30303231392d2d2d30303230
+---00219---0020
+
+RX payload: 0030
+.0
+
+RX payload: 5aa500
+Z..
+
+RX payload: 48f1314e532d2d2d2d30324e4e5330
+H.1NS----02NNS0
+
+RX payload: 30303033542d2d3030303034542d2d30
+0003T--00004T--0
+
+RX payload: 303030354c442d2d2d2d2d36533030
+0005LD-----6S00
+
+RX payload: 30303030372d303030303030382d2d
+00007-0000008--
+
+RX payload: 2d30303231392d2d2d303032300030
+-00219---0020.0
+
+RX payload: 5aa50048f1314e532d2d2d
+Z..H.1NS---
+
+RX payload: 2d30324e4e533030303033542d2d30
+-02NNS00003T--0
+
+RX payload: 30303034542d2d30303030354c442d
+0004T--00005LD-
+
+RX payload: 2d2d2d2d3653303030303030372d3030
+----6S0000007-00
+
+RX payload: 30303030382d2d2d30303231392d2d
+00008---00219--
+
+RX payload: 2d303032300030
+-0020.0
+
+RX payload: 5aa50048f1314e53
+Z..H.1NS
+
+RX payload: 2d2d2d2d30324e4e533030303033542d
+----02NNS00003T-
+
+RX payload: 2d3030303034542d2d30303030354c
+-00004T--00005L
+
+RX payload: 442d2d2d2d2d365330303030303037
+D-----6S0000007
+
+RX payload: 2d303030303030382d2d2d3030323139
+-0000008---00219
+
+RX payload: 2d2d2d303032300030
+---0020.0
+
+RX payload: 5aa50048f131
+Z..H.1
+
+RX payload: 4e532d2d2d2d30324e4e5330303030
+NS----02NNS0000
+
+RX payload: 33542d2d3030303034542d2d303030
+3T--00004T--000
+
+RX payload: 30354c442d2d2d2d2d36533030303030
+05LD-----6S00000
+
+RX payload: 30372d303030303030382d2d2d3030
+07-0000008---00
+
+RX payload: 3231392d2d2d303032300030
+219---0020.0
+
+RX payload: 5aa500
+Z..
+
+RX payload: 48f1314e532d2d2d2d30324e4e533030
+H.1NS----02NNS00
+
+RX payload: 303033542d2d3030303034542d2d30
+003T--00004T--0
+
+RX payload: 303030354c442d2d2d2d2d36533030
+0005LD-----6S00
+
+RX payload: 30303030372d303030303030382d2d2d
+00007-0000008---
+
+RX payload: 30303231392d2d2d303032300030
+00219---0020.0
+
+RX payload: 5a
+Z
+
+RX payload: a50048f1314e532d2d2d2d30324e4e
+..H.1NS----02NN
+
+RX payload: 533030303033542d2d3030303034542d
+S00003T--00004T-
+
+RX payload: 2d30303030354c442d2d2d2d2d3653
+-00005LD-----6S
+
+RX payload: 303030303030372d30303030303038
+0000007-0000008
+
+RX payload: 2d2d2d30303231392d2d2d30303230
+---00219---0020
+
+RX payload: 0030
+.0
+
+RX payload: 5aa50048f1314e532d2d2d2d
+Z..H.1NS----
+
+RX payload: 30324e4e533030303033542d2d3030
+02NNS00003T--00
+
+RX payload: 303034542d2d30303030354c442d2d2d
+004T--00005LD---
+
+RX payload: 2d2d3653303030303030372d303030
+--6S0000007-000
+
+RX payload: 303030382d2d2d30303231392d2d2d
+0008---00219---
+
+RX payload: 303032300030
+0020.0
+
+RX payload: 5aa50048f1314e532d2d2d
+Z..H.1NS---
+
+RX payload: 2d3032444e533030303033542d2d30
+-02DNS00003T--0
+
+RX payload: 30303034542d2d30303030354c442d
+0004T--00005LD-
+
+RX payload: 2d2d2d2d3653303030303030372d3030
+----6S0000007-00
+
+RX payload: 30303030382d2d2d30303231392d2d
+00008---00219--
+
+RX payload: 2d303032300030
+-0020.0
+
+RX payload: 5aa50048f1314e53
+Z..H.1NS
+
+RX payload: 2d2d2d2d3032444e53303030303354
+----02DNS00003T
+
+RX payload: 2d2d3030303034542d2d3030303035
+--00004T--00005
+
+RX payload: 4c442d2d2d2d2d3653303030303030
+LD-----6S000000
+
+RX payload: 372d303030303030382d2d2d30303231
+7-0000008---0021
+
+RX payload: 392d2d2d303032300030
+9---0020.0
+
+RX payload: 5aa50048f131
+Z..H.1
+
+RX payload: 4e532d2d2d2d3032444e533030303033
+NS----02DNS00003
+
+RX payload: 542d2d3030303034542d2d30303030
+T--00004T--0000
+
+RX payload: 354c442d2d2d2d2d36533030303030
+5LD-----6S00000
+
+RX payload: 30372d303030303030382d2d2d3030
+07-0000008---00
+
+RX payload: 3231392d2d2d303032300030
+219---0020.0
+
+RX payload: 5aa500
+Z..
+
+RX payload: 48f1314e532d2d2d2d3032444e5330
+H.1NS----02DNS0
+
+RX payload: 30303033542d2d3030303034542d2d30
+0003T--00004T--0
+
+RX payload: 303030354c442d2d2d2d2d36533030
+0005LD-----6S00
+
+RX payload: 30303030372d303030303030382d2d
+00007-0000008--
+
+RX payload: 2d30303231392d2d2d303032300030
+-00219---0020.0
