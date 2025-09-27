@@ -285,3 +285,10 @@ RX payload:
 0004 - 4 bytes
 81010000 - Powering off, napping. Goodnight!
 0185 - sum
+
+Console supposed to send these after before data download begins.
+Activated indicator is likely just be 0xE0?
+Console: Activated indicator received
+Console: SID 240 selected
+Console: App Id 10 data delivery confirmed
+Console: App Id 230-238 data delivery confirmed

@@ -57,13 +57,10 @@ class canipy_tk(tkinter.Tk):
                             print("Check if antenna is connected")
                             print("and has a clear view of the sky")
                         continue
-
-                    chnum = data[3] if self.canipy.baud_rate == 9600 else data[2]
-
                     if data[4]:
-                        print(f"Data mode set on channel {chnum}")
+                        print(f"Data mode set on channel {data[3]}")
                     else:
-                        self.canipy.channel_info(chnum)
+                        self.canipy.channel_info(data[3])
                 case 0x91:
                     if data[0] == 0x04:
                         print("No signal")
