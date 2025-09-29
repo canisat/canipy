@@ -4,6 +4,7 @@ except:
     print("Serial Library not available")
 
 import time
+from collections.abc import Callable
 
 class CaniPy:
     """
@@ -117,9 +118,9 @@ class CaniPy:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.serial_conn == None:
+        if self.serial_conn is None:
             print("No serial port in use")
-            return
+            return b""
         length = len(payload).to_bytes(2, byteorder='big')
         command = self.header + length + payload + self.tail
         self.serial_conn.write(command)
@@ -304,7 +305,7 @@ class CaniPy:
         """
         if channel not in range(256):
             print("Invalid channel value")
-            return
+            return b""
         print(f"Changing to channel {channel}{' (Data)' if data else ''}")
         if not is_sid: self.ch_num = channel
         return self.pcr_tx(bytes([0x10, 0x02 - is_sid, channel, data, prg_type, 0x01 + data]))
@@ -327,7 +328,7 @@ class CaniPy:
         """
         if channel not in range(256):
             print("Invalid channel value")
-            return
+            return b""
         if self.verbose: print(f"Check RX for info on {channel}")
         # 07 allows for checking by SID
         return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
@@ -352,7 +353,7 @@ class CaniPy:
         """
         if channel not in range(256):
             print("Invalid channel value")
-            return
+            return b""
         if self.verbose: print(f"Check RX for status of {channel}")
         return self.pcr_tx(bytes([0x11, channel, data]))
 
@@ -374,7 +375,7 @@ class CaniPy:
         """
         if channel not in range(256):
             print("Invalid channel value")
-            return
+            return b""
         if self.verbose: print(f"Check RX for extinfo on {channel}")
         # I set title size to 0x24 earlier to see if this fixes out the botched output.
         return self.pcr_tx(bytes([0x22, channel]))
@@ -409,7 +410,7 @@ class CaniPy:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if self.verbose: print("Check RX for radio firmware version")
-        return self.pcr_tx(bytes[0x70, magic])
+        return self.pcr_tx(bytes([0x70, magic]))
 
     def signal_info(self) -> bytes:
         """
@@ -573,7 +574,7 @@ class CaniPy:
         """
         Close the connection to the serial device.
         """
-        if self.serial_conn == None:
+        if self.serial_conn is None:
             print("No serial port in use")
             return
         self.serial_conn.close()

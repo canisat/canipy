@@ -28,12 +28,12 @@ class canipy_tk(tkinter.Tk):
         self.quitThread = True
         self.comThread.join(None)
         # Close com if any open
-        if self.canipy.serial_conn != None: self.canipy.close()
+        if self.canipy.serial_conn is not None: self.canipy.close()
 
     def com_thread(self):
         # Keep calling the read method for the port
         while True:
-            (return_code,data) = self.receiveXMPacket()
+            (return_code,data) = self.rx_packet()
             if self.quitThread: return
             
             # check return codes
@@ -188,11 +188,11 @@ class canipy_tk(tkinter.Tk):
         self.update()
         self.geometry(self.geometry())
         
-    def receiveXMPacket(self):
-        if self.canipy.serial_conn == None:
+    def rx_packet(self):
+        if self.canipy.serial_conn is None:
             # wait for port to be connected
             time.sleep(1)
-            return (None, None)
+            return None, None
             
         # read header 
         # first two bytes are 5AA5, like command
@@ -207,21 +207,21 @@ class canipy_tk(tkinter.Tk):
                 print("No serial port in use")
                 # wait for port to be connected
                 time.sleep(1)
-                return (None, None)
+                return None, None
             packet += chunk
             read_so_far += len(chunk)
             #print(f"{len(chunk)} {read_so_far}:")
-            if (self.quitThread): return (None,None)
+            if self.quitThread: return None, None
             
         if len(packet) != 5:
             print("Unexpected header size")
             if self.canipy.verbose: print(f"Exp 5, got {len(packet)}")
-            return (None, None)
+            return None, None
         # verify it is the header
         if packet[:2] != self.canipy.header:
             print("Header not found")
             if self.canipy.verbose: print(f"{packet[:2]}")
-            return (None, None)
+            return None, None
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
@@ -230,16 +230,16 @@ class canipy_tk(tkinter.Tk):
             print("No serial port in use")
             # wait for port to be connected
             time.sleep(1)
-            return (None, None)
+            return None, None
         if len(rest_of_packet) != size+1:
             print("Unexpected packet size")
             if self.canipy.verbose: print(f"Exp {size}, got {len(rest_of_packet)}")
-            return (None, None)
+            return None, None
         # return tuple with return code and data
         buf = packet[4:]+rest_of_packet[:-2]
         if self.canipy.verbose:
             print(f"Received: {' '.join(f'{b:02X}' for b in buf)}")  #ignore header, length, sum in printout
-        return (packet[4],rest_of_packet[:size-1])
+        return packet[4], rest_of_packet[:size-1]
     
     def change_channel(self):
         channel = int(self.chEntry.get())
@@ -259,11 +259,11 @@ class canipy_tk(tkinter.Tk):
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
-        if self.canipy.serial_conn != None: self.canipy.close()
+        if self.canipy.serial_conn is not None: self.canipy.close()
         # get com port
-        comPort = self.comEntry.get()
-        print(f"Connect to {comPort} ({baud})")
-        self.canipy.set_serial_params(port=comPort, baud=baud)
+        com_port = self.comEntry.get()
+        print(f"Connect to {com_port} ({baud})")
+        self.canipy.set_serial_params(port=com_port, baud=baud)
 
     def set_pcr_device(self):
         print("Device set to PCR")
