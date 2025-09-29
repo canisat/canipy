@@ -200,7 +200,6 @@ class canipy_tk(tkinter.Tk):
         packet = b""
         read_so_far = 0
         while read_so_far < 5:
-            chunk = b""
             try:
                 chunk = self.canipy.serial_conn.read(5-read_so_far)
             except:
