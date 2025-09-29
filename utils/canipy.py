@@ -412,8 +412,6 @@ class CaniPy:
         return self.pcr_tx(bytes[0x70, magic])
 
     def signal_info(self) -> bytes:
-        # It's known that 42 is monitor, but these two are
-        # the only ones documented. idk if theres a 41 or 40...
         """
         Sends in a command to the tuner to report "extended" signal quality info.
 
@@ -424,6 +422,8 @@ class CaniPy:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if self.verbose: print("Check RX for signal info")
+        # It's known that 42 is monitor, but these two are
+        # the only ones documented. idk if theres a 41 or 40...
         return self.pcr_tx(bytes([0x43]))
 
     # TODO: Continue implementation of RX handling.
@@ -539,10 +539,10 @@ class CaniPy:
         # There's also hint at 74 0D,
         # no idea what 0D does at the moment,
         # assuming this sequence works regardless
+
         print("Direct listening mode")
         self.pcr_tx(bytes([0x74, 0x00, 0x01]))
-        # These sleeps should be event driven instead
-        time.sleep(1)
+        time.sleep(1)  # These sleeps should be event driven instead
 
         print("Direct voltage on")
         self.pcr_tx(bytes([0x74, 0x02, 0x01, 0x01]))
