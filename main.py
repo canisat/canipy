@@ -238,7 +238,7 @@ class canipy_tk(tkinter.Tk):
         # return tuple with return code and data
         buf = packet[4:]+rest_of_packet[:-2]
         if self.canipy.verbose:
-            print(f"Received: {" ".join(f"{b:02X}" for b in buf)}")  #ignore header, length, sum in printout
+            print(f"Received: {' '.join(f'{b:02X}' for b in buf)}")  #ignore header, length, sum in printout
         return (packet[4],rest_of_packet[:size-1])
     
     def change_channel(self):

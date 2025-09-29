@@ -124,7 +124,7 @@ class CaniPy:
         command = self.header + length + payload + self.tail
         self.serial_conn.write(command)
         if self.verbose:
-            print(f"Sent: {" ".join(f"{b:02X}" for b in payload)}")
+            print(f"Sent: {' '.join(f'{b:02X}' for b in payload)}")
         return payload
 
     def rx_startup(self, payload:bytes):
