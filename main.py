@@ -33,64 +33,62 @@ class canipy_tk(tkinter.Tk):
     def com_thread(self):
         # Keep calling the read method for the port
         while True:
-            (return_code,data) = self.rx_packet()
+            rx_response = self.rx_packet()
             if self.quitThread: return
+            if not rx_response: continue
             
             # check return codes
-            # SOME ARE TEMPORARILY UNREFACTORED
-            # AS THIS'LL LATER BE MOVED TO MODULE
+            # THIS SWITCH IS TO BE REFACTORED!!
 
-            # data[0] and data[1] appear to always be
-            # status code and detail respectively
+            # rx_response[1] and rx_response[2] appear to
+            # always be status code and detail respectively
 
-            match return_code:
-                case None:
-                    continue
+            match rx_response[0]:
                 case 0x80:
-                    self.canipy.rx_startup(bytes([return_code])+data)
+                    self.canipy.rx_startup(rx_response)
                 case 0x81:
                     print("Goodnight")
                 case 0x90:
-                    if data[0] == 0x04:
+                    if rx_response[1] == 0x04:
                         print("No signal")
-                        if data[1] == 0x10:
+                        if rx_response[2] == 0x10:
                             print("Check if antenna is connected")
                             print("and has a clear view of the sky")
                         continue
-                    if self.canipy.verbose: print(f"Channel SID: {data[2]}")
-                    if data[4]:
-                        print(f"Data mode set on channel {data[3]}")
+                    if self.canipy.verbose: print(f"Channel SID: {rx_response[3]}")
+                    if rx_response[5]:
+                        print(f"Data mode set on channel {rx_response[4]}")
                     else:
-                        self.canipy.channel_info(data[3])
+                        self.canipy.channel_info(rx_response[4])
                 case 0x91:
                     # Need to be sure what 11/91 actually does...
-                    if data[0] == 0x04:
+                    if rx_response[1] == 0x04:
                         print("No signal")
                     else:
-                        print(f"Channel is {'' if data[0] == 0x01 else 'not '}present")
+                        print(f"Channel is {'' if rx_response[1] == 0x01 else 'not '}present")
                         print("You will be tuned out!")
                         print("Change channel to resume content")
                 case 0x93:
-                    print(f"Mute: { {0x00:'Off',0x01:'On'}.get(data[2],f'?({data[2]})') }")
+                    print(f"Mute: { {0x00:'Off',0x01:'On'}.get(rx_response[3],f'?({rx_response[3]})') }")
                 case 0xA5:
-                    self.canipy.rx_chan(bytes([return_code])+data)
+                    self.canipy.rx_chan(rx_response)
                 case 0xB1:
-                    if len(data) != 11:
+                    if len(rx_response) != 12:
                         print("Invalid Radio ID length")
-                        if self.canipy.verbose: print(f"Exp 11, got {len(data)}")
+                        if self.canipy.verbose: print(f"Exp 12, got {len(rx_response)}")
                         continue
                     # if good, print characters
-                    print(f"Radio ID: {data[3:11].decode('utf-8')}")
+                    print(f"Radio ID: {rx_response[4:12].decode('utf-8')}")
                 case 0xC1 | 0xC3:
-                    self.canipy.rx_sig(bytes([return_code])+data)
+                    self.canipy.rx_sig(rx_response)
                 case 0xC2:
                     print("Signal strength monitoring status updated")
                 case 0xCA:
                     # 'A' cmds are WX specific!
-                    if data[0] == 0x43:
+                    if rx_response[1] == 0x43:
                         print("WX Pong")
-                    elif data[0] == 0x64:
-                        print(f"WX Version: {data[1:].decode('utf-8').rstrip(chr(0))}")
+                    elif rx_response[1] == 0x64:
+                        print(f"WX Version: {rx_response[2:].decode('utf-8').rstrip(chr(0))}")
                 case 0xE0:
                     print("Fetched activation info")
                 case 0xE1:
@@ -106,15 +104,18 @@ class canipy_tk(tkinter.Tk):
                 case 0xFF:
                     # These usually can be recovered from
                     print("Warning! Radio reported an error")
-                    if data[0] == 0x01 and data[1] == 0x00:
+                    if rx_response[1] == 0x01 and rx_response[2] == 0x00:
                         # 01 00 (aka OK) on error, typically corresponds to antenna
                         print("Antenna not detected, check antenna")
+                    if rx_response[1] == 0x07 and rx_response[2] == 0x10:
+                        # 07 10, sending commands to a radio tuner that is not on yet
+                        print("Please power up the tuner before sending commands")
                     if self.canipy.verbose:
-                        print(f"{data[0]:02X} {data[1]:02X} {data[2:].decode('utf-8')}")
+                        print(f"{rx_response[1]:02X} {rx_response[2]:02X} {rx_response[3:].decode('utf-8')}")
                     print("Radio may still be operated")
                     print("If errors persist, check radio")
                 case _:
-                    print(f"Unknown return code {hex(return_code)}")
+                    print(f"Unknown return code {hex(rx_response[0])}")
                 
 
     def initialize(self):
@@ -188,11 +189,11 @@ class canipy_tk(tkinter.Tk):
         self.update()
         self.geometry(self.geometry())
         
-    def rx_packet(self):
+    def rx_packet(self) -> bytes:
         if self.canipy.serial_conn is None:
             # wait for port to be connected
             time.sleep(1)
-            return None, None
+            return b""
             
         # read header 
         # first two bytes are 5AA5, like command
@@ -206,21 +207,21 @@ class canipy_tk(tkinter.Tk):
                 print("No serial port in use")
                 # wait for port to be connected
                 time.sleep(1)
-                return None, None
+                return b""
             packet += chunk
             read_so_far += len(chunk)
             #print(f"{len(chunk)} {read_so_far}:")
-            if self.quitThread: return None, None
+            if self.quitThread: return b""
             
         if len(packet) != 5:
             print("Unexpected header size")
             if self.canipy.verbose: print(f"Exp 5, got {len(packet)}")
-            return None, None
+            return b""
         # verify it is the header
         if packet[:2] != self.canipy.header:
             print("Header not found")
             if self.canipy.verbose: print(f"{packet[:2]}")
-            return None, None
+            return b""
         size = packet[2]*256 + packet[3]
         # read the rest of the packet
         try:
@@ -229,16 +230,18 @@ class canipy_tk(tkinter.Tk):
             print("No serial port in use")
             # wait for port to be connected
             time.sleep(1)
-            return None, None
+            return b""
         if len(rest_of_packet) != size+1:
             print("Unexpected packet size")
             if self.canipy.verbose: print(f"Exp {size}, got {len(rest_of_packet)}")
-            return None, None
-        # return tuple with return code and data
+            return b""
+        # combine the return code and data and return
+        # ignoring header, length, sum in printout
         buf = packet[4:]+rest_of_packet[:-2]
         if self.canipy.verbose:
-            print(f"Received: {' '.join(f'{b:02X}' for b in buf)}")  #ignore header, length, sum in printout
-        return packet[4], rest_of_packet[:size-1]
+            print(f"Received: {' '.join(f'{b:02X}' for b in buf)}")
+        #return bytes([packet[4]])+rest_of_packet[:size-1]
+        return buf
     
     def change_channel(self):
         channel = int(self.chEntry.get())
