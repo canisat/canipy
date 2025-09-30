@@ -123,7 +123,7 @@ d001002a - watching (channel 42)
 RX payload:
 5aa5 - start
 0017 - 23 bytes
-d10101536972697573584d205072657669657700000000 - Channel name change on ch1, [SiriusXM Preview], not sure whats with the extra padding?? hinting at extended names???
+d10101536972697573584d205072657669657700000000 - Channel name change on ch1, [SiriusXM Preview], not sure what's with the extra padding
 0000 - sum
 
 RX payload:

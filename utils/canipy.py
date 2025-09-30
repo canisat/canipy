@@ -37,6 +37,8 @@ class CaniPy:
         ant_strength (int): Indicates whether the antenna is connected or not (Exp: -1 inactive, 0 none, 3 connected).
         ter_strength (int): Overall terrestrial signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
 
+        direct_idleframes (int): Counter for every time the Direct reports F2 hex.
+
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
     
     Lambda:
@@ -45,6 +47,11 @@ class CaniPy:
 
         sigmon_enable(): Enable signal monitoring.
         sigmon_disable(): Disable signal monitoring.
+
+        chanmon_disable(): Disable channel monitoring.
+
+        diagmon_enable(): Enable diagnostics info monitoring.
+        diagmon_disable(): Disable diagnostics info monitoring.
 
         curr_channel_info(): Prompts radio to report info for current channel.
         next_channel_info(): Prompts radio to report info for the channel ahead of the current one.
@@ -82,11 +89,18 @@ class CaniPy:
         self.ant_strength = -1
         self.ter_strength = -1
 
+        self.direct_idleframes = 0
+
         self.mute = lambda: self.set_mute(True)
         self.unmute = lambda: self.set_mute(False)
 
         self.sigmon_enable = lambda: self.signal_mon(True)
         self.sigmon_disable = lambda: self.signal_mon(False)
+
+        self.chanmon_disable = lambda: self.chan_mon(0, False, False, False, False)
+
+        self.diagmon_enable = lambda: self.diag_mon(True)
+        self.diagmon_disable = lambda: self.diag_mon(False)
 
         # These may be valid
         self.curr_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x08]))
@@ -185,12 +199,12 @@ class CaniPy:
                     print("Contact service provider to subscribe")
             else:
                 if payload[5]:
-                    print(f"{payload[6:22].decode('utf-8')}")
+                    print(payload[6:22].decode('utf-8'))
                 if payload[40]:
-                    print(f"{payload[41:57].decode('utf-8')}")
-                    print(f"{payload[57:73].decode('utf-8')}")
+                    print(payload[41:57].decode('utf-8'))
+                    print(payload[57:73].decode('utf-8'))
                 if payload[22]:
-                    print(f"{payload[24:40].decode('utf-8')}")
+                    print(payload[24:40].decode('utf-8'))
                     if self.verbose:
                         print(f"Cat ID: {payload[23]:02X}")
                 if self.verbose:
@@ -250,6 +264,156 @@ class CaniPy:
         else:
             print("Payload not of correct length")
             if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
+
+    def rx_response(self, payload:bytes):
+        """
+        Takes in a response payload to then determine and display the information stored within it.
+        The message type is checked to select how to handle it.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+        """
+        # payload[1] and payload[2] appear to
+        # always be status code and detail respectively,
+        # except if it's an event driven response.
+        match payload[0]:
+            case 0x80:
+                self.rx_startup(payload)
+            case 0x81:
+                print("Goodnight")
+            case 0x90:
+                if payload[1] == 0x04:
+                    print("No signal")
+                    if payload[2] == 0x10:
+                        print("Check if antenna is connected")
+                        print("and has a clear view of the sky")
+                    continue
+                if self.verbose: print(f"Channel SID: {payload[3]}")
+                if payload[5]:
+                    print(f"Data mode set on channel {payload[4]}")
+                else:
+                    self.channel_info(payload[4])
+            case 0x91:
+                # Need to be sure what 11/91 actually does...
+                if payload[1] == 0x04:
+                    print("No signal")
+                else:
+                    print(f"Channel is {'' if payload[1] == 0x01 else 'not '}present")
+                    print("You will be tuned out!")
+                    print("Change channel to resume content")
+            case 0x93:
+                print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
+            case 0xA5:
+                self.rx_chan(payload)
+            case 0xB1:
+                if len(payload) != 12:
+                    print("Invalid Radio ID length")
+                    if self.verbose: print(f"Exp 12, got {len(payload)}")
+                    continue
+                # if good, print characters
+                print(f"Radio ID: {payload[4:12].decode('utf-8')}")
+            case 0xC1 | 0xC3:
+                self.rx_sig(payload)
+            case 0xC2:
+                print("Signal strength monitoring status updated")
+            case 0xCA:
+                # 'A' cmds are WX specific!
+                if payload[1] == 0x43:
+                    print("WX Pong")
+                elif payload[1] == 0x64:
+                    print(f"WX Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
+            case 0xD0:
+                if payload[3]:
+                    print(f"Monitoring channel {payload[3]}")
+                else:
+                    print("Channel monitoring stopped")
+            case 0xD1:
+                if payload[2]:
+                    print("===Channel Name===")
+                    print(f"Channel {payload[1]}")
+                    # Not a good idea to assume current ch for now..
+                    # This could be tracking any channel.
+                    #self.ch_name = payload[3:19].decode('utf-8')
+                    #print(self.ch_name)
+                    print(payload[3:19].decode('utf-8'))
+                    # Trailing bytes, not sure what they're for.
+                    # Treat as debug info for now.
+                    if self.verbose:
+                        print(' '.join(f'{b:02X}' for b in payload[19:]))
+                    print("==================")
+            case 0xD2:
+                if payload[3]:
+                    print("===Ch. Category===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[4:].decode('utf-8'))
+                    if self.verbose:
+                        print(f"Cat ID: {payload[2]:02X}")
+                    print("==================")
+            case 0xD3:
+                if payload[2]:
+                    print("===Program Info===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:19].decode('utf-8'))
+                    print(payload[19:].decode('utf-8'))
+                    print("==================")
+            case 0xD4:
+                if payload[2]:
+                     print("===Artist Info.===")
+                     print(f"Channel {payload[1]}")
+                     print(payload[3:].decode('utf-8'))
+                     print("==================")
+            case 0xD5:
+                if payload[2]:
+                     print("===Title  Info.===")
+                     print(f"Channel {payload[1]}")
+                     print(payload[3:].decode('utf-8'))
+                     print("==================")
+            case 0xD6:
+                if payload[3] or payload[4]:
+                    print("===Program Info===")
+                    print(f"Channel {payload[1]}")
+                    if self:verbose:
+                        print(f"Time Format: {payload[2]:02X}")
+                    if payload[3]:
+                        print(f"Started {round(((packet[5] << 8) | packet[6])/60)}m ago")
+                    if payload[4]:
+                        print(f"Ends in {round(((packet[7] << 8) | packet[8])/60)}m")
+                    print("==================")
+            case 0xE0:
+                print("Fetched activation info")
+            case 0xE1:
+                print("Fetched deactivation info")
+            case 0xE4 | 0xF4:
+                # Acknowledgement of Direct responses.
+                # nsayer ref listens to E4 though??
+                # differs by 4th opcode, cover both until better understood
+                print("Direct command Acknowledged")
+            case 0xF0:
+                print("Diagnostic info monitoring status updated")
+            case 0xF1:
+                if self.verbose:
+                    print("=== DIAGNOSTIC ===")
+                    print(payload[2:].decode('utf-8'))
+                    print("==================")
+            case 0xF2:
+                # Direct idle frames.
+                # Counted, but generally just ignored.
+                self.direct_idleframes += 1
+            case 0xFF:
+                # These usually can be recovered from
+                print("Warning! Radio reported an error")
+                if payload[1] == 0x01 and payload[2] == 0x00:
+                    # 01 00 (aka OK) on error, typically corresponds to antenna
+                    print("Antenna not detected, check antenna")
+                if payload[1] == 0x07 and payload[2] == 0x10:
+                    # 07 10, sending commands to a radio tuner that is not on yet
+                    print("Please power up the tuner before sending commands")
+                if self.verbose:
+                    print(f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}")
+                print("Radio may still be operated")
+                print("If errors persist, check radio")
+            case _:
+                print(f"Unknown return code {hex(payload[0])}")
 
     def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
         """
@@ -433,22 +597,29 @@ class CaniPy:
         # the only ones documented. idk if theres a 41 or 40...
         return self.pcr_tx(bytes([0x43]))
 
-    # TODO: Continue implementation of RX handling.
-    # main.py implements event-driven RX using a
-    # discrete thread, reading size from header
-    # to distinguish valid command.
-    #
-    # Main code checks if it received at least 5 bytes:
-    # Header, length, & at least 1 byte content.
-    #
-    # This thread code is to be moved as a util script.
+    def chan_mon(self, channel:int, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
+        """
+        Sends in a command to the tuner to monitor and periodically report information for the given channel number.
 
-    # Kept here for reference, handling will need to be
-    # implemented first. Also gotta figure out how to
-    # then stop monitoring. I believe this is just setting ch0?
-    # def chan_mon(self, channel, serv_mon:bool=False, prgtype_mon:bool=False, inf_mon:bool=False, ext_mon:bool=False) -> bytes:
-    #     print("Monitoring channel")
-    #     return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
+        Example:
+            To monitor all channel 1 info, the radio will be provided with "50 01 01 01 01 01".
+            Turn on monitoring for channel 1, monitor service ID, prog type, info, and extended.
+
+        Args:
+            channel (int): The channel value.
+            serv_mon (bool, optional): Monitor changes to the channel's service ID. Default is true.
+            prgtype_mon (bool, optional): Monitor changes to the channel's program type. Default is true.
+            inf_mon (bool, optional): Monitor changes in the program info for the channel. Default is true.
+            ext_mon (bool, optional): Monitor changes in the extended program info for the channel. Default is true.
+
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if channel not in range(256):
+            print("Invalid channel value")
+            return b""
+        if self.verbose: print(f"Asking radio to monitor channel {channel}")
+        return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
     def signal_mon(self, toggle:bool) -> bytes:
         """
