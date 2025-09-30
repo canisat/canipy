@@ -34,6 +34,7 @@ class CaniPy:
         cat_id (int): The ID number corresponding to the current channel's assigned category.
 
         sig_strength (int): Overall satellite signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
+        ant_strength (int): Indicates whether the antenna is connected or not (Exp: -1 inactive, 0 none, 3 connected).
         ter_strength (int): Overall terrestrial signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
 
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
@@ -78,6 +79,7 @@ class CaniPy:
         self.cat_id = 0
 
         self.sig_strength = -1
+        self.ant_strength = -1
         self.ter_strength = -1
 
         self.mute = lambda: self.set_mute(True)
@@ -213,6 +215,7 @@ class CaniPy:
                 payload = payload[:1] + bytes([1,0]) + payload[1:] + bytes(2)
             # Store signal info
             self.sig_strength = payload[3]
+            self.ant_strength = payload[4]
             self.ter_strength = payload[5]
             siglabel = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
             antlabel = {0x00:"Disconnected",0x03:"Connected"}
@@ -306,8 +309,11 @@ class CaniPy:
         if channel not in range(256):
             print("Invalid channel value")
             return b""
-        print(f"Changing to channel {channel}{' (Data)' if data else ''}")
-        if not is_sid: self.ch_num = channel
+        print(f"Changing to {'channel' if not is_sid else 'ID'} {channel}{' (Data)' if data else ''}")
+        if not is_sid:
+            self.ch_num = channel
+        else:
+            self.ch_sid = channel
         return self.pcr_tx(bytes([0x10, 0x02 - is_sid, channel, data, prg_type, 0x01 + data]))
 
     def channel_info(self, channel:int, is_sid:bool=False, prg_type:int=0) -> bytes:
