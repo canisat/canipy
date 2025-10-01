@@ -287,7 +287,7 @@ class CaniPy:
                     if payload[2] == 0x10:
                         print("Check if antenna is connected")
                         print("and has a clear view of the sky")
-                    continue
+                    return
                 if self.verbose: print(f"Channel SID: {payload[3]}")
                 if payload[5]:
                     print(f"Data mode set on channel {payload[4]}")
@@ -309,7 +309,7 @@ class CaniPy:
                 if len(payload) != 12:
                     print("Invalid Radio ID length")
                     if self.verbose: print(f"Exp 12, got {len(payload)}")
-                    continue
+                    return
                 # if good, print characters
                 print(f"Radio ID: {payload[4:12].decode('utf-8')}")
             case 0xC1 | 0xC3:
@@ -372,12 +372,12 @@ class CaniPy:
                 if payload[3] or payload[4]:
                     print("===Program Info===")
                     print(f"Channel {payload[1]}")
-                    if self:verbose:
+                    if self.verbose:
                         print(f"Time Format: {payload[2]:02X}")
                     if payload[3]:
-                        print(f"Started {round(((packet[5] << 8) | packet[6])/60)}m ago")
+                        print(f"Started {round(((payload[5] << 8) | payload[6])/60)}m ago")
                     if payload[4]:
-                        print(f"Ends in {round(((packet[7] << 8) | packet[8])/60)}m")
+                        print(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
                     print("==================")
             case 0xE0:
                 print("Fetched activation info")
