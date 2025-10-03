@@ -18,18 +18,18 @@ e0 - Fetched activation info
 TX payload:
 5aa5 - Start
 0002 - 2 bytes
-7005 - Fetch firmware versions??
+7005 - Fetch firmware versions
 eded - end
 RX payload:
 5aa5 - start
 0013 - 19 bytes
-e3010085140802200274040520022510292002 - 1.3.3??, 2.0??, not sure what this versioning is for... (2 Aug 2002), CMB v1.1.6 (5 Apr 2002), RX v3.7 (29 Oct 2002)
+e3010085140802200274040520022510292002 - SDEC, 1.3.3 or 2.0?? will need to pcap PCR again... (2 Aug 2002), CMB v1.1.6 (5 Apr 2002), RX v3.7 (29 Oct 2002)
 0002 - sum
 
 TX payload:
 5aa5 - Start
 0002 - 2 byte
-4201 - monitor signal data, event driven (same format as C3, but will not report 2 bytes right after C3 AKA status bytes like 0100 OK, nor last 2 bytes i.e. sat 1+2 CN)
+4201 - monitor signal data, event driven (same format as C3, but will not report both command status or sat CN)
 eded - end
 RX payload:
 5aa5 - start

@@ -102,14 +102,14 @@ class CaniPy:
         self.diagmon_enable = lambda: self.diag_mon(True)
         self.diagmon_disable = lambda: self.diag_mon(False)
 
-        # These may be valid? if not, have 9 and 10
+        # TODO: These may be valid? if not, have 9 and 10
         # just increment in func & figure out what
         # to do with these here lambdas
         self.curr_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x08]))
         self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09]))
         self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x10]))
 
-        # I think just sending 22 would imply current channel?
+        # TODO: I think just sending 22 would imply current channel?
         self.curr_audio_info = lambda: self.pcr_tx(bytes([0x22]))
 
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
@@ -184,7 +184,7 @@ class CaniPy:
         """
         if len(payload) == 77:
             # Assign values first, before printout
-            # Might separate this and printout later
+            # TODO: Might separate this and the printout later?
             self.ch_num = payload[3]
             self.ch_sid = payload[4]
             self.ch_name = payload[6:22].decode('utf-8')
@@ -240,14 +240,17 @@ class CaniPy:
             print(f"Ant: {antlabel.get(payload[4],f'?({payload[4]})')}")
             print(f"Ter: {siglabel.get(payload[5],f'?({payload[5]})')}")
             if self.verbose:
+                # Additional info for rock & roll signal, plus terrestrial
                 print("===QPSK/MCM===")
-                print(f"Sat1: {payload[6]}")
-                print(f"Sat2: {payload[7]}")
-                print(f"Terr: {payload[8]}")
+                # Demod lock
+                print(f"Sat1: {'Locked' if payload[6] else 'Lost'}")
+                print(f"Sat2: {'Locked' if payload[7] else 'Lost'}")
+                print(f"Terr: {'Locked' if payload[8] else 'Lost'}")
                 print("=====TDM!=====")
-                print(f"Sat1: {payload[9]}")
-                print(f"Sat2: {payload[10]}")
-                print(f"Terr: {payload[11]}")
+                # TDM lock
+                print(f"Sat1: {'Locked' if payload[9] else 'Lost'}")
+                print(f"Sat2: {'Locked' if payload[10] else 'Lost'}")
+                print(f"Terr: {'Locked' if payload[11] else 'Lost'}")
                 print("=====BER!=====")
                 # Bit error rate is two bytes big,
                 # 68ths, not exceeding 100%
@@ -266,6 +269,29 @@ class CaniPy:
         else:
             print("Payload not of correct length")
             if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
+
+    def rx_firminf(self, payload:bytes):
+        """
+        Takes in a firmware info response (E3 hex) to print out relevant information.
+        At this time, verification of the command is by checking if it contains 19 bytes.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+        """
+        if len(payload) == 19:
+            print("===FirmwareInfo===")
+            # TODO: Versioning will need to be examined again.
+            # I don't have the PCR with me at the moment...
+            # For now, just print whatever
+            print(f"SDEC Version: {'.'.join(list(str(payload[3])))}, {'.'.join(list(str(payload[4])))}")
+            print(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
+            print(f"CMB Version: {'.'.join(list(str(payload[9])))}")
+            print(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
+            print(f"RX Version: {'.'.join(list(str(payload[14])))}")
+            print(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
+        else:
+            print("Payload not of correct length")
+            if self.verbose: print(f"Exp 19, got {len(payload)}")
 
     def rx_response(self, payload:bytes):
         """
@@ -330,12 +356,11 @@ class CaniPy:
                     print("Channel monitoring stopped")
             case 0xD1:
                 if payload[2]:
+                    # Store only if channel numbers match!
+                    if payload[1] == self.ch_num:
+                        self.ch_name = payload[3:19].decode('utf-8')
                     print("===Channel Name===")
                     print(f"Channel {payload[1]}")
-                    # Not a good idea to assume current ch for now..
-                    # This could be tracking any channel.
-                    #self.ch_name = payload[3:19].decode('utf-8')
-                    #print(self.ch_name)
                     print(payload[3:19].decode('utf-8'))
                     # Trailing bytes, not sure what they're for.
                     # Treat as debug info for now.
@@ -344,6 +369,9 @@ class CaniPy:
                     print("==================")
             case 0xD2:
                 if payload[3]:
+                    if payload[1] == self.ch_num:
+                        self.cat_id = payload[2]
+                        self.cat_lbl = payload[4:].decode('utf-8')
                     print("===Ch. Category===")
                     print(f"Channel {payload[1]}")
                     print(payload[4:].decode('utf-8'))
@@ -352,6 +380,9 @@ class CaniPy:
                     print("==================")
             case 0xD3:
                 if payload[2]:
+                    if payload[1] == self.ch_num:
+                        self.artist_name = payload[3:19].decode('utf-8')
+                        self.title_name = payload[19:].decode('utf-8')
                     print("===Program Info===")
                     print(f"Channel {payload[1]}")
                     print(payload[3:19].decode('utf-8'))
@@ -384,15 +415,18 @@ class CaniPy:
                 print("Fetched activation info")
             case 0xE1:
                 print("Fetched deactivation info")
+            case 0xE3:
+                self.rx_firminf(payload)
             case 0xE4 | 0xF4:
                 # Acknowledgement of Direct responses.
-                # nsayer ref listens to E4 though??
-                # differs by 4th opcode, cover both until better understood
+                # nsayer ref listens to E4 though?? differs by 4th opcode
+                # TODO: cover both until better understood
                 print("Direct command Acknowledged")
             case 0xF0:
                 print("Diagnostic info monitoring status updated")
             case 0xF1:
                 if self.verbose:
+                    # TODO: examine how diag is laid out, appears to be 8 or 9 fields
                     print("=== DIAGNOSTIC ===")
                     print(payload[2:].decode('utf-8'))
                     print("==================")
