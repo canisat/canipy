@@ -109,7 +109,7 @@ class CaniPy:
         self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09]))
         self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x10]))
 
-        # I think just sending 22 would imply current channel
+        # I think just sending 22 would imply current channel?
         self.curr_audio_info = lambda: self.pcr_tx(bytes([0x22]))
 
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
@@ -303,7 +303,7 @@ class CaniPy:
             case 0x93:
                 print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
             case 0xA2:
-                print()  # coming soon
+                print()  # TODO: extended program info parsing, coming soon
             case 0xA5:
                 self.rx_chan(payload)
             case 0xB1:
@@ -504,7 +504,7 @@ class CaniPy:
         # 07 allows for checking by SID
         return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 
-    def channel_cancel(self, channel:int, data:bool=False) -> bytes:
+    def channel_cancel(self, channel:int=0, data:bool=False) -> bytes:
         """
         Sends in a command to the tuner to stop listening to the current channel, like picking up the needle off a record.
         The command then supplies a channel for the radio to "pre-load" and quickly tune after client processing.
@@ -519,7 +519,7 @@ class CaniPy:
             Stop and prepare for channel 1, no data.
 
         Args:
-            channel (int): The channel value to preload.
+            channel (int, optional): The channel value to preload. Default to 0 as in don't preload. Hopefully that'll work fine...
             data (bool, optional): Indicate to treat the preloaded channel as a data feed. Default to False.
 
         Returns:
