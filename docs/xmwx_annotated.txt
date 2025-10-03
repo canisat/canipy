@@ -58,12 +58,12 @@ c30100000001000000000000154015401a90000000007f7f0d0d - No signal, antenna not co
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-110100 - Channel 1 exists? Soft check of some kind? Prep work? listening? No idea...
+110100 - Cancel whatever you're currently tuned to, preload Channel 1
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-9101000100 - ch 1
+9101000100 - cancelled, ready for ch 1
 0197 - Sum
 
 TX payload:
@@ -80,18 +80,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11f001 - Channel 240 (XMWX) exists? In data mode?
+11f001 - Cancel, preload 240 (XMWX) in data mode
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100f001 - ch 240, via data mode
+910100f001 - cancelled, ready for 240 as data
 0287 - Sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001f0010002 - Tune SID 240, DATA MODE (XMWX?), route to 2 (data port?)
+1001f0010002 - Tune SID 240, DATA MODE (XMWX), route to data port (2)
 eded - End
 RX payload:
 5aa5 - Start
@@ -102,18 +102,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e600 - App 230 exists? I think this and all following channels are XMWX "apps"?
+11e600 - Cancel, preload App 230
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e600 - It does, App 230
+910100e600 - cancelled, ready for App 230
 027c -  Sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e6000001 - Tune App 230, method 1
+1001e6000001 - Tune App (SID) 230
 eded - End
 RX payload:
 5aa5 - Start
@@ -124,18 +124,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e700 - App 231 exists?
+11e700 - Cancel, preload App 231
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e700 - App 231
+910100e700 - cancelled, ready for App 231
 027d - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e7000001 - tune App 231, method 1
+1001e7000001 - tune App 231
 eded - end
 RX payload:
 5aa5 - Start
@@ -146,18 +146,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11e800 - App 232 exists?
+11e800 - Cancel, preload App 232
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100e800 - App 232
+910100e800 - cancelled, ready for App 232
 027e - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001e8000001 - tune App 232, method 1
+1001e8000001 - tune App 232
 eded - End
 RX payload:
 5aa5 - Start
@@ -168,18 +168,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ea00 - App 234 exists?
+11ea00 - Cancel, preload App 234
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ea00 - App 234
+910100ea00 - cancelled, ready for App 234
 0280 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ea000001 - tune App 234, method 1
+1001ea000001 - tune App 234
 eded - end
 RX payload:
 5aa5 - Start
@@ -190,18 +190,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11eb00 - App 235 exists?
+11eb00 - Cancel, preload App 235
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100eb00 - App 235
+910100eb00 - cancelled, ready for App 235
 0281 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001eb000001 - tune App 235, method 1
+1001eb000001 - tune App 235
 eded - End
 RX payload:
 5aa5 - Start
@@ -212,18 +212,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ec00 - App 236 exists?
+11ec00 - Cancel, preload App 236
 eded - End
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ec00 - App 236
+910100ec00 - cancelled, ready for App 236
 0282 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ec000001 - tune App 236, method 1
+1001ec000001 - tune App 236
 eded - End
 RX payload:
 5aa5 - Start
@@ -234,18 +234,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ed00 - App 237 exists?
+11ed00 - Cancel, preload App 237
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ed00 - App 237
+910100ed00 - cancelled, ready for App 237
 0283 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ed000001 - tune App 237, method 1
+1001ed000001 - tune App 237
 eded - end
 RX payload:
 5aa5 - Start
@@ -256,18 +256,18 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11ee00 - App 238 exists?
+11ee00 - Cancel, preload App 238
 eded - end
 RX payload:
 5aa5 - Start
 0005 - 5 bytes
-910100ee00 - App 238
+910100ee00 - cancelled, ready for App 238
 0284 - sum
 
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001ee000001 - tune App 238, method 1
+1001ee000001 - tune App 238
 eded - end
 RX payload:
 5aa5 - Start

@@ -102,7 +102,9 @@ class CaniPy:
         self.diagmon_enable = lambda: self.diag_mon(True)
         self.diagmon_disable = lambda: self.diag_mon(False)
 
-        # These may be valid
+        # These may be valid? if not, have 9 and 10
+        # just increment in func & figure out what
+        # to do with these here lambdas
         self.curr_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x08]))
         self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09]))
         self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x10]))
@@ -290,19 +292,18 @@ class CaniPy:
                     return
                 if self.verbose: print(f"Channel SID: {payload[3]}")
                 if payload[5]:
-                    print(f"Data mode set on channel {payload[4]}")
+                    print(f"Data mode set on app {payload[3]} (Ch{payload[4]})")
                 else:
                     self.channel_info(payload[4])
             case 0x91:
-                # Need to be sure what 11/91 actually does...
-                if payload[1] == 0x04:
-                    print("No signal")
-                else:
-                    print(f"Channel is {'' if payload[1] == 0x01 else 'not '}present")
-                    print("You will be tuned out!")
-                    print("Change channel to resume content")
+                print("Current channel tune cancelled! You will be tuned out!")
+                if payload[3]:
+                    print(f"Ready for channel {payload[3]}{' (Data)' if payload[4] else ''}")
+                print("Change channel to resume content")
             case 0x93:
                 print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
+            case 0xA2:
+                print()  # coming soon
             case 0xA5:
                 self.rx_chan(payload)
             case 0xB1:
@@ -503,20 +504,23 @@ class CaniPy:
         # 07 allows for checking by SID
         return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 
-    def channel_status(self, channel:int, data:bool=False) -> bytes:
+    def channel_cancel(self, channel:int, data:bool=False) -> bytes:
         """
-        Sends in a command to the tuner to I believe check if it exists? Likely with proving the service ID.
-        Additional byte is probably to indicate to check if the channel is available in data mode?
-        Running this will tune out of the current channel. User must tune to another channel to resume content.
+        Sends in a command to the tuner to stop listening to the current channel, like picking up the needle off a record.
+        The command then supplies a channel for the radio to "pre-load" and quickly tune after client processing.
+        Additional byte is to indicate if the channel is for "pre-loading" in data mode.
+        Running this will tune out of the current channel. User must tune once again to resume content.
+        Channel number could just be the assigned number or service ID? No idea.
+        This is mainly used for data channels to stop/finish data download before the channel loops the data.
         This command was not community documented, but is utilized by official implementations.
 
         Example:
-            To check the status of channel ID 1, the radio will be provided with "11 01 00".
-            Check channel 1, no data.
+            To stop listening and prepare the radio for channel 1, the radio will be provided with "11 01 00".
+            Stop and prepare for channel 1, no data.
 
         Args:
-            channel (int): The channel value.
-            data (bool, optional): Indicate to treat channel as a data feed. Default to False.
+            channel (int): The channel value to preload.
+            data (bool, optional): Indicate to treat the preloaded channel as a data feed. Default to False.
 
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
@@ -524,7 +528,7 @@ class CaniPy:
         if channel not in range(256):
             print("Invalid channel value")
             return b""
-        if self.verbose: print(f"Check RX for status of {channel}")
+        if self.verbose: print(f"Cancelling and preparing for channel {channel}")
         return self.pcr_tx(bytes([0x11, channel, data]))
 
     def audio_info(self, channel:int) -> bytes:

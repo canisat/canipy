@@ -89,8 +89,8 @@ class canipy_tk(tkinter.Tk):
         self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Ch Info",command=self.get_extended_channel_info)       
         self.extChInfoButton.grid(column=5,row=1)
 
-        self.chStatusButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.sigmon_enable)       
-        self.chStatusButton.grid(column=6,row=1)
+        self.sigMonButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.sigmon_enable)       
+        self.sigMonButton.grid(column=6,row=1)
 
         self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
         self.UnmuteButton.grid(column=7,row=1)
