@@ -865,6 +865,7 @@ def debug():
     print("5. Fetch radio ID")
     print("6. Fetch signal info")
     print("7. Enter manual command")
+    print("8. Toggle verbose output")
     print("0. Exit")
 
     while True:
@@ -889,6 +890,10 @@ def debug():
                 continue
             case "7":
                 pcr_control.crash_override()
+                continue
+            case "8":
+                pcr_control.verbose = not pcr_control.verbose
+                print(f"Verbose output set to {pcr_control.verbose}")
                 continue
             case "0":
                 break
