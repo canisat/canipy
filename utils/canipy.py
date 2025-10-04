@@ -440,13 +440,19 @@ class CaniPy:
                 if payload[1] == 0x01 and payload[2] == 0x00:
                     # 01 00 (aka OK) on error, typically corresponds to antenna
                     print("Antenna not detected, check antenna")
+                if payload[1] == 0x02:
+                    print("Radio unresponsive!")
+                    if payload[2] == 0x04:
+                        print("Unable to change channels")
+                    elif payload[2] == 0x06:
+                        print("Unable to change radio's power state")
                 if payload[1] == 0x07 and payload[2] == 0x10:
                     # 07 10, sending commands to a radio tuner that is not on yet
                     print("Please power up the tuner before sending commands")
                 if self.verbose:
                     print(f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}")
                 print("Radio may still be operated")
-                print("If errors persist, check radio")
+                print("If errors persist, check or power-cycle the radio")
             case _:
                 print(f"Unknown return code {hex(payload[0])}")
 
