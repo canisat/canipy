@@ -37,6 +37,8 @@ class CaniPy:
         ant_strength (int): Indicates whether the antenna is connected or not (Exp: -1 inactive, 0 none, 3 connected).
         ter_strength (int): Overall terrestrial signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
 
+        self.radio_id (str): The ID of the tuner hardware assigned by the service provider.
+
         direct_idleframes (int): Counter for every time the Direct reports F2 hex.
 
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
@@ -57,7 +59,7 @@ class CaniPy:
         next_channel_info(): Prompts radio to report info for the channel ahead of the current one.
         prev_channel_info(): Prompts radio to report info for the channel behind the current one.
 
-        curr_audio_info(): Prompts radio to report extended program info for current channel.
+        curr_ext_info(): Prompts radio to report extended program info for current channel.
 
         set_port(): Set up a new connection, only changing the serial device path.
         set_baud(): Set up a new connection, only changing the baud rate.
@@ -89,6 +91,8 @@ class CaniPy:
         self.ant_strength = -1
         self.ter_strength = -1
 
+        self.radio_id = ""
+
         self.direct_idleframes = 0
 
         self.mute = lambda: self.set_mute(True)
@@ -110,7 +114,7 @@ class CaniPy:
         self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x10]))
 
         # TODO: I think just sending 22 would imply current channel?
-        self.curr_audio_info = lambda: self.pcr_tx(bytes([0x22]))
+        self.curr_ext_info = lambda: self.pcr_tx(bytes([0x22]))
 
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
@@ -155,6 +159,7 @@ class CaniPy:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 27:
+            self.radio_id = payload[19:27].decode('utf-8')
             print("===Radio Info===")
             print(f"Activated: {'No' if payload[1] == 0x3 else 'Yes'}")
             # No idea what payload[3] might be yet, always 0 in pcaps.
@@ -162,16 +167,15 @@ class CaniPy:
             if self.verbose:
                 print(f"RX Version: {'.'.join(list(str(payload[4])))}")
                 print(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-                # In this project, data will be tackled (Eventually).
                 print(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
                 print(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
                 print(f"CMB Version: {'.'.join(list(str(payload[13])))}")
                 print(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
             print(f"Radio ID: {payload[19:27].decode('utf-8')}")
             print("================")
-        else:
-            print("Payload not of correct length")
-            if self.verbose: print(f"Exp 27, got {len(payload)}")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 27, got {len(payload)}")
 
     def rx_chan(self, payload:bytes):
         """
@@ -183,38 +187,81 @@ class CaniPy:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 77:
-            # Assign values first, before printout
-            # TODO: Might separate this and the printout later?
-            self.ch_num = payload[3]
-            self.ch_sid = payload[4]
-            self.ch_name = payload[6:22].decode('utf-8')
-            self.artist_name = payload[41:57].decode('utf-8')
-            self.title_name = payload[57:73].decode('utf-8')
-            self.cat_name = payload[24:40].decode('utf-8')
-            self.cat_id = payload[23]
-
+            # Assign values if it's the current channel
+            is_currchan = False
+            if payload[3] == self.ch_num or payload[4] == self.ch_sid:
+                # If number or SID match, we're in this channel.
+                # Store values again to ensure they're up to speed.
+                is_currchan = True
+                self.ch_num = payload[3]
+                self.ch_sid = payload[4]
             print("===Channel Info===")
             print(f"Channel {payload[3]}")
             if payload[1] == 0x03:
                 print("Not subscribed")
                 if payload[2] == 0x09:
                     print("Contact service provider to subscribe")
-            else:
-                if payload[5]:
-                    print(payload[6:22].decode('utf-8'))
-                if payload[40]:
-                    print(payload[41:57].decode('utf-8'))
-                    print(payload[57:73].decode('utf-8'))
-                if payload[22]:
-                    print(payload[24:40].decode('utf-8'))
-                    if self.verbose:
-                        print(f"Cat ID: {payload[23]:02X}")
-                if self.verbose:
-                    print(f"Service ID: {payload[4]:02X}")
+                print("==================")
+                return
+            if payload[5]:
+                if is_currchan:
+                    self.ch_name = payload[6:22].decode('utf-8')
+                print(payload[6:22].decode('utf-8'))
+            if payload[40]:
+                if is_currchan:
+                    self.artist_name = payload[41:57].decode('utf-8')
+                    self.title_name = payload[57:73].decode('utf-8')
+                print(payload[41:57].decode('utf-8'))
+                print(payload[57:73].decode('utf-8'))
+            if payload[22]:
+                if is_currchan:
+                    self.cat_name = payload[24:40].decode('utf-8')
+                    self.cat_id = payload[23]
+                print(payload[24:40].decode('utf-8'))
+                if self.verbose: print(f"Cat ID: {payload[23]:02X}")
+            if self.verbose: print(f"Service ID: {payload[4]:02X}")
             print("==================")
-        else:
-            print("Payload not of correct length")
-            if self.verbose: print(f"Exp 77, got {len(payload)}")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 77, got {len(payload)}")
+
+    def rx_extinfo(self, payload:bytes):
+        """
+        Takes in a extended label response (A2 hex) to print out relevant information.
+        Relevant program information is stored in respective attributes before printout.
+        At this time, verification of the command is by checking if it contains 78 bytes
+        as community implementations read extended length assuming 0x24 label size was
+        passed during power-on. Given how setting it to another length before caused
+        strange results, I think it was deliberately set to 0x24 to work around a glitch
+        with the tuner firmware. Function will only report 32 of the 36 bytes per line,
+        following what other community projects have done.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+        """
+        if len(payload) == 78:
+            print("===Title  Info.===")
+            print(f"Channel {payload[3]}")
+            if payload[1] == 0x03:
+                print("Not subscribed")
+                if payload[2] == 0x09:
+                    print("Contact service provider to subscribe")
+                print("==================")
+                return
+            if payload[4]:
+                if payload[3] == self.ch_num:
+                    self.artist_name = payload[5:37].decode('utf-8').rstrip(chr(0))
+                print(payload[5:37].decode('utf-8').rstrip(chr(0)))
+                if self.verbose: print(' '.join(f'{b:02X}' for b in payload[37:41]))
+            if payload[41]:
+                if payload[3] == self.ch_num:
+                    self.title_name = payload[57:73].decode('utf-8').rstrip(chr(0))
+                print(payload[42:74].decode('utf-8').rstrip(chr(0)))
+                if self.verbose: print(' '.join(f'{b:02X}' for b in payload[74:]))
+            print("==================")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 78, got {len(payload)}")
 
     def rx_sig(self, payload:bytes):
         """
@@ -226,7 +273,7 @@ class CaniPy:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) in (22, 26):
-            if len(payload) == 22:
+            if payload[0] == 0xC1:
                 # If C1 event-driven poll, pad it to conform
                 payload = payload[:1] + bytes([1,0]) + payload[1:] + bytes(2)
             # Store signal info
@@ -310,33 +357,41 @@ class CaniPy:
             case 0x81:
                 print("Goodnight")
             case 0x90:
+                if payload[1] == 0x03:
+                    print("Not subscribed")
+                    if payload[2] == 0x09:
+                        print("Contact service provider to subscribe")
+                    elif payload[2] == 0x0a:
+                        print("Not available for current subscription")
+                    return
                 if payload[1] == 0x04:
                     print("No signal")
                     if payload[2] == 0x10:
                         print("Check if antenna is connected")
                         print("and has a clear view of the sky")
                     return
-                if self.verbose: print(f"Channel SID: {payload[3]}")
+                self.ch_sid = payload[3]
+                self.ch_num = payload[4]
+                if self.verbose: print(f"SID {payload[3]}, Ch. {payload[4]}")
                 # Kind of an oddball hack to identify if tuning to data.
                 # This byte is true if tuning by SID (10 01) regardless.
                 # Assume SID tune corresponds to data anyway as it's
                 # VERY rare having to change channel based on SID.
                 if payload[5]:
-                    if payload[1] == 0x03:
-                        print("Not subscribed")
-                        if payload[2] == 0x09:
-                            print("Contact service provider to subscribe")
-                        elif payload[2] == 0x0a:
-                            print("Data track not available for current subscription")
-                        return
                     # OK (01 00) used in Main WX SID 240
-                    # 02 03 indicates entitled product
                     print(f"Data mode set on app {payload[3]} (Ch. {payload[4]})")
+                    # 02 03 indicates entitled product
                     if payload[1] == 0x02 and payload[2] == 0x03:
                         print("Product is available with current subscription")
                 else:
                     self.channel_info(payload[4])
             case 0x91:
+                # Hacky way to distinguish, but if it's data, it's usually SID
+                # Or maybe 11/91 is exclusively sid, im not sure...
+                if payload[4]:
+                    self.ch_sid = payload[3]
+                else:
+                    self.ch_num = payload[3]
                 print("Current channel tune cancelled! You will be tuned out!")
                 if payload[3]:
                     print(f"Ready for channel {payload[3]}{' (Data)' if payload[4] else ''}")
@@ -344,7 +399,7 @@ class CaniPy:
             case 0x93:
                 print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
             case 0xA2:
-                print()  # TODO: extended program info parsing, coming soon
+                self.rx_extinfo(payload)
             case 0xA5:
                 self.rx_chan(payload)
             case 0xB1:
@@ -353,6 +408,7 @@ class CaniPy:
                     if self.verbose: print(f"Exp 12, got {len(payload)}")
                     return
                 # if good, print characters
+                self.radio_id = payload[4:12].decode('utf-8')
                 print(f"Radio ID: {payload[4:12].decode('utf-8')}")
             case 0xC1 | 0xC3:
                 self.rx_sig(payload)
@@ -383,7 +439,8 @@ class CaniPy:
                     print("===Channel Name===")
                     print(f"Channel {payload[1]}")
                     print(payload[3:19].decode('utf-8'))
-                    # Trailing bytes, not sure what they're for.
+                    # Trailing bytes, this could be length side effect?
+                    # Like with whats happening with extended info?
                     # Treat as debug info for now.
                     if self.verbose:
                         print(' '.join(f'{b:02X}' for b in payload[19:]))
@@ -411,19 +468,23 @@ class CaniPy:
                     print("==================")
             case 0xD4:
                 if payload[2]:
-                     print("===Artist Info.===")
-                     print(f"Channel {payload[1]}")
-                     print(payload[3:].decode('utf-8'))
-                     print("==================")
+                    if payload[1] == self.ch_num:
+                        self.artist_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                    print("===Artist Info.===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    print("==================")
             case 0xD5:
                 if payload[2]:
-                     print("===Title  Info.===")
-                     print(f"Channel {payload[1]}")
-                     print(payload[3:].decode('utf-8'))
-                     print("==================")
+                    if payload[1] == self.ch_num:
+                        self.title_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                    print("===Title  Info.===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    print("==================")
             case 0xD6:
                 if payload[3] or payload[4]:
-                    print("===Program Info===")
+                    print("===Program Len.===")
                     print(f"Channel {payload[1]}")
                     if self.verbose:
                         print(f"Time Format: {payload[2]:02X}")
@@ -466,12 +527,12 @@ class CaniPy:
                 # Counted, but generally just ignored.
                 self.direct_idleframes += 1
             case 0xFF:
-                # These usually can be recovered from
                 print("Warning! Radio reported an error")
                 if payload[1] == 0x01 and payload[2] == 0x00:
                     # 01 00 (aka OK) on error, typically corresponds to antenna
                     print("Antenna not detected, check antenna")
                 if payload[1] == 0x02:
+                    # 02 means radio is not repsonding
                     print("Radio unresponsive!")
                     if payload[2] == 0x04:
                         print("Unable to change channels")
@@ -490,6 +551,8 @@ class CaniPy:
     def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
         """
         Sends in a command to power on the radio tuner.
+        Defaults are 16 characters long for channel and category labels, and 36 for title label
+        mainly due to a possible oversight with the radio firmware when fetching extended labels.
 
         Example:
             The radio will be provided with "00 10 10 24 01".
@@ -581,7 +644,7 @@ class CaniPy:
         The command then supplies a channel for the radio to "pre-load" and quickly tune after client processing.
         Additional byte is to indicate if the channel is for "pre-loading" in data mode.
         Running this will tune out of the current channel. User must tune once again to resume content.
-        Channel number could just be the assigned number or service ID? No idea.
+        Channel number could just be the assigned number or service ID? No idea...
         This is mainly used for data channels to stop/finish data download before the channel loops the data.
         This command was not community documented, but is utilized by official implementations.
 
@@ -602,7 +665,7 @@ class CaniPy:
         if self.verbose: print(f"Cancelling and preparing for channel {channel}")
         return self.pcr_tx(bytes([0x11, channel, data]))
 
-    def audio_info(self, channel:int) -> bytes:
+    def ext_info(self, channel:int) -> bytes:
         """
         Sends in a command to the tuner to report program information at full char length.
         This is known as "extended" channel info.

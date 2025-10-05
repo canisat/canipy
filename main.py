@@ -180,7 +180,7 @@ class canipy_tk(tkinter.Tk):
         
     def get_extended_channel_info(self):
         channel = int(self.chEntry.get())
-        self.canipy.audio_info(channel)
+        self.canipy.ext_info(channel)
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
