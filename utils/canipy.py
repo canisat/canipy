@@ -328,12 +328,12 @@ class CaniPy:
                             print("Contact service provider to subscribe")
                         elif payload[2] == 0x0a:
                             print("Data track not available for current subscription")
-                    else:
-                        # OK (01 00) used in Main WX SID 240
-                        # 02 03 indicates entitled product
-                        print(f"Data mode set on app {payload[3]} (Ch. {payload[4]})")
-                        if payload[1] == 0x02 and payload[2] == 0x03:
-                            print("Product is available for current subscription")
+                        return
+                    # OK (01 00) used in Main WX SID 240
+                    # 02 03 indicates entitled product
+                    print(f"Data mode set on app {payload[3]} (Ch. {payload[4]})")
+                    if payload[1] == 0x02 and payload[2] == 0x03:
+                        print("Product is available with current subscription")
                 else:
                     self.channel_info(payload[4])
             case 0x91:
@@ -360,10 +360,16 @@ class CaniPy:
                 print("Signal strength monitoring status updated")
             case 0xCA:
                 # 'A' cmds are WX specific!
-                if payload[1] == 0x43:
-                    print("WX Pong")
+                if payload[1] == 0x40:
+                    if payload[2] == 0xff:
+                        print("WX - Error when setting up data")
+                        if payload[3] == 0x0a:
+                            print("Data track not available for current subscription")
+                    print(f"WX - Ready for data on {payload[4]}")
+                elif payload[1] == 0x43:
+                    print("WX - Pong")
                 elif payload[1] == 0x64:
-                    print(f"WX Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
+                    print(f"WX - Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
             case 0xD0:
                 if payload[3]:
                     print(f"Monitoring channel {payload[3]}")
@@ -426,6 +432,14 @@ class CaniPy:
                     if payload[4]:
                         print(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
                     print("==================")
+            case 0xDE:
+                print("Clock monitoring status updated")
+            case 0xDF:
+                if self.verbose:
+                    # TODO: figure out how time is decoded
+                    print(f"{payload[1]}{payload[2]}/{payload[3]}/{payload[4]:02X}")
+                    print(f"{payload[5]:02X}:{payload[6]:02X}:{payload[7]:02X}")
+                    print(f"{payload[8]:02X}:{payload[9]:02X}:{payload[10]:02X}")
             case 0xE0:
                 print("Fetched activation info")
             case 0xE1:
@@ -437,6 +451,8 @@ class CaniPy:
                 # nsayer ref listens to E4 though?? differs by 4th opcode
                 # TODO: cover both until better understood
                 print("Direct command Acknowledged")
+            case 0xEA:
+                print("Data packet received")  # TODO: In the future, dump data to a file
             case 0xF0:
                 print("Diagnostic info monitoring status updated")
             case 0xF1:
@@ -738,6 +754,29 @@ class CaniPy:
         print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.pcr_tx(bytes([0x13, mute]))
 
+    def wx_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
+        """
+        Sets the specialized receiver to a data channel.
+        This command will only work with WX receivers!
+
+        Example:
+            By default, if tuning to SID 240, the radio will be provided with
+            "4A 10 F0 00 00" to prepare and begin data download.
+
+        Args:
+            sid (int): Service ID of the data channel.
+            datflagone (bool, optional): Magic flag. Only ever seen enabled if SID is FF (255). Default to false.
+            datflagtwo (bool, optional): Magic flag. Only ever seen enabled if SID is FF (255). Default to false.
+
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if sid not in range(256):
+            print("Invalid channel value")
+            return b""
+        if self.verbose: print(f"WX - Preparing for SID {sid}")
+        return self.pcr_tx(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
+
     def wx_ping(self) -> bytes:
         """
         Sends a "ping" for the radio to answer back.
@@ -750,12 +789,12 @@ class CaniPy:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        print("WX Ping")
+        print("WX - Ping")
         return self.pcr_tx(bytes([0x4A, 0x43]))
 
     def wx_firmver(self) -> bytes:
         """
-        Prompts the radio to report data receiver version.
+        Prompts the radio to report data receiver firmware version.
         This command will only work with WX receivers!
 
         Example:
@@ -764,8 +803,45 @@ class CaniPy:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.verbose: print("Check RX for WX firmware version")
+        if self.verbose: print("WX - Check RX for data receiver version")
         return self.pcr_tx(bytes([0x4A, 0x44]))
+    
+    def wr_gpsconn(self, toggle:bool) -> bytes:
+        """
+        Prompts the radio to set the GPS receiver module state if equipped.
+        This command will only work with later weather receivers!
+        No idea what the radio would return either!
+
+        Example:
+            If "toggle" is True, the radio will be provided with
+            "4B 09 00 01" to enable its embedded GPS module. If False,
+            the last byte sent is "03" to disconnect the module.
+
+        Args:
+            toggle (bool): Prompt to enable or disable radio's GPS module.
+
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if self.verbose: print("WR - Check RX for GPS module confirmation")
+        return self.pcr_tx(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
+
+    def clock_mon(self, toggle:bool) -> bytes:
+        """
+        Prompts the radio to report the time as synced with the service.
+
+        Example:
+            If "toggle" is True, the radio will be provided with
+            "4E 01" to enable the clock.
+
+        Args:
+            toggle (bool): Prompt to enable or disable time reports.
+
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if self.verbose: print(f"Turning {'on' if toggle else 'off'} the clock")
+        return self.pcr_tx(bytes([0x4E, toggle]))
     
     def direct_enable(self):
         """
