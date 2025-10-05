@@ -317,8 +317,23 @@ class CaniPy:
                         print("and has a clear view of the sky")
                     return
                 if self.verbose: print(f"Channel SID: {payload[3]}")
+                # Kind of an oddball hack to identify if tuning to data.
+                # This byte is true if tuning by SID (10 01) regardless.
+                # Assume SID tune corresponds to data anyway as it's
+                # VERY rare having to change channel based on SID.
                 if payload[5]:
-                    print(f"Data mode set on app {payload[3]} (Ch{payload[4]})")
+                    if payload[1] == 0x03:
+                        print("Not subscribed")
+                        if payload[2] == 0x09:
+                            print("Contact service provider to subscribe")
+                        elif payload[2] == 0x0a:
+                            print("Data track not available for current subscription")
+                    else:
+                        # OK (01 00) used in Main WX SID 240
+                        # 02 03 indicates entitled product
+                        print(f"Data mode set on app {payload[3]} (Ch. {payload[4]})")
+                        if payload[1] == 0x02 and payload[2] == 0x03:
+                            print("Product is available for current subscription")
                 else:
                     self.channel_info(payload[4])
             case 0x91:
