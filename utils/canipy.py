@@ -386,7 +386,7 @@ class CaniPy:
                 if payload[3]:
                     if payload[1] == self.ch_num:
                         self.cat_id = payload[2]
-                        self.cat_lbl = payload[4:].decode('utf-8')
+                        self.cat_name = payload[4:].decode('utf-8')
                     print("===Ch. Category===")
                     print(f"Channel {payload[1]}")
                     print(payload[4:].decode('utf-8'))
