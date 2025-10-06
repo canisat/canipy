@@ -313,7 +313,7 @@ class CaniPy:
                 print(f"Ter: {payload[23]}")
                 if payload[0] == 0xC3:
                     print("======CN======")
-                    # C:N's are stored in 1/4 dB
+                    # Signal to noise ratio is stored in 1/4 dB
                     print(f"Sat1: {payload[24]/4}")
                     print(f"Sat2: {payload[25]/4}")
             print("==============")
@@ -847,7 +847,7 @@ class CaniPy:
     def signal_mon(self, toggle:bool) -> bytes:
         """
         Sends in a command to the tuner to monitor and periodically report signal strength.
-        Responses are the same as what you get after sending in 43 hex, but without first two status bytes and C:N info.
+        Responses are the same as what you get after sending in 43 hex, but without first two status bytes and C/N info.
         This was not a community-documented command.
 
         Example:
