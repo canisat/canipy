@@ -737,7 +737,7 @@ class CaniPy:
         # I set title size to 0x24 earlier to see if this fixes out the botched output.
         return self.pcr_tx(bytes([0x22, channel]))
 
-    def radio_id(self) -> bytes:
+    def get_radioid(self) -> bytes:
         """
         Sends in a command to the tuner to report its radio ID.
         Supported radio IDs are 8-char alphanumeric (Excluding letters I, O, S, F).
@@ -1086,7 +1086,7 @@ def debug():
                 pcr_control.channel_info(input("Channel #: "))
                 continue
             case "5":
-                pcr_control.radio_id()
+                pcr_control.get_radioid()
                 continue
             case "6":
                 pcr_control.signal_info()
