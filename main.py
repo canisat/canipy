@@ -60,7 +60,7 @@ class canipy_tk(tkinter.Tk):
         self.changeChannelButton = tkinter.Button(self.buttonFrame,text="Change Ch",command=self.change_channel)       
         self.changeChannelButton.grid(column=4,row=0)
         
-        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.radio_id)       
+        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.get_radioid)       
         self.getRadioIDButton.grid(column=5,row=0)
         
         self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.signal_info)
