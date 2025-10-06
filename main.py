@@ -69,6 +69,9 @@ class canipy_tk(tkinter.Tk):
         self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.mute)       
         self.MuteButton.grid(column=7,row=0)
 
+        self.clockOnButton = tkinter.Button(self.buttonFrame,text="Clock On",command=lambda:self.canipy.clock_mon(True))       
+        self.clockOnButton.grid(column=8,row=0)
+
         # channel number 
         self.chEntry = tkinter.Entry(self.buttonFrame)
         self.chEntry.grid(column=0,row=1)
@@ -94,6 +97,9 @@ class canipy_tk(tkinter.Tk):
 
         self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
         self.UnmuteButton.grid(column=7,row=1)
+        
+        self.clockOffButton = tkinter.Button(self.buttonFrame,text="Clock Off",command=lambda:self.canipy.clock_mon(False))       
+        self.clockOffButton.grid(column=8,row=1)
         
         # Buttons used during debug
         #

@@ -313,9 +313,9 @@ class CaniPy:
                     print(f"Sat1: {payload[24]/4}")
                     print(f"Sat2: {payload[25]/4}")
             print("==============")
-        else:
-            print("Payload not of correct length")
-            if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 22 or 26, got {len(payload)}")
 
     def rx_firminf(self, payload:bytes):
         """
@@ -336,9 +336,62 @@ class CaniPy:
             print(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
             print(f"RX Version: {'.'.join(list(str(payload[14])))}")
             print(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
-        else:
-            print("Payload not of correct length")
-            if self.verbose: print(f"Exp 19, got {len(payload)}")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 19, got {len(payload)}")
+    
+    def rx_clock(self, payload:bytes, miltime:bool=False):
+        """
+        Takes in a time info response (DF hex) to print out relevant information.
+        At this time, verification of the command is by checking if it contains 19 bytes.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+            miltime (bool, optional): Report the time in 24-hour format. Default to false.
+        """
+        # TODO: Ensure data is consistent!
+        # Day will not be correct after around the 15th-16th!!!
+        # This is a semi-long-term analysis!
+        # Issues are expected!
+        weekdaylabel = {
+            0x02:"Monday",
+            0x04:"Tuesday",
+            0x06:"Wednesday",
+            0x08:"Thursday",
+            0x0A:"Friday",
+            0x0C:"Saturday",
+            0x0E:"Sunday"
+        }
+        if len(payload) == 11:
+            print("===  DateTime  ===")
+            weekdaycalc = (payload[4]>>4) - ((payload[4]>>4) % 2)
+            # Day of the week
+            print(f"{weekdaylabel.get(weekdaycalc,f'?({payload[4]})')}")
+            # Funny layout to compensate the need to decode
+            # Date
+            print(f"{payload[1]:02d}{payload[2]:02d}-{payload[3]:02d}-{(
+                payload[4]&0x0F
+            ):02d}")
+            # Time
+            print(f"{(
+                ((payload[5] % 12) or 12) if not miltime else payload[5]
+            ):02d}:{payload[6]:02d}:{(
+                payload[7] - 0x80 if payload[7] & 0x80 else payload[7]
+            ):02d}{(
+                ' PM' if payload[5] >= 12 else ' AM'
+            ) if not miltime else ''} UTC")
+            if self.verbose:
+                # Seconds have high bit on for some reason...
+                # TODO: Figure out why this is.
+                # For now, AM and PM are determined by 24h time.
+                # I thought this was an AM PM indicator at first.
+                print(f"Raw seconds due to high bit: {payload[7]:02X}")
+                print(f"Tick is at {payload[10]:02X}, rolled over {payload[9]} times.")
+                print(f"Roll-over cleared {payload[8]} times since epoch.")
+            print("==================")
+            return
+        print("Payload not of correct length")
+        if self.verbose: print(f"Exp 11, got {len(payload)}")
 
     def rx_response(self, payload:bytes):
         """
@@ -496,11 +549,7 @@ class CaniPy:
             case 0xDE:
                 print("Clock monitoring status updated")
             case 0xDF:
-                if self.verbose:
-                    # TODO: figure out how time is decoded
-                    print(f"{payload[1]}{payload[2]}/{payload[3]}/{payload[4]:02X}")
-                    print(f"{payload[5]:02X}:{payload[6]:02X}:{payload[7]:02X}")
-                    print(f"{payload[8]:02X}:{payload[9]:02X}:{payload[10]:02X}")
+                self.rx_clock(payload)
             case 0xE0:
                 print("Fetched activation info")
             case 0xE1:
