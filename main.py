@@ -104,9 +104,9 @@ class canipy_tk(tkinter.Tk):
         # Buttons used during debug
         #
         # self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx_firmver)       
-        # self.wxFwVerButton.grid(column=8,row=0)
+        # self.wxFwVerButton.grid(column=9,row=0)
         # self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx_ping)       
-        # self.wxPingButton.grid(column=8,row=1)
+        # self.wxPingButton.grid(column=9,row=1)
 
         self.buttonFrame.grid(column=0, row=0)
         

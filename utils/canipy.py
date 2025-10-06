@@ -55,6 +55,8 @@ class CaniPy:
         diagmon_enable(): Enable diagnostics info monitoring.
         diagmon_disable(): Disable diagnostics info monitoring.
 
+        wx_datastop(): Instructs the radio to halt data RX.
+
         curr_channel_info(): Prompts radio to report info for current channel.
         next_channel_info(): Prompts radio to report info for the channel ahead of the current one.
         prev_channel_info(): Prompts radio to report info for the channel behind the current one.
@@ -105,6 +107,8 @@ class CaniPy:
 
         self.diagmon_enable = lambda: self.diag_mon(True)
         self.diagmon_disable = lambda: self.diag_mon(False)
+
+        self.wx_datastop = lambda: self.wx_datachan(0xFF, True, True)
 
         # TODO: These may be valid? if not, have 9 and 10
         # just increment in func & figure out what
@@ -439,8 +443,8 @@ class CaniPy:
                     # 02 03 indicates entitled product
                     if payload[1] == 0x02 and payload[2] == 0x03:
                         print("Product is available with current subscription")
-                else:
-                    self.channel_info(payload[4])
+                    return
+                self.channel_info(payload[4])
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
                 # Or maybe 11/91 is exclusively sid, im not sure...
@@ -474,19 +478,25 @@ class CaniPy:
                 # 'A' cmds are WX specific!
                 if payload[1] == 0x40:
                     if payload[2] == 0xff:
-                        print("WX - Error when setting up data")
+                        print(f"WX - Error setting up data RX on {payload[4]}")
                         if payload[3] == 0x0a:
                             print("Data track not available for current subscription")
-                    print(f"WX - Ready for data on {payload[4]}")
-                elif payload[1] == 0x43:
+                        return
+                    if payload[4] != 0xff:
+                        print(f"WX - Ready for data on {payload[4]}")
+                    else:
+                        print("WX - Data stopped")
+                    return
+                if payload[1] == 0x43:
                     print("WX - Pong")
-                elif payload[1] == 0x64:
+                    return
+                if payload[1] == 0x64:
                     print(f"WX - Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
             case 0xD0:
                 if payload[3]:
                     print(f"Monitoring channel {payload[3]}")
-                else:
-                    print("Channel monitoring stopped")
+                    return
+                print("Channel monitoring stopped")
             case 0xD1:
                 if payload[2]:
                     # Store only if channel numbers match!
@@ -565,7 +575,30 @@ class CaniPy:
                 # TODO: cover both until better understood
                 print("Direct command Acknowledged")
             case 0xEA:
-                print("Data packet received")  # TODO: In the future, dump data to a file
+                # Rudimentary data implementation.
+                # Will only report if verbose logging.
+                # TODO: Figure out how the data is to be written.
+                if self.verbose:
+                    if payload[1] == 0xD0:
+                        print("=== DATA  INFO ===")
+                        print(f"SID: {payload[2]}")
+                        print(f"Frame: {payload[3]}")
+                        # The radio packets in general can theoretically
+                        # report up to 64k. Studied pcaps only go up to 220
+                        # however, and a data frame that was inspected only
+                        # went up to D0 (208 bytes), but data frames could
+                        # be larger in theory?
+                        print(f"Length: {payload[7]} bytes")
+                        print("===    DATA    ===")
+                        # Safely print out bare data
+                        print(payload[10:].decode('utf-8', errors='replace'))
+                        print("==================")
+                        print("===    HEX!    ===")
+                        # Print out hex dump
+                        print(' '.join(f'{b:02X}' for b in payload[10:]))
+                        print("==================")
+                        return
+                print("Data packet received")
             case 0xF0:
                 print("Diagnostic info monitoring status updated")
             case 0xF1:
