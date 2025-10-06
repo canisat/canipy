@@ -3,7 +3,7 @@ import tkinter
 import time
 import threading
 
-from utils.canipy import CaniPy
+from utils import CaniPy
 
 class canipy_tk(tkinter.Tk):  
     def __init__(self,parent):

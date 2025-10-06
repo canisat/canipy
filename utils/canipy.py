@@ -6,6 +6,9 @@ except:
 import time
 from collections.abc import Callable
 
+from .canirx import CaniRX
+from .canitx import CaniTX
+
 class CaniPy:
     """
     The main CaniPy support script, used to interface with supported SDARS hardware.
@@ -123,8 +126,18 @@ class CaniPy:
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
 
+        # TODO: Move out of using exception catches...
+        # And also setting to None might not be the smoothest practice,
+        # but also prevents exceptions. Idk, tinker around with these.
+        #if self.serial_conn and self.serial_conn.is_open:
+        #if self.serial_conn.is_open: self.serial_conn.close()
         self.serial_conn = None
         if port: self.set_serial_params(port, baud)
+
+        # STUB
+        # Functions will be moved here gradually
+        self.rx = CaniRX(self)
+        self.tx = CaniTX(self)
 
         print("CaniPy started")
 
