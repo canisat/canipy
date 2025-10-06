@@ -115,7 +115,7 @@ class canipy_tk(tkinter.Tk):
         self.geometry(self.geometry())
         
     def rx_packet(self) -> bytes:
-        if self.canipy.serial_conn is None:
+        if self.canipy.serial_conn is None or not self.canipy.serial_conn.is_open:
             # wait for port to be connected
             time.sleep(1)
             return b""
@@ -126,10 +126,15 @@ class canipy_tk(tkinter.Tk):
         packet = b""
         read_so_far = 0
         while read_so_far < 5:
+            # Because this is a threaded function, serial_conn can
+            # change to None at ANY MOMENT, even if it clears the
+            # check at the start of this function!
+            # Best to handle exceptions to cater those edge cases.
+            #if self.canipy.serial_conn is None or not self.canipy.serial_conn.is_open:
             try:
                 chunk = self.canipy.serial_conn.read(5-read_so_far)
-            except:
-                print("No serial port in use")
+            except Exception as e:
+                if self.canipy.verbose: (type(e))
                 # wait for port to be connected
                 time.sleep(1)
                 return b""
@@ -153,10 +158,11 @@ class canipy_tk(tkinter.Tk):
         #size = packet[2]*256 + packet[3]
         size = (packet[2] << 8) | packet[3]
         # read the rest of the packet
+        #if self.canipy.serial_conn is None or not self.canipy.serial_conn.is_open:
         try:
             rest_of_packet = self.canipy.serial_conn.read(size+1)
-        except:
-            print("No serial port in use")
+        except Exception as e:
+            if self.canipy.verbose: (type(e))
             # wait for port to be connected
             time.sleep(1)
             return b""

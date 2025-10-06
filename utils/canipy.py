@@ -1,7 +1,4 @@
-try:
-    import serial
-except:
-    print("Serial Library not available")
+import serial
 
 import time
 from collections.abc import Callable
@@ -126,11 +123,6 @@ class CaniPy:
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
 
-        # TODO: Move out of using exception catches...
-        # And also setting to None might not be the smoothest practice,
-        # but also prevents exceptions. Idk, tinker around with these.
-        #if self.serial_conn and self.serial_conn.is_open:
-        #if self.serial_conn.is_open: self.serial_conn.close()
         self.serial_conn = None
         if port: self.set_serial_params(port, baud)
 
@@ -157,7 +149,7 @@ class CaniPy:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.serial_conn is None:
+        if self.serial_conn is None or not self.serial_conn.is_open:
             print("No serial port in use")
             return b""
         length = len(payload).to_bytes(2, byteorder='big')
@@ -1039,16 +1031,16 @@ class CaniPy:
         self.baud_rate = baud
         try:
             self.serial_conn = serial.Serial(port=port, baudrate=baud, timeout=1)
-        except:
-            print("No serial port in use")
+        except serial.SerialException:
+            print(f"Port is unavailable")
             self.serial_conn = None
 
     def close(self):
         """
         Close the connection to the serial device.
         """
-        if self.serial_conn is None:
-            print("No serial port in use")
+        if self.serial_conn is not None or not self.serial_conn.is_open:
+            print("Port already closed")
             return
         self.serial_conn.close()
 
