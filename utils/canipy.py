@@ -386,6 +386,9 @@ class CaniPy:
                 # For now, AM and PM are determined by 24h time.
                 # I thought this was an AM PM indicator at first.
                 print(f"Raw seconds due to high bit: {payload[7]:02X}")
+                # Tick can be useful for RNG
+                # Feed test[8:11] as a seed
+                # TODO: Implement "lucky number" feature just for fun
                 print(f"Tick is at {payload[10]:02X}, rolled over {payload[9]} times.")
                 print(f"Roll-over cleared {payload[8]} times since epoch.")
             print("==================")
