@@ -3,12 +3,8 @@ import serial
 import time
 from collections.abc import Callable
 
-try:
-    from .canirx import CaniRX
-    from .canitx import CaniTX
-except ImportError:
-    from canirx import CaniRX
-    from canitx import CaniTX
+from .canirx import CaniRX
+from .canitx import CaniTX
 
 class CaniPy:
     """
