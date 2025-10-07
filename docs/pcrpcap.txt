@@ -91,7 +91,7 @@ d0010001 - watching (channel 1)
 TX payload:
 5aa5 - start
 0004 - 4 bytes
-2508de00 - get info for channel 222 (Service???)
+2508de00 - get info for channel 222 (42's SID, whoops! need to use 07)
 eded
 RX payload:
 5aa5 - start

@@ -96,7 +96,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309f0f001 - OK, sid 240, sid 240 is not subscribed
+900309f0f001 - OK, sid 240, sid 240 is not subscribed, data aux on
 0382 - Sum
 
 TX payload:
@@ -118,7 +118,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e62401 - OK, App 230, App 230 is not subscribed
+900309e62401 - OK, App 230, App 230 is not subscribed, data aux on
 02ac - Sum
 
 TX payload:
@@ -140,7 +140,7 @@ eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e71301 - OK, App 231, App 231 is not subscribed
+900309e71301 - OK, App 231, App 231 is not subscribed, data aux on
 029c - sum
 
 TX payload:
@@ -162,7 +162,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309e8e101 - OK, App 232, App 232 is not subscribed
+900309e8e101 - OK, App 232, App 232 is not subscribed, data aux on
 036b - sum
 
 TX payload:
@@ -184,7 +184,7 @@ eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ea1f01 - OK, App 234, App 234 is not subscribed
+900309ea1f01 - OK, App 234, App 234 is not subscribed, data aux on
 02ab - sum
 
 TX payload:
@@ -206,7 +206,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309eb3f01 - OK, App 235, App 235 is not subscribed
+900309eb3f01 - OK, App 235, App 235 is not subscribed, data aux on
 02cc - sum
 
 TX payload:
@@ -228,7 +228,7 @@ eded - End
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ec2601 - OK, App 236, App 236 is not subscribed
+900309ec2601 - OK, App 236, App 236 is not subscribed, data aux on
 02b4 - sum
 
 TX payload:
@@ -250,7 +250,7 @@ eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ed4501 - OK, App 237, App 237 is not subscribed
+900309ed4501 - OK, App 237, App 237 is not subscribed, data aux on
 02d4 - sum
 
 TX payload:
@@ -272,7 +272,7 @@ eded - end
 RX payload:
 5aa5 - Start
 0006 - 6 bytes
-900309ee3d01 - OK, App 238, App 238 is not subscribed
+900309ee3d01 - OK, App 238, App 238 is not subscribed, data aux on
 02cd - sum
 
 TX payload:
@@ -286,22 +286,25 @@ RX payload:
 81010000 - Powering off, napping. Goodnight!
 0185 - sum
 
-90 03 0a f0 f0 01
-90 03 0a e6 8b 01
-90 02 03 e7 a5 01
-90 02 03 e8 ed 01
-90 03 0a ea e0 01
-90 03 0a eb f2 01
-90 03 0a ec f8 01
-90 03 0a ed a1 01
-90 03 0a ee f5 01
+90 03 0a f0 f0 01 - 240 not subscribed
+90 03 0a e6 8b 01 - 230 not subscribed
+90 02 03 e7 a5 01 - 231 product available
+90 02 03 e8 ed 01 - 232 product available
+90 03 0a ea e0 01 - 234 not subscribed
+90 03 0a eb f2 01 - 235 not subscribed
+90 03 0a ec f8 01 - 236 not subscribed
+90 03 0a ed a1 01 - 237 not subscribed
+90 03 0a ee f5 01 - 238 not subscribed
 
-90 01 00 f0 f0 01
-90 03 0a e6 8b 01
-90 02 03 e7 a5 01
-90 02 03 e8 ed 01
-90 03 0a ea e0 01
-90 02 03 eb f2 01
-90 02 03 ec f8 01
-90 02 03 ed a1 01
-90 02 03 ee f5 01
+90 01 00 f0 f0 01 - 240 ready
+90 03 0a e6 8b 01 - 230 not subscribed
+90 02 03 e7 a5 01 - 231 product available
+90 02 03 e8 ed 01 - 232 product available
+90 03 0a ea e0 01 - 234 not subscribed
+90 02 03 eb f2 01 - 235 product available
+90 02 03 ec f8 01 - 236 product available
+90 02 03 ed a1 01 - 237 product available
+90 02 03 ee f5 01 - 238 product available
+
+4f 01 01 01 01 01 - monitor channel 1, keeping in mind data auxiliary is active
+cf 01 00 01 - monitoring ch1

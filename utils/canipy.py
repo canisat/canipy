@@ -3,8 +3,12 @@ import serial
 import time
 from collections.abc import Callable
 
-from .canirx import CaniRX
-from .canitx import CaniTX
+try:
+    from .canirx import CaniRX
+    from .canitx import CaniTX
+except ImportError:
+    from canirx import CaniRX
+    from canitx import CaniTX
 
 class CaniPy:
     """
@@ -103,22 +107,18 @@ class CaniPy:
         self.sigmon_enable = lambda: self.signal_mon(True)
         self.sigmon_disable = lambda: self.signal_mon(False)
 
-        self.chanmon_disable = lambda: self.chan_mon(0, False, False, False, False)
+        self.chanmon_disable = lambda: self.chan_mon(0)
 
         self.diagmon_enable = lambda: self.diag_mon(True)
         self.diagmon_disable = lambda: self.diag_mon(False)
 
         self.wx_datastop = lambda: self.wx_datachan(0xFF, True, True)
 
-        # TODO: These may be valid? if not, have 9 and 10
-        # just increment in func & figure out what
-        # to do with these here lambdas
-        self.curr_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x08]))
-        self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09]))
-        self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x10]))
+        self.curr_channel_info = lambda: self.channel_info(self.ch_num)
+        self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09, self.ch_num, 0x00]))
+        self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x0A, self.ch_num, 0x00]))
 
-        # TODO: I think just sending 22 would imply current channel?
-        self.curr_ext_info = lambda: self.pcr_tx(bytes([0x22]))
+        self.curr_ext_info = lambda: self.ext_info(self.ch_num)
 
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
@@ -212,17 +212,22 @@ class CaniPy:
                     print("Contact service provider to subscribe")
                 print("==================")
                 return
-            if payload[5]:
+            if payload[1] == 0x04:
+                if payload[2] == 0x0E:
+                    print("End of line-up reached")
+                print("==================")
+                return
+            if payload[5] == 0x01:
                 if is_currchan:
                     self.ch_name = payload[6:22].decode('utf-8')
                 print(payload[6:22].decode('utf-8'))
-            if payload[40]:
+            if payload[40] == 0x01:
                 if is_currchan:
                     self.artist_name = payload[41:57].decode('utf-8')
                     self.title_name = payload[57:73].decode('utf-8')
                 print(payload[41:57].decode('utf-8'))
                 print(payload[57:73].decode('utf-8'))
-            if payload[22]:
+            if payload[22] == 0x01:
                 if is_currchan:
                     self.cat_name = payload[24:40].decode('utf-8')
                     self.cat_id = payload[23]
@@ -257,12 +262,12 @@ class CaniPy:
                     print("Contact service provider to subscribe")
                 print("==================")
                 return
-            if payload[4]:
+            if payload[4] == 0x01:
                 if payload[3] == self.ch_num:
                     self.artist_name = payload[5:37].decode('utf-8').rstrip(chr(0))
                 print(payload[5:37].decode('utf-8').rstrip(chr(0)))
                 if self.verbose: print(' '.join(f'{b:02X}' for b in payload[37:41]))
-            if payload[41]:
+            if payload[41] == 0x01:
                 if payload[3] == self.ch_num:
                     self.title_name = payload[57:73].decode('utf-8').rstrip(chr(0))
                 print(payload[42:74].decode('utf-8').rstrip(chr(0)))
@@ -421,6 +426,9 @@ class CaniPy:
                 self.rx_startup(payload)
             case 0x81:
                 print("Goodnight")
+            case 0x8b:
+                # TODO: Printout to scale of -96dB to 24dB
+                print(f"Line level set to -{payload[3]}dB")
             case 0x90:
                 if payload[1] == 0x03:
                     print("Not subscribed")
@@ -438,21 +446,21 @@ class CaniPy:
                 self.ch_sid = payload[3]
                 self.ch_num = payload[4]
                 if self.verbose: print(f"SID {payload[3]}, Ch. {payload[4]}")
-                # Kind of an oddball hack to identify if tuning to data.
-                # This byte is true if tuning by SID (10 01) regardless.
-                # Assume SID tune corresponds to data anyway as it's
-                # VERY rare having to change channel based on SID.
                 if payload[5]:
-                    # OK (01 00) used in Main WX SID 240
-                    print(f"Data mode set on app {payload[3]} (Ch. {payload[4]})")
-                    # 02 03 indicates entitled product
+                    # When first tuning to a data channel, like
+                    # main WX SID 240, this will still be 0. But tune
+                    # normally to another channel after, this becomes 1.
+                    # Might be to indicate auxiliary tuning is enabled
+                    # to allow simultaneous audio and data tuning.
+                    print(f"Data aux is on")
+                    # 02 03 indicates entitled data product
                     if payload[1] == 0x02 and payload[2] == 0x03:
                         print("Product is available with current subscription")
-                    return
                 self.channel_info(payload[4])
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
                 # Or maybe 11/91 is exclusively sid, im not sure...
+                # TODO: Check this is working right in normal operation!
                 if payload[4]:
                     self.ch_sid = payload[3]
                 else:
@@ -488,7 +496,7 @@ class CaniPy:
                             print("Data track not available for current subscription")
                         return
                     if payload[4] != 0xff:
-                        print(f"WX - Ready for data on {payload[4]}")
+                        print(f"WX - Ready for data from {payload[4]}")
                     else:
                         print("WX - Data stopped")
                     return
@@ -503,7 +511,7 @@ class CaniPy:
                     return
                 print("Channel monitoring stopped")
             case 0xD1:
-                if payload[2]:
+                if payload[2] == 0x01:
                     # Store only if channel numbers match!
                     if payload[1] == self.ch_num:
                         self.ch_name = payload[3:19].decode('utf-8')
@@ -517,7 +525,7 @@ class CaniPy:
                         print(' '.join(f'{b:02X}' for b in payload[19:]))
                     print("==================")
             case 0xD2:
-                if payload[3]:
+                if payload[3] == 0x01:
                     if payload[1] == self.ch_num:
                         self.cat_id = payload[2]
                         self.cat_name = payload[4:].decode('utf-8')
@@ -528,7 +536,7 @@ class CaniPy:
                         print(f"Cat ID: {payload[2]:02X}")
                     print("==================")
             case 0xD3:
-                if payload[2]:
+                if payload[2] == 0x01:
                     if payload[1] == self.ch_num:
                         self.artist_name = payload[3:19].decode('utf-8')
                         self.title_name = payload[19:].decode('utf-8')
@@ -538,7 +546,7 @@ class CaniPy:
                     print(payload[19:].decode('utf-8'))
                     print("==================")
             case 0xD4:
-                if payload[2]:
+                if payload[2] == 0x01:
                     if payload[1] == self.ch_num:
                         self.artist_name = payload[3:].decode('utf-8').rstrip(chr(0))
                     print("===Artist Info.===")
@@ -546,7 +554,7 @@ class CaniPy:
                     print(payload[3:].decode('utf-8').rstrip(chr(0)))
                     print("==================")
             case 0xD5:
-                if payload[2]:
+                if payload[2] == 0x01:
                     if payload[1] == self.ch_num:
                         self.title_name = payload[3:].decode('utf-8').rstrip(chr(0))
                     print("===Title  Info.===")
@@ -554,14 +562,14 @@ class CaniPy:
                     print(payload[3:].decode('utf-8').rstrip(chr(0)))
                     print("==================")
             case 0xD6:
-                if payload[3] or payload[4]:
+                if payload[3] == 0x01 or payload[4] == 0x01:
                     print("===Program Len.===")
                     print(f"Channel {payload[1]}")
                     if self.verbose:
                         print(f"Time Format: {payload[2]:02X}")
-                    if payload[3]:
+                    if payload[3] == 0x01:
                         print(f"Started {round(((payload[5] << 8) | payload[6])/60)}m ago")
-                    if payload[4]:
+                    if payload[4] == 0x01:
                         print(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
                     print("==================")
             case 0xDE:
@@ -825,7 +833,7 @@ class CaniPy:
         # the only ones documented. idk if theres a 41 or 40...
         return self.pcr_tx(bytes([0x43]))
 
-    def chan_mon(self, channel:int, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
+    def chan_mon(self, channel:int, is_data_on:bool=False, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
         """
         Sends in a command to the tuner to monitor and periodically report information for the given channel number.
 
@@ -835,6 +843,7 @@ class CaniPy:
 
         Args:
             channel (int): The channel value.
+            is_data_on (bool, optional): Ensure this gets set to True if using the data RX. Default is false.
             serv_mon (bool, optional): Monitor changes to the channel's service ID. Default is true.
             prgtype_mon (bool, optional): Monitor changes to the channel's program type. Default is true.
             inf_mon (bool, optional): Monitor changes in the program info for the channel. Default is true.
@@ -846,8 +855,14 @@ class CaniPy:
         if channel not in range(256):
             print("Invalid channel value")
             return b""
+        if not channel:
+            # If channel is 0, assume it's to not listen to anything.
+            serv_mon = False
+            prgtype_mon = False
+            inf_mon = False
+            ext_mon = False
         if self.verbose: print(f"Asking radio to monitor channel {channel}")
-        return self.pcr_tx(bytes([0x50, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
+        return self.pcr_tx(bytes([0x50 - is_data_on, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
     def signal_mon(self, toggle:bool) -> bytes:
         """
@@ -906,6 +921,22 @@ class CaniPy:
         """
         print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.pcr_tx(bytes([0x13, mute]))
+    
+    def set_linevol(self, db:int) -> bytes:
+        """
+        Sends in a command to set the audio level/gain of the radio's line output.
+        Ideal to keep it at 0 decibels unless needed to be changed.
+        Output level can be between -96dB (db=96) to 24dB (db=78).
+        Have to check this again to get the correct scale for printout.
+        
+        Args:
+            db (int): The gain value to set on the radio.
+
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if self.verbose: print(f"Setting gain to {db}dB")
+        return self.pcr_tx(bytes([0x0b, db]))
 
     def wx_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
         """
@@ -1121,10 +1152,10 @@ def debug():
                 pcr_control.power_down()
                 continue
             case "3":
-                pcr_control.change_channel(input("Channel #: "))
+                pcr_control.change_channel(int(input("Channel #: ")))
                 continue
             case "4":
-                pcr_control.channel_info(input("Channel #: "))
+                pcr_control.channel_info(int(input("Channel #: ")))
                 continue
             case "5":
                 pcr_control.get_radioid()
