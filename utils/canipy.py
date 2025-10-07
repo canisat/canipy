@@ -383,17 +383,18 @@ class CaniPy:
             print(f"{weekdaylabel.get(weekdaycalc,f'?({payload[4]})')}")
             # Funny layout to compensate the need to decode
             # Date
-            print(f"{payload[1]:02d}{payload[2]:02d}-{payload[3]:02d}-{(
-                payload[4]&0x0F
-            ):02d}")
+            print(
+                f"{payload[1]:02d}{payload[2]:02d}-"
+                f"{payload[3]:02d}-"
+                f"{(payload[4]&0x0F):02d}"
+            )
             # Time
-            print(f"{(
-                ((payload[5] % 12) or 12) if not miltime else payload[5]
-            ):02d}:{payload[6]:02d}:{(
-                payload[7] - 0x80 if payload[7] & 0x80 else payload[7]
-            ):02d}{(
-                ' PM' if payload[5] >= 12 else ' AM'
-            ) if not miltime else ''} UTC")
+            print(
+                f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
+                f"{payload[6]:02d}:"
+                f"{(payload[7] - 0x80 if payload[7] & 0x80 else payload[7]):02d}"
+                f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
+            )
             if self.verbose:
                 # Seconds have high bit on for some reason...
                 # TODO: Figure out why this is.
