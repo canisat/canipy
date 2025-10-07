@@ -1070,7 +1070,7 @@ class CaniPy:
         """
         Close the connection to the serial device.
         """
-        if self.serial_conn is not None or not self.serial_conn.is_open:
+        if self.serial_conn is None or not self.serial_conn.is_open:
             print("Port already closed")
             return
         self.serial_conn.close()
