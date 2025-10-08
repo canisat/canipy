@@ -51,7 +51,7 @@ class CaniDX:
         """
         #if self.parent.verbose:
         print("Direct listening mode")
-        return self.parent.pcr_tx(bytes([0x74, 0x00, toggle]))
+        return self.parent.tx.send(bytes([0x74, 0x00, toggle]))
 
     def voltage(self, toggle1:bool, toggle2:bool) -> bytes:
         """
@@ -74,7 +74,7 @@ class CaniDX:
         # TODO: Figure out what each flag corresponds to!
         #if self.parent.verbose:
         print("Direct voltage on")
-        return self.parent.pcr_tx(bytes([0x74, 0x02, toggle1, toggle2]))
+        return self.parent.tx.send(bytes([0x74, 0x02, toggle1, toggle2]))
 
     def dac_mute(self, mute:bool) -> bytes:
         """
@@ -94,4 +94,4 @@ class CaniDX:
         """
         #if self.parent.verbose:
         print(f"{'' if mute else 'Un-'}Muting Direct DAC")
-        return self.parent.pcr_tx(bytes([0x74, 0x0B, mute]))
+        return self.parent.tx.send(bytes([0x74, 0x0B, mute]))

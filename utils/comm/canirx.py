@@ -262,3 +262,239 @@ class CaniRX:
             return
         print("Payload not of correct length")
         if self.parent.verbose: print(f"Exp 19, got {len(payload)}")
+
+    def conductor(self, payload:bytes):
+        """
+        Takes in a response payload to then interpret/display the information stored within it.
+        The message type is checked to select how to handle it.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+        """
+        # payload[1] and payload[2] appear to
+        # always be status code and detail respectively,
+        # except if it's an event driven response.
+        match payload[0]:
+            case 0x80:
+                self.parse_startup(payload)
+            case 0x81:
+                print("Goodnight")
+            case 0x8b:
+                # TODO: Printout to scale of -96dB to 24dB
+                print(f"Line level set to -{payload[3]}dB")
+            case 0x90:
+                if payload[1] == 0x03:
+                    print("Not subscribed")
+                    if payload[2] == 0x09:
+                        print("Contact service provider to subscribe")
+                    elif payload[2] == 0x0a:
+                        print("Not available for current subscription")
+                    return
+                if payload[1] == 0x04:
+                    print("No signal")
+                    if payload[2] == 0x10:
+                        print("Check if antenna is connected")
+                        print("and has a clear view of the sky")
+                    return
+                self.parent.ch_sid = payload[3]
+                self.parent.ch_num = payload[4]
+                if self.parent.verbose: print(f"SID {payload[3]}, Ch. {payload[4]}")
+                if payload[5]:
+                    # When first tuning to a data channel, like
+                    # main WX SID 240, this will still be 0. But tune
+                    # normally to another channel after, this becomes 1.
+                    # Might be to indicate auxiliary tuning is enabled
+                    # to allow simultaneous audio and data tuning.
+                    print(f"Data aux is on")
+                    # 02 03 indicates entitled data product
+                    if payload[1] == 0x02 and payload[2] == 0x03:
+                        print("Product is available with current subscription")
+                self.parent.tx.channel_info(payload[4])
+            case 0x91:
+                # Hacky way to distinguish, but if it's data, it's usually SID
+                # Or maybe 11/91 is exclusively sid, im not sure...
+                # TODO: Check this is working right in normal operation!
+                if payload[4]:
+                    self.parent.ch_sid = payload[3]
+                else:
+                    self.parent.ch_num = payload[3]
+                print("Current channel tune cancelled! You will be tuned out!")
+                if payload[3]:
+                    print(f"Ready for channel {payload[3]}{' (Data)' if payload[4] else ''}")
+                print("Change channel to resume content")
+            case 0x93:
+                print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
+            case 0xA2:
+                self.parse_extinfo(payload)
+            case 0xA5:
+                self.parse_chan(payload)
+            case 0xB1:
+                if len(payload) != 12:
+                    print("Invalid Radio ID length")
+                    if self.parent.verbose: print(f"Exp 12, got {len(payload)}")
+                    return
+                # if good, print characters
+                self.parent.radio_id = payload[4:12].decode('utf-8')
+                print(f"Radio ID: {payload[4:12].decode('utf-8')}")
+            case 0xC1 | 0xC3:
+                self.parse_sig(payload)
+            case 0xC2:
+                print("Signal strength monitoring status updated")
+            case 0xCA:
+                # 'A' cmds are WX specific!
+                if payload[1] == 0x40:
+                    if payload[2] == 0xff:
+                        print(f"WX - Error setting up data RX on {payload[4]}")
+                        if payload[3] == 0x0a:
+                            print("Data track not available for current subscription")
+                        return
+                    if payload[4] != 0xff:
+                        print(f"WX - Ready for data from {payload[4]}")
+                    else:
+                        print("WX - Data stopped")
+                    return
+                if payload[1] == 0x43:
+                    print("WX - Pong")
+                    return
+                if payload[1] == 0x64:
+                    print(f"WX - Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
+            case 0xD0:
+                if payload[3]:
+                    print(f"Monitoring channel {payload[3]}")
+                    return
+                print("Channel monitoring stopped")
+            case 0xD1:
+                if payload[2] == 0x01:
+                    # Store only if channel numbers match!
+                    if payload[1] == self.parent.ch_num:
+                        self.parent.ch_name = payload[3:19].decode('utf-8')
+                    print("===Channel Name===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:19].decode('utf-8'))
+                    # Trailing bytes, this could be length side effect?
+                    # Like with whats happening with extended info?
+                    # Treat as debug info for now.
+                    if self.parent.verbose:
+                        print(' '.join(f'{b:02X}' for b in payload[19:]))
+                    print("==================")
+            case 0xD2:
+                if payload[3] == 0x01:
+                    if payload[1] == self.parent.ch_num:
+                        self.parent.cat_id = payload[2]
+                        self.parent.cat_name = payload[4:].decode('utf-8')
+                    print("===Ch. Category===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[4:].decode('utf-8'))
+                    if self.parent.verbose:
+                        print(f"Cat ID: {payload[2]:02X}")
+                    print("==================")
+            case 0xD3:
+                if payload[2] == 0x01:
+                    if payload[1] == self.parent.ch_num:
+                        self.parent.artist_name = payload[3:19].decode('utf-8')
+                        self.parent.title_name = payload[19:].decode('utf-8')
+                    print("===Program Info===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:19].decode('utf-8'))
+                    print(payload[19:].decode('utf-8'))
+                    print("==================")
+            case 0xD4:
+                if payload[2] == 0x01:
+                    if payload[1] == self.parent.ch_num:
+                        self.parent.artist_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                    print("===Artist Info.===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    print("==================")
+            case 0xD5:
+                if payload[2] == 0x01:
+                    if payload[1] == self.parent.ch_num:
+                        self.parent.title_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                    print("===Title  Info.===")
+                    print(f"Channel {payload[1]}")
+                    print(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    print("==================")
+            case 0xD6:
+                if payload[3] == 0x01 or payload[4] == 0x01:
+                    print("===Program Len.===")
+                    print(f"Channel {payload[1]}")
+                    if self.parent.verbose:
+                        print(f"Time Format: {payload[2]:02X}")
+                    if payload[3] == 0x01:
+                        print(f"Started {round(((payload[5] << 8) | payload[6])/60)}m ago")
+                    if payload[4] == 0x01:
+                        print(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
+                    print("==================")
+            case 0xDE:
+                print("Clock monitoring status updated")
+            case 0xDF:
+                self.parse_clock(payload)
+            case 0xE0:
+                print("Fetched activation info")
+            case 0xE1:
+                print("Fetched deactivation info")
+            case 0xE3:
+                self.parse_firminf(payload)
+            case 0xE4 | 0xF4:
+                # Acknowledgement of Direct responses.
+                # nsayer ref listens to E4 though?? differs by 4th opcode
+                # TODO: cover both until better understood
+                print("Direct command Acknowledged")
+            case 0xEA:
+                # Rudimentary data implementation.
+                # Will only report if verbose logging.
+                # TODO: Figure out how the data is to be written.
+                if self.parent.verbose:
+                    if payload[1] == 0xD0:
+                        print("=== DATA  INFO ===")
+                        print(f"SID: {payload[2]}")
+                        print(f"Frame: {payload[3]}")
+                        # The radio packets in general can theoretically
+                        # report up to 64k. Studied pcaps only go up to 220
+                        # however, and a data frame that was inspected only
+                        # went up to D0 (208 bytes), but data frames could
+                        # be larger in theory?
+                        print(f"Length: {payload[7]} bytes")
+                        print("===    DATA    ===")
+                        # Safely print out bare data
+                        print(payload[10:].decode('utf-8', errors='replace'))
+                        print("==================")
+                        print("===    HEX!    ===")
+                        # Print out hex dump
+                        print(' '.join(f'{b:02X}' for b in payload[10:]))
+                        print("==================")
+                        return
+                print("Data packet received")
+            case 0xF0:
+                print("Diagnostic info monitoring status updated")
+            case 0xF1:
+                if self.parent.verbose:
+                    # TODO: examine how diag is laid out, appears to be 8 or 9 fields
+                    print("=== DIAGNOSTIC ===")
+                    print(payload[2:].decode('utf-8'))
+                    print("==================")
+            case 0xF2:
+                # Direct idle frames.
+                # Counted, but generally just ignored.
+                self.parent.direct_idleframes += 1
+            case 0xFF:
+                print("Warning! Radio reported an error")
+                if payload[1] == 0x01 and payload[2] == 0x00:
+                    # 01 00 (aka OK) on error, typically corresponds to antenna
+                    print("Antenna not detected, check antenna")
+                if payload[1] == 0x02:
+                    # 02 means radio is not repsonding
+                    print("Radio unresponsive!")
+                    if payload[2] == 0x04:
+                        print("Unable to change channels")
+                    elif payload[2] == 0x06:
+                        print("Unable to change radio's power state")
+                if payload[1] == 0x07 and payload[2] == 0x10:
+                    # 07 10, sending commands to a radio tuner that is not on yet
+                    print("Please power up the tuner before sending commands")
+                if self.parent.verbose:
+                    print(f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}")
+                print("Radio may still be operated")
+                print("If errors persist, check or power-cycle the radio")
+            case _:
+                print(f"Unknown return code {hex(payload[0])}")

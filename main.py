@@ -32,10 +32,10 @@ class canipy_tk(tkinter.Tk):
     def com_thread(self):
         # Keep calling the read method for the port
         while True:
-            buf = self.rx_packet()
             if self.quitThread: return
+            buf = self.rx_packet()
             if not buf: continue  # sure wish i was buff..
-            self.canipy.rx_response(buf)
+            self.canipy.rx.conductor(buf)
                 
     def initialize(self):
         self.grid()
@@ -66,7 +66,7 @@ class canipy_tk(tkinter.Tk):
         self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.tx.signal_info)
         self.GetSignalDataButton.grid(column=6,row=0)
 
-        self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.mute)       
+        self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.tx.mute)       
         self.MuteButton.grid(column=7,row=0)
 
         self.clockOnButton = tkinter.Button(self.buttonFrame,text="Clock On",command=lambda:self.canipy.tx.clock_mon(True))       
@@ -92,10 +92,10 @@ class canipy_tk(tkinter.Tk):
         self.extChInfoButton = tkinter.Button(self.buttonFrame,text="Ext Ch Info",command=self.get_extended_channel_info)       
         self.extChInfoButton.grid(column=5,row=1)
 
-        self.sigMonButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.sigmon_enable)       
+        self.sigMonButton = tkinter.Button(self.buttonFrame,text="Watch Sig",command=self.canipy.tx.sigmon_enable)       
         self.sigMonButton.grid(column=6,row=1)
 
-        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
+        self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.tx.unmute)       
         self.UnmuteButton.grid(column=7,row=1)
         
         self.clockOffButton = tkinter.Button(self.buttonFrame,text="Clock Off",command=lambda:self.canipy.tx.clock_mon(False))       
@@ -181,10 +181,6 @@ class canipy_tk(tkinter.Tk):
     def change_channel(self):
         channel = int(self.chEntry.get())
         self.canipy.tx.change_channel(channel)
-
-    def change_data_channel(self):
-        channel = int(self.chEntry.get())
-        self.canipy.tx.change_channel(channel, data=True)
 
     def get_channel_info(self):
         channel = int(self.chEntry.get())

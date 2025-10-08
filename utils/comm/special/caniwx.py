@@ -4,10 +4,15 @@ class CaniWX:
 
     Attributes:
         parent (CaniPy): A main CaniPy instance that this script will support.
+    
+    Lambda:
+        data_stop(): Instructs the radio to halt data RX.
     """
     # Functions will be moved here gradually
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
+
+        self.data_stop = lambda: self.change_datachan(0xFF, True, True)
 
     def change_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
         """
@@ -29,7 +34,7 @@ class CaniWX:
             print("Invalid channel value")
             return b""
         if self.parent.verbose: print(f"WX - Preparing for SID {sid}")
-        return self.parent.pcr_tx(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
+        return self.parent.tx.send(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
 
     def ping(self) -> bytes:
         """
@@ -43,7 +48,7 @@ class CaniWX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         print("WX - Ping")
-        return self.parent.pcr_tx(bytes([0x4A, 0x43]))
+        return self.parent.tx.send(bytes([0x4A, 0x43]))
 
     def firm_ver(self) -> bytes:
         """
@@ -56,7 +61,7 @@ class CaniWX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if self.parent.verbose: print("WX - Check RX for data receiver version")
-        return self.parent.pcr_tx(bytes([0x4A, 0x44]))
+        return self.parent.tx.send(bytes([0x4A, 0x44]))
 
     def wrgps_conn(self, toggle:bool) -> bytes:
         """
@@ -76,4 +81,4 @@ class CaniWX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if self.parent.verbose: print("WR - Check RX for GPS module confirmation")
-        return self.parent.pcr_tx(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
+        return self.parent.tx.send(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
