@@ -54,22 +54,22 @@ class canipy_tk(tkinter.Tk):
         self.SetWxDevice = tkinter.Button(self.buttonFrame,text="WX Portable",command=self.set_wx_device)
         self.SetWxDevice.grid(column=2,row=0)
         
-        self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.canipy.power_up)       
+        self.powerOnButton = tkinter.Button(self.buttonFrame,text="Power On",command=self.canipy.tx.power_up)       
         self.powerOnButton.grid(column=3,row=0)
         
         self.changeChannelButton = tkinter.Button(self.buttonFrame,text="Change Ch",command=self.change_channel)       
         self.changeChannelButton.grid(column=4,row=0)
         
-        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.get_radioid)       
+        self.getRadioIDButton = tkinter.Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.tx.get_radioid)       
         self.getRadioIDButton.grid(column=5,row=0)
         
-        self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.signal_info)
+        self.GetSignalDataButton = tkinter.Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.tx.signal_info)
         self.GetSignalDataButton.grid(column=6,row=0)
 
         self.MuteButton = tkinter.Button(self.buttonFrame,text="Mute",command=self.canipy.mute)       
         self.MuteButton.grid(column=7,row=0)
 
-        self.clockOnButton = tkinter.Button(self.buttonFrame,text="Clock On",command=lambda:self.canipy.clock_mon(True))       
+        self.clockOnButton = tkinter.Button(self.buttonFrame,text="Clock On",command=lambda:self.canipy.tx.clock_mon(True))       
         self.clockOnButton.grid(column=8,row=0)
 
         # channel number 
@@ -83,7 +83,7 @@ class canipy_tk(tkinter.Tk):
         self.SetWcDevice = tkinter.Button(self.buttonFrame,text="WX Certified",command=self.set_wc_device)
         self.SetWcDevice.grid(column=2,row=1)
 
-        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.power_down(pwr_sav=True))       
+        self.powerOffButton = tkinter.Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down(pwr_sav=True))       
         self.powerOffButton.grid(column=3,row=1)
 
         self.getChInfoButton = tkinter.Button(self.buttonFrame,text="Ch Info",command=self.get_channel_info)       
@@ -98,14 +98,14 @@ class canipy_tk(tkinter.Tk):
         self.UnmuteButton = tkinter.Button(self.buttonFrame,text="Unmute",command=self.canipy.unmute)       
         self.UnmuteButton.grid(column=7,row=1)
         
-        self.clockOffButton = tkinter.Button(self.buttonFrame,text="Clock Off",command=lambda:self.canipy.clock_mon(False))       
+        self.clockOffButton = tkinter.Button(self.buttonFrame,text="Clock Off",command=lambda:self.canipy.tx.clock_mon(False))       
         self.clockOffButton.grid(column=8,row=1)
         
         # Buttons used during debug
         #
-        # self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx_firmver)       
+        # self.wxFwVerButton = tkinter.Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx.firm_ver)       
         # self.wxFwVerButton.grid(column=9,row=0)
-        # self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx_ping)       
+        # self.wxPingButton = tkinter.Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx.ping)       
         # self.wxPingButton.grid(column=9,row=1)
 
         self.buttonFrame.grid(column=0, row=0)
@@ -180,19 +180,19 @@ class canipy_tk(tkinter.Tk):
     
     def change_channel(self):
         channel = int(self.chEntry.get())
-        self.canipy.change_channel(channel)
+        self.canipy.tx.change_channel(channel)
 
     def change_data_channel(self):
         channel = int(self.chEntry.get())
-        self.canipy.change_channel(channel, data=True)
+        self.canipy.tx.change_channel(channel, data=True)
 
     def get_channel_info(self):
         channel = int(self.chEntry.get())
-        self.canipy.channel_info(channel)
+        self.canipy.tx.channel_info(channel)
         
     def get_extended_channel_info(self):
         channel = int(self.chEntry.get())
-        self.canipy.ext_info(channel)
+        self.canipy.tx.ext_info(channel)
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
@@ -209,7 +209,7 @@ class canipy_tk(tkinter.Tk):
     def set_direct_device(self):
         self.set_pcr_device()
         print("Sending Direct enable commands")
-        self.canipy.direct_enable()
+        self.canipy.dx.enable()
 
     def set_wx_device(self):
         print("Device set to WX (Portable)")

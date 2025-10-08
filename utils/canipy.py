@@ -1,10 +1,11 @@
 import serial
 
-import time
 from collections.abc import Callable
 
 from .canirx import CaniRX
 from .canitx import CaniTX
+from .special.canidx import CaniDX
+from .special.caniwx import CaniWX
 
 class CaniPy:
     """
@@ -43,6 +44,8 @@ class CaniPy:
 
         rx (CaniRX): Functions related to receipt of responses.
         tx (CaniTX): Functions related to transmission of commands.
+        dx (CaniDX): Functions related to Direct receiver commands.
+        wx (CaniWX): Functions related to data commands, notably to weather data receivers.
 
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
     
@@ -102,28 +105,30 @@ class CaniPy:
 
         self.rx = CaniRX(self)
         self.tx = CaniTX(self)
+        self.dx = CaniDX(self)
+        self.wx = CaniWX(self)
 
         self.serial_conn = None
         if port: self.set_serial_params(port, baud)
 
-        self.mute = lambda: self.set_mute(True)
-        self.unmute = lambda: self.set_mute(False)
+        self.mute = lambda: self.tx.set_mute(True)
+        self.unmute = lambda: self.tx.set_mute(False)
 
-        self.sigmon_enable = lambda: self.signal_mon(True)
-        self.sigmon_disable = lambda: self.signal_mon(False)
+        self.sigmon_enable = lambda: self.tx.signal_mon(True)
+        self.sigmon_disable = lambda: self.tx.signal_mon(False)
 
-        self.chanmon_disable = lambda: self.chan_mon(0)
+        self.chanmon_disable = lambda: self.tx.chan_mon(0)
 
-        self.diagmon_enable = lambda: self.diag_mon(True)
-        self.diagmon_disable = lambda: self.diag_mon(False)
+        self.diagmon_enable = lambda: self.tx.diag_mon(True)
+        self.diagmon_disable = lambda: self.tx.diag_mon(False)
 
-        self.wx_datastop = lambda: self.wx_datachan(0xFF, True, True)
+        self.wx_datastop = lambda: self.wx.change_datachan(0xFF, True, True)
 
-        self.curr_channel_info = lambda: self.channel_info(self.ch_num)
+        self.curr_channel_info = lambda: self.tx.channel_info(self.ch_num)
         self.next_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x09, self.ch_num, 0x00]))
         self.prev_channel_info = lambda: self.pcr_tx(bytes([0x25, 0x0A, self.ch_num, 0x00]))
 
-        self.curr_ext_info = lambda: self.ext_info(self.ch_num)
+        self.curr_ext_info = lambda: self.tx.ext_info(self.ch_num)
 
         self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
         self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
@@ -202,7 +207,7 @@ class CaniPy:
                     # 02 03 indicates entitled data product
                     if payload[1] == 0x02 and payload[2] == 0x03:
                         print("Product is available with current subscription")
-                self.channel_info(payload[4])
+                self.tx.channel_info(payload[4])
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
                 # Or maybe 11/91 is exclusively sid, im not sure...
@@ -392,410 +397,6 @@ class CaniPy:
             case _:
                 print(f"Unknown return code {hex(payload[0])}")
 
-    def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
-        """
-        Sends in a command to power on the radio tuner.
-        Defaults are 16 characters long for channel and category labels, and 36 for title label
-        mainly due to a possible oversight with the radio firmware when fetching extended labels.
-
-        Example:
-            The radio will be provided with "00 10 10 24 01".
-            Power up with 16 char channel and category label size, 36 char title size, expect loss of power.
-
-        Args:
-            ch_lbl (int, optional): Maximum channel label character length. Default to 16 (10 hex).
-            cat_lbl (int, optional): Maximum category label character length. Default to 16 (10 hex).
-            title_lbl (int, optional): Maximum program title label character length. Default to 36 (24 hex).
-            loss_exp (bool, optional): Indicate if the tuner is in a board that may shut off without notice. Default to True.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        print("Powering up")
-        return self.pcr_tx(bytes([0x00, ch_lbl, cat_lbl, title_lbl, loss_exp]))
-
-    def power_down(self, pwr_sav:bool=False) -> bytes:
-        """
-        Sends in a command to power down the radio tuner.
-
-        Example:
-            The radio will be provided with "01 00".
-            Power off, no power save.
-
-        Args:
-            pwr_sav (bool, optional): Set radio to a power saving state instead. Default to False.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        print("Powering down")
-        return self.pcr_tx(bytes([0x01, pwr_sav]))
-
-    def change_channel(self, channel:int, is_sid:bool=False, data:bool=False, prg_type:int=0) -> bytes:
-        """
-        Sends in a command to the tuner to switch to another channel based on assigned number or ID.
-        Some channels (i.e. SID 240/F0) can even be tuned as data.
-
-        Example:
-            To tune to audio channel number 1, the radio will be provided with "10 02 01 00 00 01".
-            Tunes to channel 1, no data, program type 0, route to audio port (1).
-
-        Args:
-            channel (int): The channel value.
-            is_sid (bool, optional): Indicate if provided number is a service ID. Default to False.
-            data (bool, optional): Indicate to tune channel as a data feed and route data to download terminal. Default to False.
-            prg_type (int, optional): Program type. Magic value; all known instances just leave it at 0 so it's defaulted to 0.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if channel not in range(256):
-            print("Invalid channel value")
-            return b""
-        print(f"Changing to {'channel' if not is_sid else 'ID'} {channel}{' (Data)' if data else ''}")
-        if not is_sid:
-            self.ch_num = channel
-        else:
-            self.ch_sid = channel
-        return self.pcr_tx(bytes([0x10, 0x02 - is_sid, channel, data, prg_type, 0x01 + data]))
-
-    def channel_info(self, channel:int, is_sid:bool=False, prg_type:int=0) -> bytes:
-        """
-        Sends in a command to the tuner to report the channel's program information provided an assigned number or ID.
-
-        Example:
-            To check the info of channel number 1, the radio will be provided with "25 08 01 00".
-            Report info for channel 1, program type 0.
-
-        Args:
-            channel (int): The channel value.
-            is_sid (bool, optional): Indicate if provided number is a service ID. Default to False.
-            prg_type (int, optional): Program type. Magic value; all known instances just leave it at 0 so it's defaulted to 0.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if channel not in range(256):
-            print("Invalid channel value")
-            return b""
-        if self.verbose: print(f"Check RX for info on {channel}")
-        # 07 allows for checking by SID
-        return self.pcr_tx(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
-
-    def channel_cancel(self, channel:int=0, data:bool=False) -> bytes:
-        """
-        Sends in a command to the tuner to stop listening to the current channel, like picking up the needle off a record.
-        The command then supplies a channel for the radio to "pre-load" and quickly tune after client processing.
-        Additional byte is to indicate if the channel is for "pre-loading" in data mode.
-        Running this will tune out of the current channel. User must tune once again to resume content.
-        Channel number could just be the assigned number or service ID? No idea...
-        This is mainly used for data channels to stop/finish data download before the channel loops the data.
-        This command was not community documented, but is utilized by official implementations.
-
-        Example:
-            To stop listening and prepare the radio for channel 1, the radio will be provided with "11 01 00".
-            Stop and prepare for channel 1, no data.
-
-        Args:
-            channel (int, optional): The channel value to preload. Default to 0 as in don't preload. Hopefully that'll work fine...
-            data (bool, optional): Indicate to treat the preloaded channel as a data feed. Default to False.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if channel not in range(256):
-            print("Invalid channel value")
-            return b""
-        if self.verbose: print(f"Cancelling and preparing for channel {channel}")
-        return self.pcr_tx(bytes([0x11, channel, data]))
-
-    def ext_info(self, channel:int) -> bytes:
-        """
-        Sends in a command to the tuner to report program information at full char length.
-        This is known as "extended" channel info.
-        The response output might look mangled. Currently figuring out why that is.
-
-        Example:
-            To check the ext status of channel number 1, the radio will be provided with "22 01".
-            Report ext program status for channel 1.
-
-        Args:
-            channel (int): The channel value.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if channel not in range(256):
-            print("Invalid channel value")
-            return b""
-        if self.verbose: print(f"Check RX for extinfo on {channel}")
-        # I set title size to 0x24 earlier to see if this fixes out the botched output.
-        return self.pcr_tx(bytes([0x22, channel]))
-
-    def get_radioid(self) -> bytes:
-        """
-        Sends in a command to the tuner to report its radio ID.
-        Supported radio IDs are 8-char alphanumeric (Excluding letters I, O, S, F).
-
-        Example:
-            The radio will be provided with "31".
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print("Check RX for ID")
-        return self.pcr_tx(bytes([0x31]))
-
-    def firm_ver(self, magic:int=5) -> bytes:
-        """
-        Sends in a command to the tuner to report its firmware version info and build dates.
-        First two bytes of response correspond to an unknown component.
-        This is followed by CMB and RX.
-
-        Example:
-            The radio will be provided with "70 05".
-
-        Args:
-            magic (int, optional): Magic value; all known instances just leave it at 5 so it's defaulted to 5.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print("Check RX for radio firmware version")
-        return self.pcr_tx(bytes([0x70, magic]))
-
-    def signal_info(self) -> bytes:
-        """
-        Sends in a command to the tuner to report "extended" signal quality info.
-
-        Example:
-            The radio will be provided with "43".
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print("Check RX for signal info")
-        # It's known that 42 is monitor, but these two are
-        # the only ones documented. idk if theres a 41 or 40...
-        return self.pcr_tx(bytes([0x43]))
-
-    def chan_mon(self, channel:int, is_data_on:bool=False, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
-        """
-        Sends in a command to the tuner to monitor and periodically report information for the given channel number.
-
-        Example:
-            To monitor all channel 1 info, the radio will be provided with "50 01 01 01 01 01".
-            Turn on monitoring for channel 1, monitor service ID, prog type, info, and extended.
-
-        Args:
-            channel (int): The channel value.
-            is_data_on (bool, optional): Ensure this gets set to True if using the data RX. Default is false.
-            serv_mon (bool, optional): Monitor changes to the channel's service ID. Default is true.
-            prgtype_mon (bool, optional): Monitor changes to the channel's program type. Default is true.
-            inf_mon (bool, optional): Monitor changes in the program info for the channel. Default is true.
-            ext_mon (bool, optional): Monitor changes in the extended program info for the channel. Default is true.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if channel not in range(256):
-            print("Invalid channel value")
-            return b""
-        if not channel:
-            # If channel is 0, assume it's to not listen to anything.
-            serv_mon = False
-            prgtype_mon = False
-            inf_mon = False
-            ext_mon = False
-        if self.verbose: print(f"Asking radio to monitor channel {channel}")
-        return self.pcr_tx(bytes([0x50 - is_data_on, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
-
-    def signal_mon(self, toggle:bool) -> bytes:
-        """
-        Sends in a command to the tuner to monitor and periodically report signal strength.
-        Responses are the same as what you get after sending in 43 hex, but without first two status bytes and C/N info.
-        This was not a community-documented command.
-
-        Example:
-            To enable signal monitoring, the radio will be provided with "42 01".
-            Turn on signal monitoring.
-
-        Args:
-            toggle (bool): Prompt to enable or disable monitoring.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
-        return self.pcr_tx(bytes([0x42, toggle]))
-
-    def diag_mon(self, toggle:bool) -> bytes:
-        """
-        Sends in a command to the tuner to what looks like some diagnostics information.
-        Will have to check again later what the responses mean.
-        This was not a community-documented command.
-
-        Example:
-            To enable diagnostics monitoring, the radio will be provided with "60 01".
-            Turn on diagnostics monitoring.
-
-        Args:
-            toggle (bool): Prompt to enable or disable monitoring.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor extra info")
-        # F0 returned when command is acknowledged.
-        # Messages will be received periodically as F1, followed by the info.
-        # Would 63 designate to return this info ad-hoc? Who knows!
-        return self.pcr_tx(bytes([0x60, toggle]))
-
-    def set_mute(self, mute:bool) -> bytes:
-        """
-        Sends in a command to the tuner to mute or unmute the DAC.
-
-        Example:
-            To mute audio, the radio will be provided with "13 01".
-            Mute the audio.
-
-        Args:
-            mute (bool): Prompt to mute or unmute audio.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        print(f"{'' if mute else 'Un-'}Muting Audio")
-        return self.pcr_tx(bytes([0x13, mute]))
-    
-    def set_linevol(self, db:int) -> bytes:
-        """
-        Sends in a command to set the audio level/gain of the radio's line output.
-        Ideal to keep it at 0 decibels unless needed to be changed.
-        Output level can be between -96dB (db=96) to 24dB (db=78).
-        Have to check this again to get the correct scale for printout.
-        
-        Args:
-            db (int): The gain value to set on the radio.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print(f"Setting gain to {db}dB")
-        return self.pcr_tx(bytes([0x0b, db]))
-
-    def wx_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
-        """
-        Sets the specialized receiver to a data channel.
-        This command will only work with WX receivers!
-
-        Example:
-            By default, if tuning to SID 240, the radio will be provided with
-            "4A 10 F0 00 00" to prepare and begin data download.
-
-        Args:
-            sid (int): Service ID of the data channel.
-            datflagone (bool, optional): Magic flag. Only ever seen enabled if SID is FF (255). Default to false.
-            datflagtwo (bool, optional): Magic flag. Only ever seen enabled if SID is FF (255). Default to false.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if sid not in range(256):
-            print("Invalid channel value")
-            return b""
-        if self.verbose: print(f"WX - Preparing for SID {sid}")
-        return self.pcr_tx(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
-
-    def wx_ping(self) -> bytes:
-        """
-        Sends a "ping" for the radio to answer back.
-        A response of CA 43 hex is expected.
-        This command will only work with WX receivers!
-
-        Example:
-            The radio will be provided with "4A 43".
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        print("WX - Ping")
-        return self.pcr_tx(bytes([0x4A, 0x43]))
-
-    def wx_firmver(self) -> bytes:
-        """
-        Prompts the radio to report data receiver firmware version.
-        This command will only work with WX receivers!
-
-        Example:
-            The radio will be provided with "4A 44".
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print("WX - Check RX for data receiver version")
-        return self.pcr_tx(bytes([0x4A, 0x44]))
-    
-    def wr_gpsconn(self, toggle:bool) -> bytes:
-        """
-        Prompts the radio to set the GPS receiver module state if equipped.
-        This command will only work with later weather receivers!
-        No idea what the radio would return either!
-
-        Example:
-            If "toggle" is True, the radio will be provided with
-            "4B 09 00 01" to enable its embedded GPS module. If False,
-            the last byte sent is "03" to disconnect the module.
-
-        Args:
-            toggle (bool): Prompt to enable or disable radio's GPS module.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print("WR - Check RX for GPS module confirmation")
-        return self.pcr_tx(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
-
-    def clock_mon(self, toggle:bool) -> bytes:
-        """
-        Prompts the radio to report the time as synced with the service.
-
-        Example:
-            If "toggle" is True, the radio will be provided with
-            "4E 01" to enable the clock.
-
-        Args:
-            toggle (bool): Prompt to enable or disable time reports.
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        if self.verbose: print(f"Turning {'on' if toggle else 'off'} the clock")
-        return self.pcr_tx(bytes([0x4E, toggle]))
-    
-    def direct_enable(self):
-        """
-        For use with Direct tuners.
-        A series of necessary are sent for allowing compatible operation.
-        This sets the Direct to enable listening mode, voltage, and unmute the DAC.
-        """
-        # There's also hint at 74 0D,
-        # no idea what 0D does at the moment,
-        # assuming this sequence works regardless
-
-        print("Direct listening mode")
-        self.pcr_tx(bytes([0x74, 0x00, 0x01]))
-        time.sleep(1)  # These sleeps should be event driven instead
-
-        print("Direct voltage on")
-        self.pcr_tx(bytes([0x74, 0x02, 0x01, 0x01]))
-        time.sleep(1)
-
-        # RX might not be received when unmuting,
-        # Let the function finish as-is after this
-        print("Direct unmute DAC")
-        self.pcr_tx(bytes([0x74, 0x0B, 0x00]))
-
     def set_serial_params(self, port:str, baud:int):
         """
         Configure a new connection to the serial device.
@@ -820,20 +421,3 @@ class CaniPy:
             print("Port already closed")
             return
         self.serial_conn.close()
-
-    def crash_override(self) -> bytes:
-        """
-        Manually enter payload for debugging purposes.
-        Hack the planet!
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        # FOR DEBUG USE
-        print("Careful now!")
-        print("You're sending commands directly!")
-        return self.pcr_tx(
-            bytes.fromhex(
-                input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
-            )
-        )

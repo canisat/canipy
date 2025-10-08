@@ -40,7 +40,7 @@ def shell_main():
     # COM3 used for this test, change if necessary
     pcr_control = CaniPy(port="COM3", baud=baud_rate)
 
-    if is_direct: pcr_control.direct_enable()
+    if is_direct: pcr_control.dx.enable()
 
     print("=Debug Menu=")
     print("1. Power on")
@@ -56,25 +56,25 @@ def shell_main():
     while True:
         match input("Select option: "):
             case "1":
-                pcr_control.power_up()
+                pcr_control.tx.power_up()
                 continue
             case "2":
-                pcr_control.power_down()
+                pcr_control.tx.power_down()
                 continue
             case "3":
-                pcr_control.change_channel(int(input("Channel #: ")))
+                pcr_control.tx.change_channel(int(input("Channel #: ")))
                 continue
             case "4":
-                pcr_control.channel_info(int(input("Channel #: ")))
+                pcr_control.tx.channel_info(int(input("Channel #: ")))
                 continue
             case "5":
-                pcr_control.get_radioid()
+                pcr_control.tx.get_radioid()
                 continue
             case "6":
-                pcr_control.signal_info()
+                pcr_control.tx.signal_info()
                 continue
             case "7":
-                pcr_control.crash_override()
+                pcr_control.tx.crash_override()
                 continue
             case "8":
                 pcr_control.verbose = not pcr_control.verbose
