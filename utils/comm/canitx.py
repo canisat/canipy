@@ -23,7 +23,6 @@ class CaniTX:
 
         curr_ext_info(): Prompts radio to report extended program info for current channel.
     """
-    # Functions will be moved here gradually
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
 
@@ -392,7 +391,7 @@ class CaniTX:
         """
         # FOR DEBUG USE
         print("Careful now!")
-        print("You're sending commands directly!")
+        print("You're sending commands to the radio directly!")
         return self.send(
             bytes.fromhex(
                 input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")

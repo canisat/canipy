@@ -18,6 +18,7 @@ def shell_main():
     print("2. Direct/Commander")
     print("3. WX")
     print("4. WX (Certified)")
+    print("5. Simulator (Parse Payload)")
     print("0. Exit")
 
     while True:
@@ -33,6 +34,9 @@ def shell_main():
             case "4":
                 baud_rate = 115200
                 break
+            case "5":
+                CaniPy().rx.acid_burn()
+                continue
             case "0":
                 return
         print("Invalid option")

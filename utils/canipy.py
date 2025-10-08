@@ -7,6 +7,8 @@ from .comm.canitx import CaniTX
 from .comm.special.canidx import CaniDX
 from .comm.special.caniwx import CaniWX
 
+from .comm.canithread import CaniThread
+
 class CaniPy:
     """
     The main CaniPy support script, used to interface with supported SDARS hardware.
@@ -47,13 +49,14 @@ class CaniPy:
         dx (CaniDX): Functions related to Direct receiver commands.
         wx (CaniWX): Functions related to data commands, notably to weather data receivers.
 
+        thread (CaniThread): Threaded instance reading the port for responses from the radio.
+
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
     
     Lambda:
         set_port(): Set up a new connection, only changing the serial device path.
         set_baud(): Set up a new connection, only changing the baud rate.
     """
-
     def __init__(self, port:str="", baud:int=9600):
         self.header = bytes([0x5A, 0xA5])
         self.tail = bytes([0xED, 0xED])
@@ -85,19 +88,28 @@ class CaniPy:
         self.direct_idleframes = 0
 
         self.serial_conn = None
-        if port: self.set_serial_params(port, baud)
 
-        self.set_port = lambda new_port: self.set_serial_params(new_port, self.baud_rate)
-        self.set_baud:Callable[[int], None] = lambda new_baud: self.set_serial_params(self.port_name, new_baud)
+        self.set_port = lambda new_port: self.open(new_port, self.baud_rate)
+        self.set_baud:Callable[[int], None] = lambda new_baud: self.open(self.port_name, new_baud)
 
         self.rx = CaniRX(self)
         self.tx = CaniTX(self)
         self.dx = CaniDX(self)
         self.wx = CaniWX(self)
 
-        print("CaniPy started")
+        self.thread = CaniThread(self)
 
-    def set_serial_params(self, port:str, baud:int):
+        if port: self.open(port, baud)
+
+        print("CaniPy started")
+    
+    def __del__(self):
+        """
+        Halt thread and close connection when object is destroyed.
+        """
+        self.close()
+
+    def open(self, port:str, baud:int):
         """
         Configure a new connection to the serial device.
 
@@ -105,19 +117,26 @@ class CaniPy:
             port (str): The serial device's path or identifier.
             baud (int): The baud rate of the connection.
         """
+        # stop thread if one already exists
+        self.thread.stop()
         self.port_name = port
         self.baud_rate = baud
         try:
             self.serial_conn = serial.Serial(port=port, baudrate=baud, timeout=1)
         except serial.SerialException:
-            print(f"Port is unavailable")
+            print("Port is unavailable")
             self.serial_conn = None
-
+            return
+        # start com port read thread
+        self.thread.start()
+        
     def close(self):
         """
         Close the connection to the serial device.
         """
+        # stop thread
+        self.thread.stop()
         if self.serial_conn is None or not self.serial_conn.is_open:
-            print("Port already closed")
+            if self.verbose: print("Port already closed")
             return
         self.serial_conn.close()

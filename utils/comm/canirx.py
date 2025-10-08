@@ -7,7 +7,6 @@ class CaniRX:
     Attributes:
         parent (CaniPy): A main CaniPy instance that this script will support.
     """
-    # Functions will be moved here gradually
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
 
@@ -500,3 +499,19 @@ class CaniRX:
                 print("If errors persist, check or power-cycle the radio")
             case _:
                 print(f"Unknown return code {hex(payload[0])}")
+
+    def acid_burn(self):
+        """
+        Manually enter payload for debugging purposes.
+        Hack the planet!
+        """
+        # FOR DEBUG USE
+        self.parent.verbose = True
+        print("Careful now!")
+        print("You're about to send manual commands to the conductor!")
+        self.conductor(
+            bytes.fromhex(
+                input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
+            )
+        )
+        self.parent.verbose = False

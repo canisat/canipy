@@ -8,7 +8,6 @@ class CaniWX:
     Lambda:
         data_stop(): Instructs the radio to halt data RX.
     """
-    # Functions will be moved here gradually
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
 
