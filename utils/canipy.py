@@ -2,10 +2,10 @@ import serial
 
 from collections.abc import Callable
 
-from .canirx import CaniRX
-from .canitx import CaniTX
-from .special.canidx import CaniDX
-from .special.caniwx import CaniWX
+from .comm.canirx import CaniRX
+from .comm.canitx import CaniTX
+from .comm.special.canidx import CaniDX
+from .comm.special.caniwx import CaniWX
 
 class CaniPy:
     """
