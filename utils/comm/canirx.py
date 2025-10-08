@@ -225,6 +225,8 @@ class CaniRX:
                 f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
             )
             if self.parent.verbose:
+                print(f"Raw day for monitoring purposes: {payload[4]:02X}")
+
                 # Seconds have high bit on for some reason...
                 # TODO: Figure out why this is.
                 # For now, AM and PM are determined by 24h time.

@@ -64,7 +64,7 @@ class CaniTX:
             print("No serial port in use")
             return b""
         length = len(payload).to_bytes(2, byteorder='big')
-        command = self.header + length + payload + self.tail
+        command = self.parent.header + length + payload + self.parent.tail
         self.parent.serial_conn.write(command)
         if self.parent.verbose:
             print(f"Sent: {' '.join(f'{b:02X}' for b in payload)}")
