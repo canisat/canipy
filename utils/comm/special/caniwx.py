@@ -25,7 +25,8 @@ class CaniWX:
         reveng.sourceforge.io/crc-catalogue/16.htm#crc.cat.crc-16-genibus
 
         Example:
-            Provided with 4 bytes "AB CD 12 34", the resulting sum is.
+            Provided with 4 bytes "AB CD 12 34", the
+            resulting Genibus sum is 0xF836.
 
         Args:
             data (bytes): The data to calculate the checksum with.
@@ -54,6 +55,11 @@ class CaniWX:
     def write_data(sid:int, frame:int, data:bytes, crc_sum:int):
         """
         Stores the provided data to a file on the system.
+
+        Example:
+            For data from SID 230, frame A1, with sum ABCD,
+            on midnight 2025 January 1, it will be stored in
+            "data/230/a1_250101000000abcd.bin".
 
         Args:
             sid (int): The service ID where the data originated from.
@@ -151,7 +157,7 @@ class CaniWX:
         print(f"Frame: {payload[3]}")
         print(f"Length: {payload[7]} bytes")
         # If CRC sums match, process it, otherwise report mismatch
-        if (payload[11]|(payload[10]<<8)) == self.parent.wx.data_sum(payload[12:]):
+        if (payload[11]|(payload[10]<<8)) == self.data_sum(payload[12:]):
             if write:
                 self.write_data(
                     payload[2],
@@ -172,6 +178,6 @@ class CaniWX:
             if self.parent.verbose:
                 print(
                     f"Expected {''.join(f'{b:02X}' for b in payload[10:12])}, "
-                    f"got {self.parent.wx.data_sum(payload[12:]):02X}"
+                    f"got {self.data_sum(payload[12:]):02X}"
                 )
         print("==================")
