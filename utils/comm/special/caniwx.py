@@ -168,7 +168,7 @@ class CaniWX:
             sum (int): Appends the sum as an identifier for the file.
         """
         path = f"data/{str(sid)}"
-        file = f"{frame:02x}_{sum:02x}_{datetime.now().strftime("%Y%m%dT%H%M%S")}.bin"
+        file = f"{frame:02x}_{datetime.now().strftime("%y%m%d%H%M%S")}{sum:02x}.bin"
         if not os.path.exists(path):
             os.makedirs(path)
         with open(path+"/"+file, "wb") as file:
