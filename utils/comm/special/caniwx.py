@@ -14,7 +14,7 @@ class CaniWX:
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
 
-        self.data_stop = lambda: self.change_datachan(0xFF, True, True)
+        self.data_stop = lambda: self.set_datachan(0xFF, True, True)
 
     @staticmethod
     def data_sum(data:bytes) -> int:
@@ -68,13 +68,13 @@ class CaniWX:
             crc_sum (int): Appends the sum as an identifier for the file.
         """
         path = f"data/{str(sid)}"
-        file = f"{frame:02x}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:02x}.bin"
+        file = f"{frame:03}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:02x}.bin"
         if not os.path.exists(path):
             os.makedirs(path)
         with open(path+"/"+file, "wb") as file:
             file.write(data)
 
-    def change_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
+    def set_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
         """
         Sets the specialized receiver to a data channel.
 
@@ -152,6 +152,8 @@ class CaniWX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
             write (bool, optional): Write the contained data to disk after verify. Default set to false.
         """
+        # Sometimes im getting sum mismatches that lead to a bunch of header/packet issues.
+        # TODO: Play the long game in figuring out what the heck is causing all that commotion...
         print("=== DATA  INFO ===")
         print(f"SID: {payload[2]}")
         print(f"Frame: {payload[3]}")
@@ -170,9 +172,9 @@ class CaniWX:
                 #print("===    DATA    ===")
                 # Safely print out bare data
                 #print(payload[12:].decode('utf-8', errors='replace'))
-                print("===    HEX!    ===")
+                #print("===    HEX!    ===")
                 # Print out hex dump
-                print(' '.join(f'{b:02X}' for b in payload[12:]))
+                #print(' '.join(f'{b:02X}' for b in payload[12:]))
         else:
             print("Sum mismatch!")
             if self.parent.verbose:

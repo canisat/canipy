@@ -88,12 +88,16 @@ class CaniThread:
             
         if len(packet) != 5:
             print("Unexpected header size")
-            if self.parent.verbose: print(f"Exp 5, got {len(packet)}")
+            if self.parent.verbose:
+                print(f"Exp 5, got {len(packet)}")
+                print({' '.join(f'{b:02X}' for b in packet)})
             return b""
         # verify it is the header
         if packet[:2] != self.parent.header:
             print("Header not found")
-            if self.parent.verbose: print(packet[:2])
+            if self.parent.verbose:
+                print(packet[:2])
+                print({' '.join(f'{b:02X}' for b in packet)})
             return b""
         # Both of these do the same thing, but codebase
         # is to keep consistency with the more
@@ -112,6 +116,7 @@ class CaniThread:
         if len(rest_of_packet) != size+1:
             print("Unexpected packet size")
             if self.parent.verbose: print(f"Exp {size}, got {len(rest_of_packet)}")
+            print({' '.join(f'{b:02X}' for b in rest_of_packet)})
             return b""
         # combine the return code and data and return
         # ignoring header, length, sum in printout
