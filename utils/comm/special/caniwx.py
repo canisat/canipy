@@ -16,6 +16,58 @@ class CaniWX:
 
         self.data_stop = lambda: self.change_datachan(0xFF, True, True)
 
+    @staticmethod
+    def data_sum(self, data:bytes) -> int:
+        """
+        Computes the CRC sum of provided data from a frame for comparing.
+        The implementation used is 16-bit Genibus.
+        Start with all on, polynomial of 0x1021, then XOR with all on for output.
+        reveng.sourceforge.io/crc-catalogue/16.htm#crc.cat.crc-16-genibus
+
+        Example:
+            Provided with 4 bytes "AB CD 12 34", the resulting sum is.
+
+        Args:
+            data (bytes): The data to calculate the checksum with.
+
+        Returns:
+            int: Provides with the resulting sum.
+        """
+        datasum = 0xFFFF  # Begin with all bits as 1
+        # For each byte
+        for byte in data:
+            # XOR assign to upper half
+            datasum ^= (byte << 8)
+            # For each bit
+            for _ in range(8):
+                # Is the sum's biggest bit currently 1?
+                if datasum & 0x8000:
+                    # Shift left and XOR with polynomial
+                    datasum = ((datasum << 1) ^ 0x1021) & 0xFFFF
+                else:
+                    # Only shift left otherwise
+                    datasum = (datasum << 1) & 0xFFFF
+        # XOR to get the final result
+        return datasum ^ 0xFFFF
+
+    @staticmethod
+    def write_data(self, sid:int, frame:int, data:bytes, crc_sum:int):
+        """
+        Stores the provided data to a file on the system.
+
+        Args:
+            sid (int): The service ID where the data originated from.
+            frame (int): The frame number of the corresponding data.
+            data (bytes): The downloaded data to store.
+            crc_sum (int): Appends the sum as an identifier for the file.
+        """
+        path = f"data/{str(sid)}"
+        file = f"{frame:02x}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:02x}.bin"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with open(path+"/"+file, "wb") as file:
+            file.write(data)
+
     def change_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
         """
         Sets the specialized receiver to a data channel.
@@ -85,39 +137,6 @@ class CaniWX:
         if self.parent.verbose: print("WR - Check RX for GPS module confirmation")
         return self.parent.tx.send(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
 
-    def data_sum(self, data:bytes) -> int:
-        """
-        Computes the CRC sum of provided data from a frame for comparing.
-        The implementation used is 16-bit Genibus.
-        Start with all on, polynomial of 0x1021, then XOR with all on for output.
-        reveng.sourceforge.io/crc-catalogue/16.htm#crc.cat.crc-16-genibus
-
-        Example:
-            Provided with 4 bytes "AB CD 12 34", the resulting sum is.
-
-        Args:
-            data (bytes): The data to calculate the checksum with.
-
-        Returns:
-            int: Provides with the resulting sum.
-        """
-        datasum = 0xFFFF  # Begin with all bits as 1
-        # For each byte
-        for byte in data:
-            # XOR assign to upper half
-            datasum ^= (byte << 8)
-            # For each bit
-            for _ in range(8):
-                # Is the sum's biggest bit currently 1?
-                if datasum & 0x8000:
-                    # Shift left and XOR with polynomial
-                    datasum = ((datasum << 1) ^ 0x1021) & 0xFFFF
-                else:
-                    # Only shift left otherwise
-                    datasum = (datasum << 1) & 0xFFFF
-        # XOR to get the final result
-        return datasum ^ 0xFFFF
-
     def parse_data(self, payload:bytes, write:bool=False):
         """
         Rudimentary data implementation.
@@ -156,20 +175,3 @@ class CaniWX:
                     f"got {self.parent.wx.data_sum(payload[12:]):02X}"
                 )
         print("==================")
-
-    def write_data(self, sid:int, frame:int, data:bytes, sum:int):
-        """
-        Stores the provided data to a file on the system.
-
-        Args:
-            sid (int): The service ID where the data originated from.
-            frame (int): The frame number of the corresponding data.
-            data (bytes): The downloaded data to store.
-            sum (int): Appends the sum as an identifier for the file.
-        """
-        path = f"data/{str(sid)}"
-        file = f"{frame:02x}_{datetime.now().strftime('%y%m%d%H%M%S')}{sum:02x}.bin"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        with open(path+"/"+file, "wb") as file:
-            file.write(data)
