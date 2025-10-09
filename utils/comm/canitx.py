@@ -37,11 +37,11 @@ class CaniTX:
         self.diagmon_enable = lambda: self.diag_mon(True)
         self.diagmon_disable = lambda: self.diag_mon(False)
 
-        self.curr_channel_info = lambda: self.channel_info(self.ch_num)
-        self.next_channel_info = lambda: self.send(bytes([0x25, 0x09, self.ch_num, 0x00]))
-        self.prev_channel_info = lambda: self.send(bytes([0x25, 0x0A, self.ch_num, 0x00]))
+        self.curr_channel_info = lambda: self.channel_info(self.parent.ch_num)
+        self.next_channel_info = lambda: self.send(bytes([0x25, 0x09, self.parent.ch_num, 0x00]))
+        self.prev_channel_info = lambda: self.send(bytes([0x25, 0x0A, self.parent.ch_num, 0x00]))
 
-        self.curr_ext_info = lambda: self.ext_info(self.ch_num)
+        self.curr_ext_info = lambda: self.ext_info(self.parent.ch_num)
 
     def send(self, payload:bytes) -> bytes:
         """

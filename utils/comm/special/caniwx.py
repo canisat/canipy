@@ -125,7 +125,7 @@ class CaniWX:
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
-            save (bool, optional): Write the contained data to disk after verify. Default set to false.
+            write (bool, optional): Write the contained data to disk after verify. Default set to false.
         """
         print("=== DATA  INFO ===")
         print(f"SID: {payload[2]}")
@@ -168,7 +168,7 @@ class CaniWX:
             sum (int): Appends the sum as an identifier for the file.
         """
         path = f"data/{str(sid)}"
-        file = f"{frame:02x}_{datetime.now().strftime("%y%m%d%H%M%S")}{sum:02x}.bin"
+        file = f"{frame:02x}_{datetime.now().strftime('%y%m%d%H%M%S')}{sum:02x}.bin"
         if not os.path.exists(path):
             os.makedirs(path)
         with open(path+"/"+file, "wb") as file:
