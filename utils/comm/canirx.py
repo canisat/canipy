@@ -1,4 +1,5 @@
-import threading
+import os
+from datetime import datetime, timezone
 
 class CaniRX:
     """
@@ -184,7 +185,8 @@ class CaniRX:
 
     def parse_clock(self, payload:bytes, miltime:bool=False):
         """
-        Takes in a time info response (DF hex) to print out relevant information.
+        Takes in a date-time info response (DF hex) to print and store relevant info.
+        Service stamp is reported in coordinated universal time (UTC).
         At this time, verification of the command is by checking if it contains 19 bytes.
 
         Args:
@@ -204,38 +206,49 @@ class CaniRX:
             0x0C:"Saturday",
             0x0E:"Sunday"
         }
+        # Eventually move to primarily using this
+        self.parent.sat_datetime = datetime(
+            (payload[1]*100)+payload[2],
+            payload[3],
+            payload[4] & 0x0F,
+            payload[5],
+            payload[6],
+            payload[7] & 0x7F,
+            tzinfo=timezone.utc
+        )
         if len(payload) == 11:
             print("===  DateTime  ===")
-            weekdaycalc = (payload[4]>>4) - ((payload[4]>>4) % 2)
-            # Day of the week
-            print(f"{weekdaylabel.get(weekdaycalc,f'?({payload[4]})')}")
-            # Funny layout to compensate the need to decode
+            # Weekday
+            print(
+                f"{weekdaylabel.get((payload[4]>>4) - ((payload[4]>>4) % 2),f'?({payload[4]})')}"
+            )
             # Date
             print(
                 f"{payload[1]:02d}{payload[2]:02d}-"
                 f"{payload[3]:02d}-"
-                f"{(payload[4]&0x0F):02d}"
+                f"{(payload[4] & 0x0F):02d}"
             )
             # Time
             print(
                 f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
                 f"{payload[6]:02d}:"
-                f"{(payload[7] - 0x80 if payload[7] & 0x80 else payload[7]):02d}"
+                f"{(payload[7] & 0x7F):02d}"
                 f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
             )
+            # DST
+            print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
             if self.parent.verbose:
+                print(f"Datetime stored: {self.parent.sat_datetime}")
                 print(f"Raw day for monitoring purposes: {payload[4]:02X}")
-
                 # Seconds have high bit on for some reason...
-                # TODO: Figure out why this is.
-                # For now, AM and PM are determined by 24h time.
-                # I thought this was an AM PM indicator at first.
-                print(f"Raw seconds due to high bit: {payload[7]:02X}")
-                # Tick can be useful for RNG
-                # Feed test[8:11] as a seed
-                # TODO: Implement "lucky number" feature just for fun
+                # Could this be daylight savings??
+                print(f"Raw seconds due to DST bit? {payload[7]:02X}")
+                # Tick can be useful for RNG seed
+                # TODO: Implement a "lucky number" feature for fun
                 print(f"Tick is at {payload[10]:02X}, rolled over {payload[9]} times.")
-                print(f"Roll-over cleared {payload[8]} times since epoch.")
+                # Not sure what this is..
+                # TODO: Figure out what this means, sometimes its 130 or 131
+                print(f"Magic number: {payload[8]} ({payload[8]:02X})")
             print("==================")
             return
         print("Payload not of correct length")
@@ -440,31 +453,12 @@ class CaniRX:
                 # Acknowledgement of Direct responses.
                 # nsayer ref listens to E4 though?? differs by 4th opcode
                 # TODO: cover both until better understood
-                print("Direct command Acknowledged")
+                print(f"Direct command Acknowledged ({payload[0]:02X})")
             case 0xEA:
-                # Rudimentary data implementation.
-                # Will only report if verbose logging.
-                # TODO: Figure out how the data is to be written.
-                if self.parent.verbose:
-                    if payload[1] == 0xD0:
-                        print("=== DATA  INFO ===")
-                        print(f"SID: {payload[2]}")
-                        print(f"Frame: {payload[3]}")
-                        # The radio packets in general can theoretically
-                        # report up to 64k. Studied pcaps only go up to 220
-                        # however, and a data frame that was inspected only
-                        # went up to D0 (208 bytes), but data frames could
-                        # be larger in theory?
-                        print(f"Length: {payload[7]} bytes")
-                        print("===    DATA    ===")
-                        # Safely print out bare data
-                        print(payload[10:].decode('utf-8', errors='replace'))
-                        print("==================")
-                        print("===    HEX!    ===")
-                        # Print out hex dump
-                        print(' '.join(f'{b:02X}' for b in payload[10:]))
-                        print("==================")
-                        return
+                if payload[1] == 0xD0:
+                    # Write data frames
+                    self.parent.wx.parse_data(payload, True)
+                    return
                 print("Data packet received")
             case 0xF0:
                 print("Diagnostic info monitoring status updated")

@@ -1,4 +1,5 @@
 import serial
+from datetime import datetime
 
 from collections.abc import Callable
 
@@ -39,6 +40,8 @@ class CaniPy:
         sig_strength (int): Overall satellite signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
         ant_strength (int): Indicates whether the antenna is connected or not (Exp: -1 inactive, 0 none, 3 connected).
         ter_strength (int): Overall terrestrial signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
+
+        sat_datetime (datetime): Stores the date-time value from the service when reported by the radio.
 
         self.radio_id (str): The ID of the tuner hardware assigned by the service provider.
 
@@ -82,6 +85,9 @@ class CaniPy:
         self.sig_strength = -1
         self.ant_strength = -1
         self.ter_strength = -1
+
+        # Assume minimum date value means not set
+        self.sat_datetime = datetime.min
 
         self.radio_id = ""
 
