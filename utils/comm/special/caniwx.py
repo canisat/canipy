@@ -17,7 +17,7 @@ class CaniWX:
         self.data_stop = lambda: self.change_datachan(0xFF, True, True)
 
     @staticmethod
-    def data_sum(self, data:bytes) -> int:
+    def data_sum(data:bytes) -> int:
         """
         Computes the CRC sum of provided data from a frame for comparing.
         The implementation used is 16-bit Genibus.
@@ -51,7 +51,7 @@ class CaniWX:
         return datasum ^ 0xFFFF
 
     @staticmethod
-    def write_data(self, sid:int, frame:int, data:bytes, crc_sum:int):
+    def write_data(sid:int, frame:int, data:bytes, crc_sum:int):
         """
         Stores the provided data to a file on the system.
 
