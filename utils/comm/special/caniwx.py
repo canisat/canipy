@@ -68,7 +68,7 @@ class CaniWX:
             crc_sum (int): Appends the sum as an identifier for the file.
         """
         path = f"data/{str(sid)}"
-        file = f"{frame:03}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:02x}.bin"
+        file = f"{frame:03}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:04x}.bin"
         if not os.path.exists(path):
             os.makedirs(path)
         with open(path+"/"+file, "wb") as file:
