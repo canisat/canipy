@@ -10,6 +10,68 @@ class CaniRX:
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
 
+    @staticmethod
+    def print_status(payload:bytes):
+        """
+        Takes in a payload to intepret its diagnostic
+        message into a human-legible response.
+
+        Example:
+            If the payload has "01 00" as the status,
+            this is an "OK" message, meaning all is good.
+
+        Args:
+            payload (bytes): The data to parse the status from.
+        """
+        match payload[1]:
+            case 0x01:
+                if payload[2] == 0x00:
+                    print("OK")
+                else:
+                    print("Normal status")
+            case 0x02:
+                match payload[2]:
+                    case 0x01:
+                        # Data is of unidentified type?
+                        # Common to see this with overlay channels,
+                        # so prompt user that ch is overlay only.
+                        print("Channel requires Overlay receiver")
+                    case 0x02:
+                        print("something...")
+                    case 0x03:
+                        # 02 03 indicates entitled data product
+                        print("Stream is available, use data mode to select")
+                    case 0x04:
+                        print("Tuner not on correct mode for channel")
+                    case 0x06:
+                        print("Irregular power state")
+                    case _:
+                        print("Radio alert")
+            case 0x03:
+                # Subscriber entitlement alert
+                print("Not subscribed")
+                if payload[2] == 0x09:
+                    print("Contact service provider to subscribe")
+                if payload[2] == 0x0a:
+                    print("Not available for current subscription")
+            case 0x04:
+                match payload[2]:
+                    case 0x0E:
+                        print("Echo radio information")
+                    case 0x10:
+                        print("No signal")
+                        print("Check if antenna is connected and has a clear view of the sky")
+                    case _:
+                        print("Tuning alert")
+            case 0x07:
+                if payload[2] == 0x10:
+                    # 07 10, sending commands to a radio tuner that is not on yet
+                    print("Please power up the tuner before sending commands")
+                else:
+                    print("Command alert")
+            case _:
+                print(f"Radio reported alert {payload[1]:02X} {payload[2]:02X}")
+
     def parse_startup(self, payload:bytes):
         """
         Takes in a power-on event response (80 hex) to print out relevant information.
@@ -21,7 +83,8 @@ class CaniRX:
         if len(payload) == 27:
             self.parent.radio_id = payload[19:27].decode('utf-8')
             print("===Radio Info===")
-            print(f"Activated: {'No' if payload[1] == 0x3 else 'Yes'}")
+            if payload[1]:
+                print(f"Activated: {'No' if payload[1] == 0x03 else 'Yes'}")
             # No idea what payload[3] might be yet, always 0 in pcaps.
             # Ignoring it for now.
             if self.parent.verbose:
@@ -54,10 +117,8 @@ class CaniRX:
         if len(payload) == 78:
             print("===Title  Info.===")
             print(f"Channel {payload[3]}")
-            if payload[1] == 0x03:
-                print("Not subscribed")
-                if payload[2] == 0x09:
-                    print("Contact service provider to subscribe")
+            if payload[1] != 0x01:
+                self.print_status(payload)
                 print("==================")
                 return
             if payload[4] == 0x01:
@@ -93,17 +154,25 @@ class CaniRX:
                 is_currchan = True
                 self.parent.ch_num = payload[3]
                 self.parent.ch_sid = payload[4]
+            if payload[1] == 0x04 and payload[2] == 0x0E:
+                # Channel 0 contains radio info.
+                # Structure to the size of a startup RX.
+                self.parse_startup(
+                    bytes(
+                        bytes(4) +
+                        payload[6:13] +
+                        bytes(2) +
+                        payload[13:18] +
+                        bytes([0x08]) +
+                        payload[18:26]
+                    )
+                )
+                return
             print("===Channel Info===")
             print(f"Channel {payload[3]}")
-            if payload[1] == 0x03:
-                print("Not subscribed")
-                if payload[2] == 0x09:
-                    print("Contact service provider to subscribe")
-                print("==================")
-                return
-            if payload[1] == 0x04:
-                if payload[2] == 0x0E:
-                    print("End of line-up reached")
+            if self.parent.verbose: print(f"SID {payload[4]:02X}")
+            if payload[1] != 0x01:
+                self.print_status(payload)
                 print("==================")
                 return
             if payload[5] == 0x01:
@@ -122,7 +191,6 @@ class CaniRX:
                     self.parent.cat_id = payload[23]
                 print(payload[24:40].decode('utf-8'))
                 if self.parent.verbose: print(f"Cat ID: {payload[23]:02X}")
-            if self.parent.verbose: print(f"Service ID: {payload[4]:02X}")
             print("==================")
             return
         print("Payload not of correct length")
@@ -296,21 +364,6 @@ class CaniRX:
                 # TODO: Printout to scale of -96dB to 24dB
                 print(f"Line level set to -{payload[3]}dB")
             case 0x90:
-                if payload[1] == 0x03:
-                    print("Not subscribed")
-                    if payload[2] == 0x09:
-                        print("Contact service provider to subscribe")
-                    elif payload[2] == 0x0a:
-                        print("Not available for current subscription")
-                    return
-                if payload[1] == 0x04:
-                    print("No signal")
-                    if payload[2] == 0x10:
-                        print("Check if antenna is connected")
-                        print("and has a clear view of the sky")
-                    return
-                self.parent.ch_sid = payload[3]
-                self.parent.ch_num = payload[4]
                 if self.parent.verbose: print(f"SID {payload[3]}, Ch. {payload[4]}")
                 if payload[5]:
                     # When first tuning to a data channel, like
@@ -319,9 +372,11 @@ class CaniRX:
                     # Might be to indicate auxiliary tuning is enabled
                     # to allow simultaneous audio and data tuning.
                     print(f"Data aux is on")
-                    # 02 03 indicates entitled data product
-                    if payload[1] == 0x02 and payload[2] == 0x03:
-                        print("Product is available with current subscription")
+                if payload[1] != 0x01:
+                    self.print_status(payload)
+                    return
+                self.parent.ch_sid = payload[3]
+                self.parent.ch_num = payload[4]
                 self.parent.tx.channel_info(payload[4])
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
@@ -476,16 +531,8 @@ class CaniRX:
                 if payload[1] == 0x01 and payload[2] == 0x00:
                     # 01 00 (aka OK) on error, typically corresponds to antenna
                     print("Antenna not detected, check antenna")
-                if payload[1] == 0x02:
-                    # 02 means radio is not repsonding
-                    print("Radio unresponsive!")
-                    if payload[2] == 0x04:
-                        print("Unable to change channels")
-                    elif payload[2] == 0x06:
-                        print("Unable to change radio's power state")
-                if payload[1] == 0x07 and payload[2] == 0x10:
-                    # 07 10, sending commands to a radio tuner that is not on yet
-                    print("Please power up the tuner before sending commands")
+                else:
+                    self.print_status(payload)
                 if self.parent.verbose:
                     print(f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}")
                 print("Radio may still be operated")
