@@ -37,10 +37,12 @@ class CaniRX:
                         # so prompt user that ch is overlay only.
                         print("Channel requires Overlay receiver")
                     case 0x02:
-                        print("something...")
+                        # Not exactly sure what this is yet.
+                        # Maybe to indicate a data service?
+                        print("Channel is a data service")
                     case 0x03:
                         # 02 03 indicates entitled data product
-                        print("Stream is available, use data mode to select")
+                        print("Data stream available")
                     case 0x04:
                         print("Tuner not on correct mode for channel")
                     case 0x06:
