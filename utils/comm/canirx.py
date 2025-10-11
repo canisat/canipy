@@ -316,7 +316,8 @@ class CaniRX:
                 # TODO: Implement a "lucky number" feature for fun
                 print(f"Tick is at {payload[10]:02X}, rolled over {payload[9]} times.")
                 # Not sure what this is..
-                # TODO: Figure out what this means, sometimes its 130 or 131
+                # TODO: Figure out what this means, sometimes its x81, x82, x83.
+                # Could be time of day? season?
                 print(f"Magic number: {payload[8]} ({payload[8]:02X})")
             print("==================")
             return
