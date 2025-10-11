@@ -47,6 +47,9 @@ class CaniRX:
                         print("Tuner not on correct mode for channel")
                     case 0x06:
                         print("Irregular power state")
+                    case 0x12:
+                        print("Extended info only fetched when tuner is active!")
+                        print("Tune to a channel first before checking info")
                     case _:
                         print("Radio alert")
             case 0x03:
@@ -88,6 +91,7 @@ class CaniRX:
             if payload[1]:
                 print(f"Activated: {'No' if payload[1] == 0x03 else 'Yes'}")
             # No idea what payload[3] might be yet, always 0 in pcaps.
+            # Could be to indicate we're starting at ch0??
             # Ignoring it for now.
             if self.parent.verbose:
                 print(f"RX Version: {'.'.join(list(str(payload[4])))}")
@@ -343,6 +347,7 @@ class CaniRX:
             print(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
             print(f"RX Version: {'.'.join(list(str(payload[14])))}")
             print(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
+            print("==================")
             return
         print("Payload not of correct length")
         if self.parent.verbose: print(f"Exp 19, got {len(payload)}")
