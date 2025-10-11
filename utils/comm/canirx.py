@@ -415,6 +415,9 @@ class CaniRX:
                 if payload[1] == 0x40:
                     if payload[2] == 0xff:
                         print(f"WX - Error setting up data RX on {payload[4]}")
+                        if payload[3] == 0x08:
+                            # Not exactly sure if this correct...
+                            print("Unable to listen as data")
                         if payload[3] == 0x0a:
                             print("Data track not available for current subscription")
                         return

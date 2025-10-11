@@ -90,6 +90,7 @@ class CaniWX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
+        # TODO: What are those two flags all about?
         if sid not in range(256):
             print("Invalid channel value")
             return b""
@@ -140,6 +141,7 @@ class CaniWX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
+        # TODO: Figure out what WR GPS behavior is like
         if self.parent.verbose: print("WR - Check RX for GPS module confirmation")
         return self.parent.tx.send(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
 
@@ -152,8 +154,6 @@ class CaniWX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
             write (bool, optional): Write the contained data to disk after verify. Default set to false.
         """
-        # Sometimes im getting sum mismatches that lead to a bunch of header/packet issues.
-        # TODO: Play the long game in figuring out what the heck is causing all that commotion...
         print("=== DATA  INFO ===")
         print(f"SID: {payload[2]}")
         print(f"Frame: {payload[3]}")
