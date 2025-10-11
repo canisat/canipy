@@ -110,24 +110,27 @@ class CaniTX:
 
     def set_linevol(self, db:int) -> bytes:
         """
-        Sends in a command to set the audio level/gain of the radio's line output,
-        mayyyybe relative to full/digital scale (dBFS)?
+        Sends in a command to set the audio level of the radio's line
+        output, maybe relative to full/digital scale (dBFS)?
         Ideal to keep it at 0 decibels unless needed to be changed.
-        Output level can be between -96dB (db=96) to 24dB (db=78).
+        Output level can be between -96dB attenuation to 24dB gain.
 
         Example:
-            To set output to -96dB, the radio will be provided with "0B 96".
-            Set line level to -96dB.
+            To set output to 5dB gain, the radio will be provided with "0B 65".
+            Set line level to +5dB.
 
         Args:
-            db (int): The gain value to set on the radio.
+            db (int): The attenuation/gain value to set on the radio.
 
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        # TODO: Have to check this again to get the correct scale.
-        if self.parent.verbose: print(f"Setting gain to {db}dB")
-        return self.send(bytes([0x0B, db]))
+        # Clamp the value within -96 and 24
+        db = max(-96, min(24, db))
+        if self.parent.verbose: print(f"Setting to {db}dB")
+        # Encode into the radio's format before sending.
+        # If above 0dB, add 96, else invert dB.
+        return self.send(bytes([0x0B, 0x60 + db if db > 0 else -db]))
 
     def change_channel(self, channel:int, is_sid:bool=False, data:bool=False, prg_type:int=0) -> bytes:
         """

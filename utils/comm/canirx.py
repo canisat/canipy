@@ -369,8 +369,10 @@ class CaniRX:
             case 0x81:
                 print("Goodnight")
             case 0x8b:
-                # TODO: Printout to scale of -96dB to 24dB
-                print(f"Line level set to -{payload[3]}dB")
+                print(
+                    f"Line level set to "
+                    f"{-payload[3] if payload[3] <= 0x60 else payload[3] - 0x60}dB"
+                )
             case 0x90:
                 if self.parent.verbose: print(f"SID {payload[3]}, Ch. {payload[4]}")
                 if payload[5]:
@@ -389,7 +391,6 @@ class CaniRX:
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
                 # Or maybe 11/91 is exclusively sid, im not sure...
-                # TODO: Check this is working right in normal operation!
                 if payload[4]:
                     self.parent.ch_sid = payload[3]
                 else:
@@ -437,7 +438,10 @@ class CaniRX:
                     return
                 if payload[1] == 0x64:
                     print(f"WX - Version: {payload[2:].decode('utf-8').rstrip(chr(0))}")
-            case 0xD0:
+            case 0xCF | 0xD0:
+                # Usually 50/D0, but 4F/CF may also be used to
+                # achieve the same thing, especially with
+                # receivers that are also tuned to data!
                 if payload[3]:
                     print(f"Monitoring channel {payload[3]}")
                     return
@@ -542,6 +546,10 @@ class CaniRX:
                 if payload[1] == 0x01 and payload[2] == 0x00:
                     # 01 00 (aka OK) on error, typically corresponds to antenna
                     print("Antenna not detected, check antenna")
+                elif payload[1] == 0xFF and payload[2] == 0xFF:
+                    # If it's all F's, it's something serious!!!
+                    # (Likely has a message, print it out!)
+                    print(f"{payload[3:].decode('utf-8')}")
                 else:
                     self.print_status(payload)
                 if self.parent.verbose:
