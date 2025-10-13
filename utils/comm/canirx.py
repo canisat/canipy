@@ -160,19 +160,25 @@ class CaniRX:
                 is_currchan = True
                 self.parent.ch_num = payload[3]
                 self.parent.ch_sid = payload[4]
-            if payload[1] == 0x04 and payload[2] == 0x0E:
-                # Channel 0 contains radio info.
-                # Structure to the size of a startup RX.
-                self.parse_startup(
-                    bytes(
-                        bytes(4) +
-                        payload[6:13] +
-                        bytes(2) +
-                        payload[13:18] +
-                        bytes([0x08]) +
-                        payload[18:26]
+            if (payload[1], payload[2]) == (0x04, 0x0E):
+                if payload[5] != 0x01:
+                    # Channel 0 contains radio info,
+                    # unless radio already cached ch info.
+                    # Structure to the size of a startup RX.
+                    self.parse_startup(
+                        bytes(
+                            bytes(4) +
+                            payload[6:13] +
+                            bytes(2) +
+                            payload[13:18] +
+                            bytes([0x08]) +
+                            payload[18:26]
+                        )
                     )
-                )
+                else:
+                    # If station info's cached,
+                    # just return radio ID.
+                    self.parent.tx.get_radioid()
                 return
             print("===Channel Info===")
             print(f"Channel {payload[3]}")
@@ -308,21 +314,27 @@ class CaniRX:
                 f"{(payload[7] & 0x7F):02d}"
                 f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
             )
-            # DST
+            # DST??
             print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
             if self.parent.verbose:
                 print(f"Datetime stored: {self.parent.sat_datetime}")
-                print(f"Raw day for monitoring purposes: {payload[4]:02X}")
-                # Seconds have high bit on for some reason...
-                # Could this be daylight savings??
-                print(f"Raw seconds due to DST bit? {payload[7]:02X}")
-                # Tick can be useful for RNG seed
+                # Tick maxes out at 0xFC before rolling back to 0.
+                # Tick could be useful to append to time info for RNG seed!
                 # TODO: Implement a "lucky number" feature for fun
-                print(f"Tick is at {payload[10]:02X}, rolled over {payload[9]} times.")
-                # Not sure what this is..
-                # TODO: Figure out what this means, sometimes its x81, x82, x83.
-                # Could be time of day? season?
-                print(f"Magic number: {payload[8]} ({payload[8]:02X})")
+                print(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
+                # Could this cycle be time of day? Not really sure...
+                print(
+                    f"Cycle {payload[8]+1 & 0x7F} of 4, "
+                    f"hi bit {'on' if payload[8] & 0x80 else 'off'}"
+                )
+                # Seconds & cycle have high bit on for some reason...
+                # Could either of these be daylight savings??
+                print(
+                    f"Raw day, seconds, cycle: "
+                    f"{payload[4]:02X} "
+                    f"{payload[7]:02X} "
+                    f"{payload[8]:02X}"
+                )
             print("==================")
             return
         print("Payload not of correct length")
@@ -382,7 +394,8 @@ class CaniRX:
                     # Might be to indicate auxiliary tuning is enabled
                     # to allow simultaneous audio and data tuning.
                     print(f"Data aux is on")
-                if payload[1] != 0x01:
+                if (payload[1], payload[2]) not in [(0x01, 0x00), (0x04, 0x0E)]:
+                    # Report status if alert, or not ch0
                     self.print_status(payload)
                     return
                 self.parent.ch_sid = payload[3]
@@ -543,10 +556,10 @@ class CaniRX:
                 self.parent.direct_idleframes += 1
             case 0xFF:
                 print("Warning! Radio reported an error")
-                if payload[1] == 0x01 and payload[2] == 0x00:
+                if (payload[1], payload[2]) == (0x01, 0x00):
                     # 01 00 (aka OK) on error, typically corresponds to antenna
                     print("Antenna not detected, check antenna")
-                elif payload[1] == 0xFF and payload[2] == 0xFF:
+                elif (payload[1], payload[2]) == (0xFF, 0xFF):
                     # If it's all F's, it's something serious!!!
                     # (Likely has a message, print it out!)
                     print(f"{payload[3:].decode('utf-8')}")
