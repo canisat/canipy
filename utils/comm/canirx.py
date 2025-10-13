@@ -315,16 +315,18 @@ class CaniRX:
                 f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
             )
             # DST??
-            print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
+            # I'll need to do more testing before this goes to primetime...
+            # TODO: The heck is with these toggled MSBs in seconds and cycle??
+            #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
             if self.parent.verbose:
                 print(f"Datetime stored: {self.parent.sat_datetime}")
-                # Tick maxes out at 0xFC before rolling back to 0.
-                # Tick could be useful to append to time info for RNG seed!
+                # Tick maxes out at 0xFC before rollover gets counted.
+                # Day maxes out at 3 1F FC. All tick resets to 0 by midnight.
+                # Could be usable to append to datetime for RNG seed, i guess..
                 # TODO: Implement a "lucky number" feature for fun
                 print(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
-                # Could this cycle be time of day? Not really sure...
                 print(
-                    f"Cycle {payload[8]+1 & 0x7F} of 4, "
+                    f"Day cycle {payload[8]+1 & 0x7F} of 4, "
                     f"hi bit {'on' if payload[8] & 0x80 else 'off'}"
                 )
                 # Seconds & cycle have high bit on for some reason...
