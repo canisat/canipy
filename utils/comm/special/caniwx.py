@@ -167,6 +167,11 @@ class CaniWX:
                     payload[12:],
                     payload[11]|(payload[10]<<8)
                 )
+            print(
+                f"Bitrate: "
+                f"{(self.parent.thread.calc_bitrate(payload[7])/1000):.3f}"
+                f"kbps"
+            )
             if self.parent.verbose:
                 print(f"Sum: {''.join(f'{b:02X}' for b in payload[10:12])}")
                 #print("===    DATA    ===")

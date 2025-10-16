@@ -272,10 +272,8 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
             miltime (bool, optional): Report the time in 24-hour format. Default to false.
         """
-        # TODO: Ensure data is consistent!
-        # Day will not be correct after around the 15th-16th!!!
+        # TODO: The heck is with these toggled MSBs in seconds and cycle??
         # This is a semi-long-term analysis!
-        # Issues are expected!
         weekdaylabel = {
             0x02:"Monday",
             0x04:"Tuesday",
@@ -289,7 +287,7 @@ class CaniRX:
         self.parent.sat_datetime = datetime(
             (payload[1]*100)+payload[2],
             payload[3],
-            payload[4] & 0x0F,
+            (payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0),
             payload[5],
             payload[6],
             payload[7] & 0x7F,
@@ -305,7 +303,7 @@ class CaniRX:
             print(
                 f"{payload[1]:02d}{payload[2]:02d}-"
                 f"{payload[3]:02d}-"
-                f"{(payload[4] & 0x0F):02d}"
+                f"{((payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0)):02d}"
             )
             # Time
             print(
@@ -314,12 +312,14 @@ class CaniRX:
                 f"{(payload[7] & 0x7F):02d}"
                 f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
             )
-            # DST??
             # I'll need to do more testing before this goes to primetime...
-            # TODO: The heck is with these toggled MSBs in seconds and cycle??
             #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
             if self.parent.verbose:
                 print(f"Datetime stored: {self.parent.sat_datetime}")
+                print(
+                    f"TPS: "
+                    f"{self.parent.thread.calc_delta():.2f}"
+                )
                 # Tick maxes out at 0xFC before rollover gets counted.
                 # Day maxes out at 3 1F FC. All tick resets to 0 by midnight.
                 # Could be usable to append to datetime for RNG seed, i guess..
@@ -332,8 +332,7 @@ class CaniRX:
                 # Seconds & cycle have high bit on for some reason...
                 # Could either of these be daylight savings??
                 print(
-                    f"Raw day, seconds, cycle: "
-                    f"{payload[4]:02X} "
+                    f"Raw seconds, cycle: "
                     f"{payload[7]:02X} "
                     f"{payload[8]:02X}"
                 )

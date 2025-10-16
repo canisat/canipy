@@ -1,5 +1,6 @@
 import time
 import threading
+from datetime import datetime
 
 class CaniThread:
     """
@@ -9,11 +10,56 @@ class CaniThread:
         parent (CaniPy): A main CaniPy instance that this script will support.
         thread_signal (threading.Event): Prompts the threaded function to halt.
         com_thread (threading.Thread): The actual thread entity looking for responeses.
+
+        last_tick (datetime): Used for storing last datetime to calculate debug.
+        last_bitrate (datetime): Used for storing last datetime to calculate bitrate.
+        bitsize_count (int): Store the size of the bits received.
+        curr_bitrate (int): The last reported bitrate.
     """
     def __init__(self, parent:"CaniPy"):
         self.parent = parent
         self.thread_signal = threading.Event()
         self.com_thread = None
+
+        self.last_tick = datetime.min
+        self.last_bitrate = datetime.min
+        self.bitsize_count = 0
+        self.curr_bitrate = 0
+
+    def calc_delta(self) -> float:
+        """
+        Used for printing out TPS rate information by
+        obtaining the delta, given the current datetime
+        stamp and referencing a past value.
+
+        Returns:
+            float: The ticks per second based off the delta.
+        """
+        now = datetime.now()
+        time_delta = (now - self.last_tick).total_seconds()
+        self.last_tick = now
+        return 1 / time_delta if time_delta > 0 else 0
+
+    def calc_bitrate(self, size:int) -> int:
+        """
+        Used for printing out bits/sec information by
+        obtaining the delta, given the current datetime
+        stamp, bytes received, and checking if a second passed.
+
+        Args:
+            size (int): Size of reported packet in bytes.
+
+        Returns:
+            int: The bitrate based off what was accumulated.
+        """
+        now = datetime.now()
+        self.bitsize_count += size*8 # Bytes * 8 gives bits
+        if (now - self.last_bitrate).total_seconds() >= 1:
+            self.curr_bitrate = self.bitsize_count
+            self.bitsize_count = 0
+            self.last_bitrate = now
+            return self.curr_bitrate
+        return self.curr_bitrate
 
     def start(self):
         """
