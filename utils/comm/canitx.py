@@ -60,7 +60,7 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if self.parent.serial_conn is None or not self.parent.serial_conn.is_open:
-            print("No serial port in use")
+            self.parent.errorprint("No serial port in use")
             return b""
         length = len(payload).to_bytes(2, byteorder='big')
         command = self.parent.header + length + payload + self.parent.tail
@@ -88,7 +88,7 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        print("Powering up")
+        if self.parent.verbose: print("Powering up")
         return self.send(bytes([0x00, ch_lbl, cat_lbl, title_lbl, loss_exp]))
 
     def power_down(self, pwr_sav:bool=False) -> bytes:
@@ -105,7 +105,7 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        print("Powering down")
+        if self.parent.verbose: print("Powering down")
         return self.send(bytes([0x01, pwr_sav]))
 
     def set_linevol(self, db:int) -> bytes:
@@ -151,9 +151,13 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if channel not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
-        print(f"Changing to {'channel' if not is_sid else 'ID'} {channel}{' (Data)' if data else ''}")
+        if self.parent.verbose:
+            print(
+                f"Changing to {'channel' if not is_sid else 'ID'} {channel}"
+                f"{' (Data)' if data else ''}"
+            )
         if not is_sid:
             self.parent.ch_num = channel
         else:
@@ -182,7 +186,7 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if channel not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
         if self.parent.verbose: print(f"Cancelling and preparing for channel {channel}")
         return self.send(bytes([0x11, channel, data]))
@@ -201,7 +205,7 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        print(f"{'' if mute else 'Un-'}Muting Audio")
+        if self.parent.verbose: print(f"{'' if mute else 'Un-'}Muting Audio")
         return self.send(bytes([0x13, mute]))
 
     def ext_info(self, channel:int) -> bytes:
@@ -220,7 +224,7 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if channel not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
         if self.parent.verbose: print(f"Check RX for extinfo on {channel}")
         # I set title size to 0x24 earlier to see if this fixes out the botched output.
@@ -243,7 +247,7 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if channel not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
         if self.parent.verbose: print(f"Check RX for info on {channel}")
         # 07 allows for checking by SID
@@ -334,7 +338,7 @@ class CaniTX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         if channel not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
         if not channel:
             # If channel is 0, assume it's to not listen to anything.

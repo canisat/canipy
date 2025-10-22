@@ -92,7 +92,7 @@ class CaniWX:
         """
         # TODO: What are those two flags all about?
         if sid not in range(256):
-            print("Invalid channel value")
+            self.parent.errorprint("Invalid channel value")
             return b""
         if self.parent.verbose: print(f"WX - Preparing for SID {sid}")
         return self.parent.tx.send(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
@@ -108,7 +108,7 @@ class CaniWX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        print("WX - Ping")
+        if self.parent.verbose: print("WX - Ping")
         return self.parent.tx.send(bytes([0x4A, 0x43]))
 
     def firm_ver(self) -> bytes:

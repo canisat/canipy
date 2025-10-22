@@ -133,15 +133,15 @@ class CaniThread:
             if self.thread_signal.is_set(): return b""
             
         if len(packet) != 5:
-            print("Unexpected header size")
             if self.parent.verbose:
+                print("Unexpected header size")
                 print(f"Exp 5, got {len(packet)}")
             #print(packet)
             return b""
         # verify it is the header
         if packet[:2] != self.parent.header:
-            print("Header not found")
             if self.parent.verbose:
+                print("Header not found")
                 print(packet[:2])
             #print(packet)
             return b""
@@ -160,8 +160,8 @@ class CaniThread:
             time.sleep(1)
             return b""
         if len(rest_of_packet) != size+1:
-            print("Unexpected packet size")
             if self.parent.verbose:
+                print("Unexpected packet size")
                 print(f"Exp {size}, got {len(rest_of_packet)}")
             #print(packet)
             #print(rest_of_packet)

@@ -17,6 +17,7 @@ class CaniPy:
     Args:
         port (str, optional): The path of the serial to use (COM3, /dev/ttyUSB0, etc). Default to no path.
         baud (int, optional): The baud rate (bits/second) to use. Default to 9600 baud.
+        gui (optional): Reference an external subsystem for output if provided. Default to None.
 
     Attributes:
         header (bytes): Request/response header constant indicating the start of a supported packet (5A A5, hex).
@@ -54,13 +55,15 @@ class CaniPy:
 
         thread (CaniThread): Threaded instance reading the port for responses from the radio.
 
+        gui: A referenced subsystem class for directing output to it instead of a terminal.
+
         serial_conn (serial.Serial): The active serial connection used for interfacing the radio.
     
     Lambda:
         set_port(): Set up a new connection, only changing the serial device path.
         set_baud(): Set up a new connection, only changing the baud rate.
     """
-    def __init__(self, port:str="", baud:int=9600):
+    def __init__(self, port:str="", baud:int=9600, gui=None):
         self.header = bytes([0x5A, 0xA5])
         self.tail = bytes([0xED, 0xED])
 
@@ -105,6 +108,8 @@ class CaniPy:
 
         self.thread = CaniThread(self)
 
+        self.gui = gui
+
         if port: self.open(port, baud)
 
         print("CaniPy started")
@@ -130,7 +135,7 @@ class CaniPy:
         try:
             self.serial_conn = serial.Serial(port=port, baudrate=baud, timeout=1)
         except serial.SerialException:
-            print("Port is unavailable")
+            self.errorprint("Port is unavailable")
             self.serial_conn = None
             return
         # start com port read thread
@@ -146,3 +151,30 @@ class CaniPy:
             if self.verbose: print("Port already closed")
             return
         self.serial_conn.close()
+
+    def infoprint(self, msg:str):
+        """
+        Send information to a subsystem if any, otherwise print to shell.
+
+        Args:
+            msg (str): The message to output
+        """
+        self.gui.infobox(msg) if self.gui else print(msg)
+
+    def warnprint(self, msg:str):
+        """
+        Send warning to a subsystem if any, otherwise print to shell.
+
+        Args:
+            msg (str): The message to output
+        """
+        self.gui.warnbox(msg) if self.gui else print(msg)
+
+    def errorprint(self, msg:str):
+        """
+        Send error to a subsystem if any, otherwise print to shell.
+
+        Args:
+            msg (str): The message to output
+        """
+        self.gui.errorbox(msg) if self.gui else print(msg)

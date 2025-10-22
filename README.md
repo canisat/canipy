@@ -3,7 +3,7 @@ Serial SDARS receiver control in Python.
 
 CaniPy provides a modern foundation for hobbyists to continue using supported SDARS hardware.
 
-The project can either be used by itself, currently a prototype GUI for both regular use and as a code sample, or as a module that can be imported to support other scripts.
+The project can either be used by itself, currently a prototype GUI for both regular use and as a subsystem sample, or as a module that can be imported to support other scripts.
 
 ## Requirements
 Python 3.10 or higher is required to run the code.
