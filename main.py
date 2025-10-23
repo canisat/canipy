@@ -4,15 +4,14 @@ from tkinter import messagebox
 from utils import CaniPy
 
 class canipy_tk(Tk):  
-    def __init__(self,parent):
+    def __init__(self):
         self.canipy = CaniPy(gui=self)
 
-        Tk.__init__(self,parent)
-        self.parent = parent
+        super().__init__()
 
         # frames
-        self.buttonFrame = Frame(self.parent)
-        self.labelFrame = Frame(self.parent)
+        self.buttonFrame = Frame(self)
+        self.labelFrame = Frame(self)
 
         # input fields
         self.comEntry = Entry(self.buttonFrame)
@@ -74,7 +73,6 @@ class canipy_tk(Tk):
         # frame for labels
         self.labelFrame.grid(column=0,row=1,sticky="w")
 
-        Label(self.labelFrame,text=f"Ch Num: {self.canipy.ch_num}").grid(column=0,row=0,sticky="w")
         attrs = [
             "ch_num",
             "ch_sid",
@@ -103,9 +101,10 @@ class canipy_tk(Tk):
         self.update_labels()
     
     def update_labels(self):
+        if not self.winfo_exists(): return
         for attr, var in self.labelVars.items():
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
-        self.after(1,self.update_labels)
+        self.after_idle(self.update_labels)
 
     def change_channel(self):
         channel = int(self.chEntry.get())
@@ -121,18 +120,21 @@ class canipy_tk(Tk):
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
-        if self.canipy.serial_conn is not None: self.canipy.close()
+        if self.canipy.serial_conn is not None:
+            self.canipy.close()
         # get com port
         com_port = self.comEntry.get()
-        self.infobox(f"Connect to {com_port} ({baud} baud)")
         self.canipy.open(port=com_port, baud=baud)
+        if self.canipy.serial_conn is not None:
+            self.infobox(f"Connected to {com_port} ({baud} baud)")
     
     def set_direct_device(self):
         self.open_com_port()
-        if self.canipy.serial_conn is not None: self.canipy.dx.enable()
+        if self.canipy.serial_conn is not None:
+            self.canipy.dx.enable()
         
 if __name__ == "__main__":
-    app = canipy_tk(None)
+    app = canipy_tk()
     app.title('CaniPy')
     app.mainloop()
         
