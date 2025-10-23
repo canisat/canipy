@@ -3,11 +3,13 @@ from tkinter import messagebox
 
 from utils import CaniPy
 
-class canipy_tk(Tk):  
+class CaniTk(Tk):  
     def __init__(self):
         self.canipy = CaniPy(gui=self)
 
         super().__init__()
+
+        self.title('CaniPy')
 
         # frames
         self.buttonFrame = Frame(self)
@@ -133,11 +135,4 @@ class canipy_tk(Tk):
         if self.canipy.serial_conn is not None:
             self.canipy.dx.enable()
         
-if __name__ == "__main__":
-    app = canipy_tk()
-    app.title('CaniPy')
-    app.mainloop()
-        
-              
-        
-        
+if __name__ == "__main__": CaniTk().mainloop()
