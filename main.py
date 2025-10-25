@@ -23,6 +23,9 @@ class CaniTk(Tk):
         self.comEntry = Entry(self.buttonFrame)
         self.chEntry = Entry(self.buttonFrame)
 
+        # toggles
+        self.verboseToggle = BooleanVar(value=self.canipy.verbose)
+
         # label dict
         self.labelVars = {}
 
@@ -53,7 +56,7 @@ class CaniTk(Tk):
         Button(self.buttonFrame,text="PCR",command=self.open_com_port).grid(column=1,row=0)
         Button(self.buttonFrame,text="WX Portable",command=lambda:self.open_com_port(baud=38400)).grid(column=2,row=0)
         Button(self.buttonFrame,text="Power On",command=self.canipy.tx.power_up).grid(column=3,row=0)
-        Button(self.buttonFrame,text="Change Ch",command=self.change_channel).grid(column=4,row=0)
+        Button(self.buttonFrame,text="Change Ch",command=lambda:self.canipy.tx.change_channel(int(self.chEntry.get()))).grid(column=4,row=0)
         Button(self.buttonFrame,text="Get Radio ID",command=self.canipy.tx.get_radioid).grid(column=5,row=0)
         Button(self.buttonFrame,text="Get Sig Data",command=self.canipy.tx.signal_info).grid(column=6,row=0)
         Button(self.buttonFrame,text="Mute",command=self.canipy.tx.mute).grid(column=7,row=0)
@@ -66,8 +69,8 @@ class CaniTk(Tk):
         Button(self.buttonFrame,text="Direct",command=self.set_direct_device).grid(column=1,row=1)
         Button(self.buttonFrame,text="WX Certified",command=lambda:self.open_com_port(baud=115200)).grid(column=2,row=1)
         Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down(pwr_sav=True)).grid(column=3,row=1)
-        Button(self.buttonFrame,text="Ch Info",command=self.get_channel_info).grid(column=4,row=1)
-        Button(self.buttonFrame,text="Ext Ch Info",command=self.get_extended_channel_info).grid(column=5,row=1)
+        Button(self.buttonFrame,text="Ch Info",command=lambda:self.canipy.tx.channel_info(int(self.chEntry.get()))).grid(column=4,row=1)
+        Button(self.buttonFrame,text="Ext Ch Info",command=lambda:self.canipy.tx.ext_info(int(self.chEntry.get()))).grid(column=5,row=1)
         Button(self.buttonFrame,text="Watch Sig",command=self.canipy.tx.sigmon_enable).grid(column=6,row=1)
         Button(self.buttonFrame,text="Unmute",command=self.canipy.tx.unmute).grid(column=7,row=1)
         Button(self.buttonFrame,text="Clock Off",command=lambda:self.canipy.tx.clock_mon(False)).grid(column=8,row=1)
@@ -101,8 +104,12 @@ class CaniTk(Tk):
             self.labelVars[attr] = var
         
         file_menu = Menu(self.menuBar,tearoff=False)
-        file_menu.add_command(label="Exit",command=self.destroy)
+        file_menu.add_command(label="Exit",command=self.destroy,underline=1)
         self.menuBar.add_cascade(label="File",menu=file_menu,underline=0)
+
+        debug_menu = Menu(self.menuBar,tearoff=False)
+        debug_menu.add_checkbutton(label='Toggle Verbose Output',variable=self.verboseToggle,underline=7)
+        self.menuBar.add_cascade(label="Debug",menu=debug_menu,underline=0)
 
         help_menu = Menu(self.menuBar,tearoff=False)
         help_menu.add_command(
@@ -139,8 +146,9 @@ class CaniTk(Tk):
                 f"or distribution of copyrighted materials received through "
                 f"the supported services. The end user is solely responsible "
                 f"for ensuring their activities comply with applicable "
-                f"copyright laws and service terms. Don't steal music."
-            )
+                f"copyright laws and service terms. Don't steal music.",
+            ),
+            underline=0
         )
         self.menuBar.add_cascade(label="Help",menu=help_menu,underline=0)
         
@@ -154,20 +162,10 @@ class CaniTk(Tk):
         if not self.winfo_exists(): return
         for attr, var in self.labelVars.items():
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
+        self.canipy.verbose = self.verboseToggle.get()
         # recursive loop
-        self.after_idle(self.update_labels)
-
-    def change_channel(self):
-        channel = int(self.chEntry.get())
-        self.canipy.tx.change_channel(channel)
-
-    def get_channel_info(self):
-        channel = int(self.chEntry.get())
-        self.canipy.tx.channel_info(channel)
-        
-    def get_extended_channel_info(self):
-        channel = int(self.chEntry.get())
-        self.canipy.tx.ext_info(channel)
+        # 1 is more stable than either 0 or after_idle
+        self.after(1,self.update)
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
