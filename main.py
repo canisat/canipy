@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 
 from utils import CaniPy
 
@@ -11,20 +11,28 @@ class CaniTk(Tk):
 
         self.title("CaniPy")
 
+        # vars
+        self.verboseToggle = BooleanVar(value=self.canipy.verbose)
+        self.chGuiVar = IntVar(value=self.canipy.ch_num)
+
         # menu bar
         self.menuBar = Menu(self)
         self.config(menu=self.menuBar)
 
         # frames
         self.buttonFrame = Frame(self)
-        self.labelFrame = Frame(self)
+        self.labelFrame = ttk.LabelFrame(self,text="Debug Values")
 
         # input fields
         self.comEntry = Entry(self.buttonFrame)
-        self.chEntry = Entry(self.buttonFrame)
-
-        # toggles
-        self.verboseToggle = BooleanVar(value=self.canipy.verbose)
+        #self.chEntry = Entry(self.buttonFrame)
+        self.chEntry = ttk.Spinbox(
+            self.buttonFrame,
+            from_=0,
+            to=255,
+            textvariable=self.chGuiVar,
+            width=16
+        )
 
         # label dict
         self.labelVars = {}
@@ -64,7 +72,7 @@ class CaniTk(Tk):
 
         # channel number
         self.chEntry.grid(column=0,row=1)
-        self.chEntry.insert(END,"1")
+        #self.chEntry.insert(END,"1")
 
         Button(self.buttonFrame,text="Direct",command=self.set_direct_device).grid(column=1,row=1)
         Button(self.buttonFrame,text="WX Certified",command=lambda:self.open_com_port(baud=115200)).grid(column=2,row=1)
@@ -80,7 +88,7 @@ class CaniTk(Tk):
         #Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx.ping).grid(column=9,row=1)
         
         # frame for labels
-        self.labelFrame.grid(column=0,row=1,sticky="w")
+        self.labelFrame.grid(column=0,row=1,columnspan=2)
 
         attrs = [
             "ch_num",
@@ -100,7 +108,7 @@ class CaniTk(Tk):
         for i, attr in enumerate(attrs):
             var = StringVar()
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
-            Label(self.labelFrame,textvariable=var).grid(column=0,row=i,sticky="w")
+            Label(self.labelFrame,textvariable=var).grid(column=i//3,row=i%3,sticky="w")
             self.labelVars[attr] = var
         
         file_menu = Menu(self.menuBar,tearoff=False)
@@ -108,7 +116,12 @@ class CaniTk(Tk):
         self.menuBar.add_cascade(label="File",menu=file_menu,underline=0)
 
         debug_menu = Menu(self.menuBar,tearoff=False)
-        debug_menu.add_checkbutton(label='Toggle Verbose Output',variable=self.verboseToggle,underline=7)
+        debug_menu.add_checkbutton(
+            label="Toggle Verbose Output",
+            variable=self.verboseToggle,
+            underline=7,
+            command=lambda:setattr(self.canipy,"verbose",self.verboseToggle.get())
+        )
         self.menuBar.add_cascade(label="Debug",menu=debug_menu,underline=0)
 
         help_menu = Menu(self.menuBar,tearoff=False)
@@ -162,10 +175,9 @@ class CaniTk(Tk):
         if not self.winfo_exists(): return
         for attr, var in self.labelVars.items():
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
-        self.canipy.verbose = self.verboseToggle.get()
         # recursive loop
         # 1 is more stable than either 0 or after_idle
-        self.after(1,self.update)
+        self.after(1,self.update_labels)
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
