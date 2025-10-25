@@ -9,7 +9,11 @@ class CaniTk(Tk):
 
         super().__init__()
 
-        self.title('CaniPy')
+        self.title("CaniPy")
+
+        # menu bar
+        self.menuBar = Menu(self)
+        self.config(menu=self.menuBar)
 
         # frames
         self.buttonFrame = Frame(self)
@@ -96,9 +100,53 @@ class CaniTk(Tk):
             Label(self.labelFrame,textvariable=var).grid(column=0,row=i,sticky="w")
             self.labelVars[attr] = var
         
+        file_menu = Menu(self.menuBar,tearoff=False)
+        file_menu.add_command(label="Exit",command=self.destroy)
+        self.menuBar.add_cascade(label="File",menu=file_menu,underline=0)
+
+        help_menu = Menu(self.menuBar,tearoff=False)
+        help_menu.add_command(
+            label="About",
+            command=lambda:messagebox.showinfo(
+                "About",
+                f"CaniPy - Version 0.25\n"
+                f"SDARS hardware control in Python\n"
+                f"Licensed under Apache 2.0\n"
+                f"\n"
+                f"This codebase is derived from PyXM by Timothy Canham\n"
+                f"\n"
+                f"Serial commands were documented from both current CaniSat "
+                f"research and prior work conducted by Nick Sayer, the "
+                f"linuXMPCR and Perl XM PCR projects, Hybrid Mobile "
+                f"Technologies, and the defunct XM Fan forums.\n"
+                f"\n"
+                f"CaniSat, a non-profit initiative, and its incubator NetOtt "
+                f"Solutions, LLC are not affiliated with either Sirius XM "
+                f"Holdings Inc., Sirius XM Radio LLC, or any of its products, "
+                f"partners, or subsidiaries. Sirius, XM, SiriusXM and all "
+                f"related indicia are trademarks of Sirius XM Holdings Inc.\n"
+                f"\n"
+                f"The data products distributed in the service(s) are "
+                f"intended to be supplemental and advisory per the provider. "
+                f"It is not recommended for use in circumstances that "
+                f"require immediate urgency to fulfill safety-critical work. "
+                f"Both CaniSat and the service provider are not responsible "
+                f"for errors and inaccuracies encountered when utilizing the "
+                f"service data products.\n"
+                f"\n"
+                f"CaniSat does not condone or encourage the use of its "
+                f"affiliated projects for unauthorized copying, duplication, "
+                f"or distribution of copyrighted materials received through "
+                f"the supported services. The end user is solely responsible "
+                f"for ensuring their activities comply with applicable "
+                f"copyright laws and service terms. Don't steal music."
+            )
+        )
+        self.menuBar.add_cascade(label="Help",menu=help_menu,underline=0)
+        
         self.resizable(False,False)
         self.update()
-        self.geometry(self.geometry())
+        #self.geometry(self.geometry())
 
         self.update_labels()
     
@@ -106,6 +154,7 @@ class CaniTk(Tk):
         if not self.winfo_exists(): return
         for attr, var in self.labelVars.items():
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
+        # recursive loop
         self.after_idle(self.update_labels)
 
     def change_channel(self):
