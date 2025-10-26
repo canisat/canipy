@@ -94,7 +94,8 @@ class CaniWX:
         if sid not in range(256):
             self.parent.errorprint("Invalid channel value")
             return b""
-        if self.parent.verbose: print(f"WX - Preparing for SID {sid}")
+        if self.parent.verbose:
+            self.parent.logprint(f"WX - Preparing for SID {sid}")
         return self.parent.tx.send(bytes([0x4A, 0x10, sid, datflagone, datflagtwo]))
 
     def ping(self) -> bytes:
@@ -108,7 +109,8 @@ class CaniWX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("WX - Ping")
+        if self.parent.verbose:
+            self.parent.logprint("WX - Ping")
         return self.parent.tx.send(bytes([0x4A, 0x43]))
 
     def firm_ver(self) -> bytes:
@@ -121,7 +123,8 @@ class CaniWX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("WX - Check RX for data receiver version")
+        if self.parent.verbose:
+            self.parent.logprint("WX - Check RX for data receiver version")
         return self.parent.tx.send(bytes([0x4A, 0x44]))
 
     def wrgps_conn(self, toggle:bool) -> bytes:
@@ -142,7 +145,8 @@ class CaniWX:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
         # TODO: Figure out what WR GPS behavior is like
-        if self.parent.verbose: print("WR - Check RX for GPS module confirmation")
+        if self.parent.verbose:
+            self.parent.logprint("WR - Check RX for GPS module confirmation")
         return self.parent.tx.send(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
 
     def parse_data(self, payload:bytes, write:bool=False):
@@ -154,10 +158,10 @@ class CaniWX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
             write (bool, optional): Write the contained data to disk after verify. Default set to false.
         """
-        print("=== DATA  INFO ===")
-        print(f"SID: {payload[2]}")
-        print(f"Frame: {payload[3]}")
-        print(f"Length: {payload[7]} bytes")
+        self.parent.logprint("=== DATA  INFO ===")
+        self.parent.logprint(f"SID: {payload[2]}")
+        self.parent.logprint(f"Frame: {payload[3]}")
+        self.parent.logprint(f"Length: {payload[7]} bytes")
         # If CRC sums match, process it, otherwise report mismatch
         if (payload[11]|(payload[10]<<8)) == self.data_sum(payload[12:]):
             if write:
@@ -167,13 +171,15 @@ class CaniWX:
                     payload[12:],
                     payload[11]|(payload[10]<<8)
                 )
-            print(
+            self.parent.logprint(
                 f"Bitrate: "
                 f"{(self.parent.thread.calc_bitrate(payload[7])/1000):.3f}"
                 f"kbps"
             )
             if self.parent.verbose:
-                print(f"Sum: {''.join(f'{b:02X}' for b in payload[10:12])}")
+                self.parent.logprint(
+                    f"Sum: {''.join(f'{b:02X}' for b in payload[10:12])}"
+                )
                 #print("===    DATA    ===")
                 # Safely print out bare data
                 #print(payload[12:].decode('utf-8', errors='replace'))
@@ -181,10 +187,10 @@ class CaniWX:
                 # Print out hex dump
                 #print(' '.join(f'{b:02X}' for b in payload[12:]))
         else:
-            print("Sum mismatch!")
+            self.parent.logprint("Sum mismatch!")
             if self.parent.verbose:
-                print(
+                self.parent.logprint(
                     f"Expected {''.join(f'{b:02X}' for b in payload[10:12])}, "
                     f"got {self.data_sum(payload[12:]):02X}"
                 )
-        print("==================")
+        self.parent.logprint("==================")

@@ -66,23 +66,27 @@ class CaniThread:
         Starts the thread
         """
         if self.com_thread and self.com_thread.is_alive():
-            if self.parent.verbose: print("CaniThread already running")
+            if self.parent.verbose:
+                self.parent.logprint("CaniThread already running")
             return
         self.thread_signal.clear()
         self.com_thread = threading.Thread(target=self.thread_read,name="CaniThread",daemon=True)
         # start com port read thread
         self.com_thread.start()
-        if self.parent.verbose: print("CaniThread started")
+        if self.parent.verbose:
+            self.parent.logprint("CaniThread started")
 
     def stop(self):
         # Stop thread upon window exit
         self.thread_signal.set()
         if not self.com_thread:
-            if self.parent.verbose: print("CaniThread already stopped")
+            if self.parent.verbose:
+                self.parent.logprint("CaniThread already stopped")
             return
         self.com_thread.join()
         self.com_thread = None
-        if self.parent.verbose: print("CaniThread stopped")
+        if self.parent.verbose:
+            self.parent.logprint("CaniThread stopped")
 
     def thread_read(self):
         """
@@ -133,16 +137,16 @@ class CaniThread:
             if self.thread_signal.is_set(): return b""
             
         if len(packet) != 5:
+            self.parent.logprint("Unexpected header size")
             if self.parent.verbose:
-                print("Unexpected header size")
-                print(f"Exp 5, got {len(packet)}")
+                self.parent.logprint(f"Exp 5, got {len(packet)}")
             #print(packet)
             return b""
         # verify it is the header
         if packet[:2] != self.parent.header:
+            self.parent.logprint("Header not found")
             if self.parent.verbose:
-                print("Header not found")
-                print(packet[:2])
+                self.parent.logprint(packet[:2])
             #print(packet)
             return b""
         # Both of these do the same thing, but codebase
@@ -160,9 +164,9 @@ class CaniThread:
             time.sleep(1)
             return b""
         if len(rest_of_packet) != size+1:
+            self.parent.logprint("Unexpected packet size")
             if self.parent.verbose:
-                print("Unexpected packet size")
-                print(f"Exp {size}, got {len(rest_of_packet)}")
+                self.parent.logprint(f"Exp {size}, got {len(rest_of_packet)}")
             #print(packet)
             #print(rest_of_packet)
             return b""
@@ -170,6 +174,6 @@ class CaniThread:
         # ignoring header, length, sum in printout
         buf = packet[4:]+rest_of_packet[:-2]
         if self.parent.verbose:
-            print(f"Received: {' '.join(f'{b:02X}' for b in buf)}")
+            self.parent.logprint(f"Received: {' '.join(f'{b:02X}' for b in buf)}")
         #return bytes([packet[4]])+rest_of_packet[:size-1]
         return buf

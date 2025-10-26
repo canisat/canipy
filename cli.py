@@ -35,7 +35,13 @@ def shell_main():
                 baud_rate = 115200
                 break
             case "5":
-                CaniPy().rx.acid_burn()
+                print("Careful now!")
+                print("You're about to send manual commands to the conductor!")
+                CaniPy().conductor.go(
+                    bytes.fromhex(
+                        input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
+                    )
+                )
                 continue
             case "0":
                 return
@@ -78,7 +84,13 @@ def shell_main():
                 pcr_control.tx.signal_info()
                 continue
             case "7":
-                pcr_control.tx.crash_override()
+                print("Careful now!")
+                print("You're sending commands to the radio directly!")
+                pcr_control.tx.send(
+                    bytes.fromhex(
+                        input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
+                    )
+                )
                 continue
             case "8":
                 pcr_control.verbose = not pcr_control.verbose

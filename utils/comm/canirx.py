@@ -8,8 +8,6 @@ class CaniRX:
         parent (CaniPy): A main CaniPy instance that this script will support.
     """
     def __init__(self, parent:"CaniPy"):
-        # TODO: Most of the printout now is verbose or using subsystem.
-        # Consider vars or subsystem printout moving forward.
         self.parent = parent
 
     @staticmethod
@@ -94,27 +92,25 @@ class CaniRX:
         """
         if len(payload) == 27:
             self.parent.radio_id = payload[19:27].decode('utf-8')
+            self.parent.logprint("===Radio Info===")
+            if payload[1]:
+                self.parent.logprint(f"Activated: {'No' if payload[1] == 0x03 else 'Yes'}")
+            # No idea what payload[3] might be yet, always 0 in pcaps.
+            # Could be to indicate we're starting at ch0??
+            # Ignoring it for now.
             if self.parent.verbose:
-                print("===Radio Info===")
-                if payload[1]:
-                    print(f"Activated: {'No' if payload[1] == 0x03 else 'Yes'}")
-                # No idea what payload[3] might be yet, always 0 in pcaps.
-                # Could be to indicate we're starting at ch0??
-                # Ignoring it for now.
-                #if self.parent.verbose:
-                print(f"RX Version: {'.'.join(list(str(payload[4])))}")
-                print(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-                print(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
-                print(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
-                print(f"CMB Version: {'.'.join(list(str(payload[13])))}")
-                print(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
-                print(f"Radio ID: {payload[19:27].decode('utf-8')}")
-                print("================")
+                self.parent.logprint(f"RX Version: {'.'.join(list(str(payload[4])))}")
+                self.parent.logprint(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
+                self.parent.logprint(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
+                self.parent.logprint(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
+                self.parent.logprint(f"CMB Version: {'.'.join(list(str(payload[13])))}")
+                self.parent.logprint(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
+            self.parent.logprint(f"Radio ID: {payload[19:27].decode('utf-8')}")
+            self.parent.logprint("================")
             return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 27, got {len(payload)}")
+            self.parent.logprint(f"Exp 27, got {len(payload)}")
 
     def parse_extinfo(self, payload:bytes):
         """
@@ -131,33 +127,29 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 78:
-            if self.parent.verbose:
-                print("===Title  Info.===")
-                print(f"Channel {payload[3]}")
+            self.parent.logprint("===Title  Info.===")
+            self.parent.logprint(f"Channel {payload[3]}")
             if payload[1] != 0x01:
                 self.parent.warnprint(self.fetch_status(payload))
-                if self.parent.verbose: print("==================")
+                self.parent.logprint("==================")
                 return
             if payload[4] == 0x01:
                 if payload[3] == self.parent.ch_num:
                     self.parent.artist_name = payload[5:37].decode('utf-8').rstrip(chr(0))
+                self.parent.logprint(payload[5:37].decode('utf-8').rstrip(chr(0)))
                 if self.parent.verbose:
-                    print(payload[5:37].decode('utf-8').rstrip(chr(0)))
-                    #if self.parent.verbose:
-                    print(' '.join(f'{b:02X}' for b in payload[37:41]))
+                    self.parent.logprint(' '.join(f'{b:02X}' for b in payload[37:41]))
             if payload[41] == 0x01:
                 if payload[3] == self.parent.ch_num:
-                    self.parent.title_name = payload[57:73].decode('utf-8').rstrip(chr(0))
+                    self.parent.title_name = payload[42:74].decode('utf-8').rstrip(chr(0))
+                self.parent.logprint(payload[42:74].decode('utf-8').rstrip(chr(0)))
                 if self.parent.verbose:
-                    print(payload[42:74].decode('utf-8').rstrip(chr(0)))
-                    #if self.parent.verbose:
-                    print(' '.join(f'{b:02X}' for b in payload[74:]))
-            if self.parent.verbose: print("==================")
+                    self.parent.logprint(' '.join(f'{b:02X}' for b in payload[74:]))
+            self.parent.logprint("==================")
             return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 78, got {len(payload)}")
+            self.parent.logprint(f"Exp 78, got {len(payload)}")
 
     def parse_chan(self, payload:bytes):
         """
@@ -197,40 +189,36 @@ class CaniRX:
                     # just return radio ID.
                     self.parent.tx.get_radioid()
                 return
+            self.parent.logprint("===Channel Info===")
+            self.parent.logprint(f"Channel {payload[3]}")
             if self.parent.verbose:
-                print("===Channel Info===")
-                print(f"Channel {payload[3]}")
-                #if self.parent.verbose:
-                print(f"SID {payload[4]:02X}")
+                self.parent.logprint(f"SID {payload[4]:02X}")
             if payload[1] != 0x01:
                 self.parent.warnprint(self.fetch_status(payload))
-                if self.parent.verbose: print("==================")
+                self.parent.logprint("==================")
                 return
             if payload[5] == 0x01:
                 if is_currchan:
                     self.parent.ch_name = payload[6:22].decode('utf-8')
-                if self.parent.verbose: print(payload[6:22].decode('utf-8'))
+                self.parent.logprint(payload[6:22].decode('utf-8'))
             if payload[40] == 0x01:
                 if is_currchan:
                     self.parent.artist_name = payload[41:57].decode('utf-8')
                     self.parent.title_name = payload[57:73].decode('utf-8')
-                if self.parent.verbose:
-                    print(payload[41:57].decode('utf-8'))
-                    print(payload[57:73].decode('utf-8'))
+                self.parent.logprint(payload[41:57].decode('utf-8'))
+                self.parent.logprint(payload[57:73].decode('utf-8'))
             if payload[22] == 0x01:
                 if is_currchan:
                     self.parent.cat_name = payload[24:40].decode('utf-8')
                     self.parent.cat_id = payload[23]
+                self.parent.logprint(payload[24:40].decode('utf-8'))
                 if self.parent.verbose:
-                    print(payload[24:40].decode('utf-8'))
-                    #if self.parent.verbose:
-                    print(f"Cat ID: {payload[23]:02X}")
-            if self.parent.verbose: print("==================")
+                    self.parent.logprint(f"Cat ID: {payload[23]:02X}")
+            self.parent.logprint("==================")
             return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 77, got {len(payload)}")
+            self.parent.logprint(f"Exp 77, got {len(payload)}")
 
     def parse_sig(self, payload:bytes):
         """
@@ -249,45 +237,44 @@ class CaniRX:
             self.parent.sig_strength = payload[3]
             self.parent.ant_strength = payload[4]
             self.parent.ter_strength = payload[5]
+            # label dicts
+            siglabel = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
+            antlabel = {0x00:"Disconnected",0x03:"Connected"}
+            self.parent.logprint("===Receiver===")
+            self.parent.logprint(f"Sat: {siglabel.get(payload[3],f'?({payload[3]})')}")
+            self.parent.logprint(f"Ant: {antlabel.get(payload[4],f'?({payload[4]})')}")
+            self.parent.logprint(f"Ter: {siglabel.get(payload[5],f'?({payload[5]})')}")
             if self.parent.verbose:
-                siglabel = {0x00:"None",0x01:"Fair",0x02:"Good",0x03:"Excellent"}
-                antlabel = {0x00:"Disconnected",0x03:"Connected"}
-                print("===Receiver===")
-                print(f"Sat: {siglabel.get(payload[3],f'?({payload[3]})')}")
-                print(f"Ant: {antlabel.get(payload[4],f'?({payload[4]})')}")
-                print(f"Ter: {siglabel.get(payload[5],f'?({payload[5]})')}")
-                #if self.parent.verbose:
                 # Additional info for rock & roll signal, plus terrestrial
-                print("===QPSK/MCM===")
+                self.parent.logprint("===QPSK/MCM===")
                 # Demod lock
-                print(f"Sat1: {'Locked' if payload[6] else 'Lost'}")
-                print(f"Sat2: {'Locked' if payload[7] else 'Lost'}")
-                print(f"Terr: {'Locked' if payload[8] else 'Lost'}")
-                print("=====TDM!=====")
+                self.parent.logprint(f"Sat1: {'Locked' if payload[6] else 'Lost'}")
+                self.parent.logprint(f"Sat2: {'Locked' if payload[7] else 'Lost'}")
+                self.parent.logprint(f"Terr: {'Locked' if payload[8] else 'Lost'}")
+                self.parent.logprint("=====TDM!=====")
                 # TDM lock
-                print(f"Sat1: {'Locked' if payload[9] else 'Lost'}")
-                print(f"Sat2: {'Locked' if payload[10] else 'Lost'}")
-                print(f"Terr: {'Locked' if payload[11] else 'Lost'}")
-                print("=====BER!=====")
+                self.parent.logprint(f"Sat1: {'Locked' if payload[9] else 'Lost'}")
+                self.parent.logprint(f"Sat2: {'Locked' if payload[10] else 'Lost'}")
+                self.parent.logprint(f"Terr: {'Locked' if payload[11] else 'Lost'}")
+                self.parent.logprint("=====BER!=====")
                 # Bit error rate is two bytes big,
                 # 68ths, not exceeding 100%
-                print(f"Sat1: {min(((payload[12] << 8) | payload[13]) / 68, 100):.2f}%")
-                print(f"Sat2: {min(((payload[14] << 8) | payload[15]) / 68, 100):.2f}%")
-                print(f"Terr: {min(((payload[16] << 8) | payload[17]) / 68, 100):.2f}%")
-                print("=====AGC!=====")
-                print(f"Sat: {payload[22]}")
-                print(f"Ter: {payload[23]}")
+                self.parent.logprint(f"Sat1: {min(((payload[12] << 8) | payload[13]) / 68, 100):.2f}%")
+                self.parent.logprint(f"Sat2: {min(((payload[14] << 8) | payload[15]) / 68, 100):.2f}%")
+                self.parent.logprint(f"Terr: {min(((payload[16] << 8) | payload[17]) / 68, 100):.2f}%")
+                self.parent.logprint("=====AGC!=====")
+                self.parent.logprint(f"Sat: {payload[22]}")
+                self.parent.logprint(f"Ter: {payload[23]}")
                 if payload[0] == 0xC3:
-                    print("======CN======")
+                    self.parent.logprint("======CN======")
                     # Signal to noise ratio is stored in 1/4 dB
-                    print(f"Sat1: {payload[24]/4}")
-                    print(f"Sat2: {payload[25]/4}")
-                print("==============")
+                    self.parent.logprint(f"Sat1: {payload[24]/4}")
+                    self.parent.logprint(f"Sat2: {payload[25]/4}")
+            self.parent.logprint("==============")
             return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 22 or 26, got {len(payload)}")
+            self.parent.logprint(f"Exp 22 or 26, got {len(payload)}")
 
     def parse_clock(self, payload:bytes, miltime:bool=False):
         """
@@ -310,41 +297,40 @@ class CaniRX:
                 payload[7] & 0x7F,
                 tzinfo=timezone.utc
             )
+            # TODO: The heck is with these toggled MSBs in seconds and cycle??
+            # This is a semi-long-term analysis!
+            weekdaylabel = {
+                0x02:"Monday",
+                0x04:"Tuesday",
+                0x06:"Wednesday",
+                0x08:"Thursday",
+                0x0A:"Friday",
+                0x0C:"Saturday",
+                0x0E:"Sunday"
+            }
+            self.parent.logprint("===  DateTime  ===")
+            # Weekday
+            self.parent.logprint(
+                f"{weekdaylabel.get((payload[4]>>4) - ((payload[4]>>4) % 2),f'?({payload[4]})')}"
+            )
+            # Date
+            self.parent.logprint(
+                f"{payload[1]:02d}{payload[2]:02d}-"
+                f"{payload[3]:02d}-"
+                f"{((payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0)):02d}"
+            )
+            # Time
+            self.parent.logprint(
+                f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
+                f"{payload[6]:02d}:"
+                f"{(payload[7] & 0x7F):02d}"
+                f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
+            )
+            # I'll need to do more testing before this goes to primetime...
+            #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
             if self.parent.verbose:
-                # TODO: The heck is with these toggled MSBs in seconds and cycle??
-                # This is a semi-long-term analysis!
-                weekdaylabel = {
-                    0x02:"Monday",
-                    0x04:"Tuesday",
-                    0x06:"Wednesday",
-                    0x08:"Thursday",
-                    0x0A:"Friday",
-                    0x0C:"Saturday",
-                    0x0E:"Sunday"
-                }
-                print("===  DateTime  ===")
-                # Weekday
-                print(
-                    f"{weekdaylabel.get((payload[4]>>4) - ((payload[4]>>4) % 2),f'?({payload[4]})')}"
-                )
-                # Date
-                print(
-                    f"{payload[1]:02d}{payload[2]:02d}-"
-                    f"{payload[3]:02d}-"
-                    f"{((payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0)):02d}"
-                )
-                # Time
-                print(
-                    f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
-                    f"{payload[6]:02d}:"
-                    f"{(payload[7] & 0x7F):02d}"
-                    f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
-                )
-                # I'll need to do more testing before this goes to primetime...
-                #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
-                #if self.parent.verbose:
-                print(f"Datetime stored: {self.parent.sat_datetime}")
-                print(
+                self.parent.logprint(f"Datetime stored: {self.parent.sat_datetime}")
+                self.parent.logprint(
                     f"TPS: "
                     f"{self.parent.thread.calc_delta():.2f}"
                 )
@@ -352,24 +338,23 @@ class CaniRX:
                 # Day maxes out at 3 1F FC. All tick resets to 0 by midnight.
                 # Could be usable to append to datetime for RNG seed, i guess..
                 # TODO: Implement a "lucky number" feature for fun
-                print(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
-                print(
+                self.parent.logprint(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
+                self.parent.logprint(
                     f"Day cycle {payload[8]+1 & 0x7F} of 4, "
                     f"hi bit {'on' if payload[8] & 0x80 else 'off'}"
                 )
                 # Seconds & cycle have high bit on for some reason...
                 # Could either of these be daylight savings??
-                print(
+                self.parent.logprint(
                     f"Raw seconds, cycle: "
                     f"{payload[7]:02X} "
                     f"{payload[8]:02X}"
                 )
-                print("==================")
+            self.parent.logprint("==================")
             return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 11, got {len(payload)}")
+            self.parent.logprint(f"Exp 11, got {len(payload)}")
 
     def parse_firminf(self, payload:bytes):
         """
@@ -379,37 +364,19 @@ class CaniRX:
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
-        # TODO: Eventually store this info so this function isnt entirely useless...
+        if len(payload) == 19:
+            self.parent.logprint("===FirmwareInfo===")
+            # TODO: Versioning will need to be examined again.
+            # I don't have the PCR with me at the moment...
+            # For now, just print whatever
+            self.parent.logprint(f"SDEC Version: {'.'.join(list(str(payload[3])))}, {'.'.join(list(str(payload[4])))}")
+            self.parent.logprint(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
+            self.parent.logprint(f"CMB Version: {'.'.join(list(str(payload[9])))}")
+            self.parent.logprint(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
+            self.parent.logprint(f"RX Version: {'.'.join(list(str(payload[14])))}")
+            self.parent.logprint(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
+            self.parent.logprint("==================")
+            return
+        self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
-            if len(payload) == 19:
-                print("===FirmwareInfo===")
-                # TODO: Versioning will need to be examined again.
-                # I don't have the PCR with me at the moment...
-                # For now, just print whatever
-                print(f"SDEC Version: {'.'.join(list(str(payload[3])))}, {'.'.join(list(str(payload[4])))}")
-                print(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-                print(f"CMB Version: {'.'.join(list(str(payload[9])))}")
-                print(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
-                print(f"RX Version: {'.'.join(list(str(payload[14])))}")
-                print(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
-                print("==================")
-                return
-            print("Payload not of correct length")
-            #if self.parent.verbose:
-            print(f"Exp 19, got {len(payload)}")
-
-    def acid_burn(self):
-        """
-        Manually enter payload for debugging purposes.
-        Hack the planet!
-        """
-        # FOR DEBUG USE
-        self.parent.verbose = True
-        print("Careful now!")
-        print("You're about to send manual commands to the conductor!")
-        self.parent.conductor.go(
-            bytes.fromhex(
-                input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
-            )
-        )
-        self.parent.verbose = False
+            self.parent.logprint(f"Exp 19, got {len(payload)}")

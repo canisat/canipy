@@ -66,7 +66,7 @@ class CaniTX:
         command = self.parent.header + length + payload + self.parent.tail
         self.parent.serial_conn.write(command)
         if self.parent.verbose:
-            print(f"Sent: {' '.join(f'{b:02X}' for b in payload)}")
+            self.parent.logprint(f"Sent: {' '.join(f'{b:02X}' for b in payload)}")
         return payload
 
     def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
@@ -88,7 +88,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("Powering up")
+        if self.parent.verbose:
+            self.parent.logprint("Powering up")
         return self.send(bytes([0x00, ch_lbl, cat_lbl, title_lbl, loss_exp]))
 
     def power_down(self, pwr_sav:bool=False) -> bytes:
@@ -105,7 +106,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("Powering down")
+        if self.parent.verbose:
+            self.parent.logprint("Powering down")
         return self.send(bytes([0x01, pwr_sav]))
 
     def set_linevol(self, db:int) -> bytes:
@@ -127,7 +129,8 @@ class CaniTX:
         """
         # Clamp the value within -96 and 24
         db = max(-96, min(24, db))
-        if self.parent.verbose: print(f"Setting to {db}dB")
+        if self.parent.verbose:
+            self.parent.logprint(f"Setting to {db}dB")
         # Encode into the radio's format before sending.
         # If above 0dB, add 96, else invert dB.
         return self.send(bytes([0x0B, 0x60 + db if db > 0 else -db]))
@@ -154,7 +157,7 @@ class CaniTX:
             self.parent.errorprint("Invalid channel value")
             return b""
         if self.parent.verbose:
-            print(
+            self.parent.logprint(
                 f"Changing to {'channel' if not is_sid else 'ID'} {channel}"
                 f"{' (Data)' if data else ''}"
             )
@@ -188,7 +191,8 @@ class CaniTX:
         if channel not in range(256):
             self.parent.errorprint("Invalid channel value")
             return b""
-        if self.parent.verbose: print(f"Cancelling and preparing for channel {channel}")
+        if self.parent.verbose:
+            self.parent.logprint(f"Cancelling and preparing for channel {channel}")
         return self.send(bytes([0x11, channel, data]))
 
     def set_mute(self, mute:bool) -> bytes:
@@ -205,7 +209,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print(f"{'' if mute else 'Un-'}Muting Audio")
+        if self.parent.verbose:
+            self.parent.logprint(f"{'' if mute else 'Un-'}Muting Audio")
         return self.send(bytes([0x13, mute]))
 
     def ext_info(self, channel:int) -> bytes:
@@ -226,7 +231,8 @@ class CaniTX:
         if channel not in range(256):
             self.parent.errorprint("Invalid channel value")
             return b""
-        if self.parent.verbose: print(f"Check RX for extinfo on {channel}")
+        if self.parent.verbose:
+            self.parent.logprint(f"Check RX for extinfo on {channel}")
         # I set title size to 0x24 earlier to see if this fixes out the botched output.
         return self.send(bytes([0x22, channel]))
 
@@ -249,7 +255,8 @@ class CaniTX:
         if channel not in range(256):
             self.parent.errorprint("Invalid channel value")
             return b""
-        if self.parent.verbose: print(f"Check RX for info on {channel}")
+        if self.parent.verbose:
+            self.parent.logprint(f"Check RX for info on {channel}")
         # 07 allows for checking by SID
         return self.send(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 
@@ -264,7 +271,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("Check RX for ID")
+        if self.parent.verbose:
+            self.parent.logprint("Check RX for ID")
         return self.send(bytes([0x31]))
 
     def signal_mon(self, toggle:bool) -> bytes:
@@ -283,7 +291,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
+        if self.parent.verbose:
+            self.parent.logprint(f"Asking radio to {'' if toggle else 'not '}monitor signal status")
         return self.send(bytes([0x42, toggle]))
 
     def signal_info(self) -> bytes:
@@ -296,7 +305,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("Check RX for signal info")
+        if self.parent.verbose:
+            self.parent.logprint("Check RX for signal info")
         # It's known that 42 is monitor, but these two are
         # the only ones documented. idk if theres a 41 or 40...
         return self.send(bytes([0x43]))
@@ -315,7 +325,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print(f"Turning {'on' if toggle else 'off'} the clock")
+        if self.parent.verbose:
+            self.parent.logprint(f"Turning {'on' if toggle else 'off'} the clock")
         return self.send(bytes([0x4E, toggle]))
 
     def chan_mon(self, channel:int, is_data_on:bool=False, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
@@ -346,7 +357,8 @@ class CaniTX:
             prgtype_mon = False
             inf_mon = False
             ext_mon = False
-        if self.parent.verbose: print(f"Asking radio to monitor channel {channel}")
+        if self.parent.verbose:
+            self.parent.logprint(f"Asking radio to monitor channel {channel}")
         return self.send(bytes([0x50 - is_data_on, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
     def diag_mon(self, toggle:bool) -> bytes:
@@ -365,7 +377,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print(f"Asking radio to {'' if toggle else 'not '}monitor extra info")
+        if self.parent.verbose:
+            self.parent.logprint(f"Asking radio to {'' if toggle else 'not '}monitor extra info")
         # F0 returned when command is acknowledged.
         # Messages will be received periodically as F1, followed by the info.
         # Would 63 designate to return this info ad-hoc? Who knows!
@@ -385,22 +398,6 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.verbose: print("Check RX for radio firmware version")
+        if self.parent.verbose:
+            self.parent.logprint("Check RX for radio firmware version")
         return self.send(bytes([0x70, magic]))
-
-    def crash_override(self) -> bytes:
-        """
-        Manually enter payload for debugging purposes.
-        Hack the planet!
-
-        Returns:
-            bytes: Echoes back the payload it's been given for debugging purposes.
-        """
-        # FOR DEBUG USE
-        print("Careful now!")
-        print("You're sending commands to the radio directly!")
-        return self.send(
-            bytes.fromhex(
-                input("Enter payload: ").strip().lower().replace("0x", "").replace(" ", "")
-            )
-        )

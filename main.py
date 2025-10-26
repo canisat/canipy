@@ -6,8 +6,6 @@ from utils import CaniPy
 
 class CaniTk(Tk):  
     def __init__(self):
-        self.canipy = CaniPy(gui=self)
-
         super().__init__()
 
         self.title("CaniPy")
@@ -19,6 +17,27 @@ class CaniTk(Tk):
             "WX (Certified)": 115200
         }
 
+        # menu bar
+        self.menuBar = Menu(self)
+        self.config(menu=self.menuBar)
+
+        # frames
+        self.buttonFrame = Frame(self)
+        self.labelFrame = ttk.LabelFrame(self,text="Debug Values")
+        
+        # log elements
+        self.logFrame = Frame(self)
+        self.logField = Text(
+            self.logFrame,
+            width=64,
+            height=12,
+            wrap="word",
+            state="disabled"
+        )
+
+        # canipy instance
+        self.canipy = CaniPy(gui=self)
+
         # vars
         self.sigmonToggle = BooleanVar()
         self.clockmonToggle = BooleanVar()
@@ -28,14 +47,6 @@ class CaniTk(Tk):
         self.verboseToggle = BooleanVar(value=self.canipy.verbose)
         self.radiodiagToggle = BooleanVar()
         self.wrgpsToggle = BooleanVar()
-
-        # menu bar
-        self.menuBar = Menu(self)
-        self.config(menu=self.menuBar)
-
-        # frames
-        self.buttonFrame = Frame(self)
-        self.labelFrame = ttk.LabelFrame(self,text="Debug Values")
 
         # input fields
         self.comEntry = Entry(self.buttonFrame)
@@ -56,22 +67,30 @@ class CaniTk(Tk):
         self.initialize()
 
     @staticmethod
-    def infobox(msg):
+    def infobox(msg:str):
         messagebox.showinfo("CaniPy",msg)
 
     @staticmethod
-    def warnbox(msg):
+    def warnbox(msg:str):
         messagebox.showwarning("CaniPy",msg)
 
     @staticmethod
-    def errorbox(msg):
+    def errorbox(msg:str):
         messagebox.showerror("CaniPy",msg)
+    
+    def logbox(self, msg:str):
+        # enable, write, then disable and scroll
+        self.logField.config(state="normal")
+        self.logField.insert(END,f"{msg}\n")
+        self.logField.config(state="disabled")
+        self.logField.see(END)
 
     def initialize(self):
         #self.grid()
         self.prep_menu()
         self.prep_buttons()
         self.prep_labels()
+        self.prep_logfield()
         
         self.resizable(False,False)
         self.update()
@@ -180,7 +199,7 @@ class CaniTk(Tk):
         debug_menu.add_checkbutton(
             label="Toggle verbose output",
             variable=self.verboseToggle,
-            command=lambda:setattr(self.canipy,"verbose",self.verboseToggle.get()),
+            command=self.toggle_logfield,
             underline=7
         )
         # End of debug menu
@@ -291,11 +310,17 @@ class CaniTk(Tk):
         for i, attr in enumerate(attrs):
             var = StringVar()
             var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
-            Label(self.labelFrame,textvariable=var).grid(column=0,row=i,sticky="w")
+            Label(self.labelFrame,textvariable=var).grid(column=i//6,row=i%6,sticky="w")
             self.labelVars[attr] = var
         
         # Hide until debug toggle is enabled
         self.labelFrame.grid_remove()
+    
+    def prep_logfield(self):
+        self.logFrame.grid(column=0,row=2)
+        self.logField.grid(column=0,row=0)
+        if not self.verboseToggle.get():
+            self.logFrame.grid_remove()
 
     def update_labels(self):
         if not self.winfo_exists(): return
@@ -304,6 +329,10 @@ class CaniTk(Tk):
         # recursive loop
         # 1 is more stable than either 0 or after_idle
         self.after(1,self.update_labels)
+    
+    def toggle_logfield(self):
+        self.canipy.verbose = self.verboseToggle.get()
+        self.logFrame.grid() if self.verboseToggle.get() else self.logFrame.grid_remove()
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open

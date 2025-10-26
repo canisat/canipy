@@ -25,21 +25,19 @@ class CaniConductor:
             case 0x81:
                 self.parent.infoprint("Radio is now powered off.\nGoodnight!")
             case 0x8b:
-                if self.parent.verbose:
-                    print(
-                        f"Line level set to "
-                        f"{-payload[3] if payload[3] <= 0x60 else payload[3] - 0x60}dB"
-                    )
+                self.parent.logprint(
+                    f"Line level set to "
+                    f"{-payload[3] if payload[3] <= 0x60 else payload[3] - 0x60}dB"
+                )
             case 0x90:
-                if self.parent.verbose:
-                    print(f"SID {payload[3]}, Ch. {payload[4]}")
-                    if payload[5]:
-                        # When first tuning to a data channel, like
-                        # main WX SID 240, this will still be 0. But tune
-                        # normally to another channel after, this becomes 1.
-                        # Might be to indicate auxiliary tuning is enabled
-                        # to allow simultaneous audio and data tuning.
-                        print(f"Data aux is on")
+                self.parent.logprint(f"SID {payload[3]}, Ch. {payload[4]}")
+                if payload[5]:
+                    # When first tuning to a data channel, like
+                    # main WX SID 240, this will still be 0. But tune
+                    # normally to another channel after, this becomes 1.
+                    # Might be to indicate auxiliary tuning is enabled
+                    # to allow simultaneous audio and data tuning.
+                    self.parent.logprint(f"Data aux is on")
                 if (payload[1], payload[2]) not in [(0x01, 0x00), (0x04, 0x0E)]:
                     # Report status if alert, or not ch0
                     self.parent.warnprint(self.parent.rx.fetch_status(payload))
@@ -54,23 +52,22 @@ class CaniConductor:
                     self.parent.ch_sid = payload[3]
                 else:
                     self.parent.ch_num = payload[3]
-                if self.parent.verbose:
-                    print("Current channel tune cancelled! You will be tuned out!")
-                    if payload[3]:
-                        print(f"Ready for channel {payload[3]}{' (Data)' if payload[4] else ''}")
-                    print("Change channel to resume content")
+                self.parent.logprint("Current channel tune cancelled! You will be tuned out!")
+                if payload[3]:
+                    self.parent.logprint(f"Ready for channel {payload[3]}{' (Data)' if payload[4] else ''}")
+                self.parent.logprint("Change channel to resume content")
             case 0x93:
                 if self.parent.verbose:
-                    print(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
+                    self.parent.logprint(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
             case 0xA2:
                 self.parent.rx.parse_extinfo(payload)
             case 0xA5:
                 self.parent.rx.parse_chan(payload)
             case 0xB1:
                 if len(payload) != 12:
+                    self.parent.logprint("Invalid Radio ID length")
                     if self.parent.verbose:
-                        print("Invalid Radio ID length")
-                        print(f"Exp 12, got {len(payload)}")
+                        self.parent.logprint(f"Exp 12, got {len(payload)}")
                     return
                 # if good, print characters
                 self.parent.radio_id = payload[4:12].decode('utf-8')
@@ -80,24 +77,22 @@ class CaniConductor:
             case 0xC1 | 0xC3:
                 self.parent.rx.parse_sig(payload)
             case 0xC2:
-                if self.parent.verbose:
-                    print("Signal strength monitoring status updated")
+                self.parent.logprint("Signal strength monitoring status updated")
             case 0xCA:
                 # 'A' cmds are WX specific!
                 if payload[1] == 0x40:
-                    if self.parent.verbose:
-                        if payload[2] == 0xff:
-                            print(f"WX - Error setting up data RX on {payload[4]}")
-                            if payload[3] == 0x08:
-                                # Not exactly sure if this correct...
-                                print("Unable to listen as data")
-                            if payload[3] == 0x0a:
-                                print("Data track not available for current subscription")
-                            return
-                        if payload[4] != 0xff:
-                            print(f"WX - Ready for data from {payload[4]}")
-                        else:
-                            print("WX - Data stopped")
+                    if payload[2] == 0xff:
+                        self.parent.logprint(f"WX - Error setting up data RX on {payload[4]}")
+                        if payload[3] == 0x08:
+                            # Not exactly sure if this correct...
+                            self.parent.logprint("Unable to listen as data")
+                        if payload[3] == 0x0a:
+                            self.parent.logprint("Data track not available for current subscription")
+                        return
+                    if payload[4] != 0xff:
+                        self.parent.logprint(f"WX - Ready for data from {payload[4]}")
+                    else:
+                        self.parent.logprint("WX - Data stopped")
                     return
                 if payload[1] == 0x43:
                     self.parent.infoprint("WX ping received")
@@ -120,73 +115,65 @@ class CaniConductor:
                     # Store only if channel numbers match!
                     if payload[1] == self.parent.ch_num:
                         self.parent.ch_name = payload[3:19].decode('utf-8')
+                    self.parent.logprint("===Channel Name===")
+                    self.parent.logprint(f"Channel {payload[1]}")
+                    self.parent.logprint(payload[3:19].decode('utf-8'))
+                    # Trailing bytes, this could be length side effect?
+                    # Like with whats happening with extended info?
+                    # Treat as debug info for now.
                     if self.parent.verbose:
-                        print("===Channel Name===")
-                        print(f"Channel {payload[1]}")
-                        print(payload[3:19].decode('utf-8'))
-                        # Trailing bytes, this could be length side effect?
-                        # Like with whats happening with extended info?
-                        # Treat as debug info for now.
-                        #if self.parent.verbose:
-                        print(' '.join(f'{b:02X}' for b in payload[19:]))
-                        print("==================")
+                        self.parent.logprint(' '.join(f'{b:02X}' for b in payload[19:]))
+                    self.parent.logprint("==================")
             case 0xD2:
                 if payload[3] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.cat_id = payload[2]
                         self.parent.cat_name = payload[4:].decode('utf-8')
+                    self.parent.logprint("===Ch. Category===")
+                    self.parent.logprint(f"Channel {payload[1]}")
+                    self.parent.logprint(payload[4:].decode('utf-8'))
                     if self.parent.verbose:
-                        print("===Ch. Category===")
-                        print(f"Channel {payload[1]}")
-                        print(payload[4:].decode('utf-8'))
-                        #if self.parent.verbose:
-                        print(f"Cat ID: {payload[2]:02X}")
-                        print("==================")
+                        self.parent.logprint(f"Cat ID: {payload[2]:02X}")
+                    self.parent.logprint("==================")
             case 0xD3:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.artist_name = payload[3:19].decode('utf-8')
                         self.parent.title_name = payload[19:].decode('utf-8')
-                    if self.parent.verbose:
-                        print("===Program Info===")
-                        print(f"Channel {payload[1]}")
-                        print(payload[3:19].decode('utf-8'))
-                        print(payload[19:].decode('utf-8'))
-                        print("==================")
+                    self.parent.logprint("===Program Info===")
+                    self.parent.logprint(f"Channel {payload[1]}")
+                    self.parent.logprint(payload[3:19].decode('utf-8'))
+                    self.parent.logprint(payload[19:].decode('utf-8'))
+                    self.parent.logprint("==================")
             case 0xD4:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.artist_name = payload[3:].decode('utf-8').rstrip(chr(0))
-                    if self.parent.verbose:
-                        print("===Artist Info.===")
-                        print(f"Channel {payload[1]}")
-                        print(payload[3:].decode('utf-8').rstrip(chr(0)))
-                        print("==================")
+                    self.parent.logprint("===Artist Info.===")
+                    self.parent.logprint(f"Channel {payload[1]}")
+                    self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    self.parent.logprint("==================")
             case 0xD5:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.title_name = payload[3:].decode('utf-8').rstrip(chr(0))
-                    if self.parent.verbose:
-                        print("===Title  Info.===")
-                        print(f"Channel {payload[1]}")
-                        print(payload[3:].decode('utf-8').rstrip(chr(0)))
-                        print("==================")
+                    self.parent.logprint("===Title  Info.===")
+                    self.parent.logprint(f"Channel {payload[1]}")
+                    self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    self.parent.logprint("==================")
             case 0xD6:
                 if payload[3] == 0x01 or payload[4] == 0x01:
-                    # TODO: Will figure out how to store this info later...
+                    self.parent.logprint("===Program Len.===")
+                    self.parent.logprint(f"Channel {payload[1]}")
                     if self.parent.verbose:
-                        print("===Program Len.===")
-                        print(f"Channel {payload[1]}")
-                        #if self.parent.verbose:
-                        print(f"Time Format: {payload[2]:02X}")
-                        if payload[3] == 0x01:
-                            print(f"Started {round(((payload[5] << 8) | payload[6])/60)}m ago")
-                        if payload[4] == 0x01:
-                            print(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
-                        print("==================")
+                        self.parent.logprint(f"Time Format: {payload[2]:02X}")
+                    if payload[3] == 0x01:
+                        self.parent.logprint(f"Started {round(((payload[5] << 8) | payload[6])/60)}m ago")
+                    if payload[4] == 0x01:
+                        self.parent.logprint(f"Ends in {round(((payload[7] << 8) | payload[8])/60)}m")
+                    self.parent.logprint("==================")
             case 0xDE:
-                if self.parent.verbose:
-                    print("Clock monitoring status updated")
+                self.parent.logprint("Clock monitoring status updated")
             case 0xDF:
                 self.parent.rx.parse_clock(payload)
             case 0xE0:
@@ -199,24 +186,22 @@ class CaniConductor:
                 # Acknowledgement of Direct responses.
                 # nsayer ref listens to E4 though?? differs by 4th opcode
                 # TODO: cover both until better understood
-                if self.parent.verbose:
-                    print(f"Direct command Acknowledged ({payload[0]:02X})")
+                self.parent.logprint(f"Direct command Acknowledged ({payload[0]:02X})")
             case 0xEA:
                 if payload[1] == 0xD0:
                     # Write data frames
                     self.parent.wx.parse_data(payload, True)
                     return
                 # Ignore if unsupported packet (not D0)
-                if self.parent.verbose: print("Data packet received")
+                self.parent.logprint("Data packet received")
             case 0xF0:
-                if self.parent.verbose:
-                    print("Diagnostic info monitoring status updated")
+                self.parent.logprint("Diagnostic info monitoring status updated")
             case 0xF1:
                 if self.parent.verbose:
                     # TODO: examine how diag is laid out, appears to be 8 or 9 fields
-                    print("=== DIAGNOSTIC ===")
-                    print(payload[2:].decode('utf-8'))
-                    print("==================")
+                    self.parent.logprint("=== DIAGNOSTIC ===")
+                    self.parent.logprint(payload[2:].decode('utf-8'))
+                    self.parent.logprint("==================")
             case 0xF2:
                 # Direct idle frames.
                 # Counted, but generally just ignored.
@@ -233,10 +218,9 @@ class CaniConductor:
                 else:
                     errstr += self.parent.rx.fetch_status(payload)
                 if self.parent.verbose:
-                    print(f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}")
+                    errstr += f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}"
                 errstr += "\nRadio may still be operated"
                 errstr += "\nIf errors persist, check or power-cycle the radio"
                 self.parent.errorprint(errstr)
             case _:
-                if self.parent.verbose:
-                    print(f"Unknown return code {hex(payload[0])}")
+                self.parent.logprint(f"Unknown return code {hex(payload[0])}")

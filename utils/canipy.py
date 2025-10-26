@@ -115,7 +115,7 @@ class CaniPy:
 
         if port: self.open(port, baud)
 
-        print("CaniPy started")
+        self.logprint("CaniPy started")
     
     def __del__(self):
         """
@@ -151,7 +151,7 @@ class CaniPy:
         # stop thread
         self.thread.stop()
         if self.serial_conn is None or not self.serial_conn.is_open:
-            if self.verbose: print("Port already closed")
+            if self.verbose: self.logprint("Port already closed")
             return
         self.serial_conn.close()
 
@@ -181,3 +181,12 @@ class CaniPy:
             msg (str): The message to output
         """
         self.gui.errorbox(msg) if self.gui else print(msg)
+    
+    def logprint(self, msg:str):
+        """
+        Send log message to a subsystem if any, otherwise print to shell.
+
+        Args:
+            msg (str): The message to output
+        """
+        self.gui.logbox(msg) if self.gui else print(msg)
