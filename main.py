@@ -20,12 +20,14 @@ class CaniTk(Tk):
         }
 
         # vars
-        self.sigmonToggle = BooleanVar(value=False)
-        self.clockmonToggle = BooleanVar(value=False)
-        self.wxToggle = BooleanVar(value=False)
+        self.sigmonToggle = BooleanVar()
+        self.clockmonToggle = BooleanVar()
+        self.wxToggle = BooleanVar()
         self.chGuiVar = IntVar(value=self.canipy.ch_num)
-        self.labeldbgToggle = BooleanVar(value=False)
+        self.labeldbgToggle = BooleanVar()
         self.verboseToggle = BooleanVar(value=self.canipy.verbose)
+        self.radiodiagToggle = BooleanVar()
+        self.wrgpsToggle = BooleanVar()
 
         # menu bar
         self.menuBar = Menu(self)
@@ -89,7 +91,10 @@ class CaniTk(Tk):
         mon_menu = Menu(tools_menu, tearoff=0)
         mon_menu.add_command(
             label="Tuned channel",
-            command=lambda:self.canipy.tx.chan_mon(self.canipy.ch_num),
+            command=lambda:self.canipy.tx.chan_mon(
+                self.canipy.ch_num,
+                self.wxToggle.get()
+            ),
             underline=6
         )
         mon_menu.add_separator()
@@ -109,25 +114,61 @@ class CaniTk(Tk):
         tools_menu.add_separator()
         # Data
         tools_menu.add_checkbutton(
-            label="Download WX data",
+            label="Toggle WX data download",
             variable=self.wxToggle,
             command=self.wx_sequence,
-            underline=9
+            underline=7
+        )
+        tools_menu.add_checkbutton(
+            label="Toggle WR GPS module",
+            variable=self.wrgpsToggle,
+            command=lambda:self.canipy.wx.wrgps_conn(self.wrgpsToggle.get()),
+            underline=10
         )
         # End tools menu
         self.menuBar.add_cascade(label="Tools",menu=tools_menu,underline=0)
 
         # Debug menu
         debug_menu = Menu(self.menuBar,tearoff=False)
-        debug_menu.add_command(
-            label="Fetch signal info now",
+        # Fetch menu
+        fetch_menu = Menu(tools_menu, tearoff=0)
+        fetch_menu.add_command(
+            label="Signal info",
             command=self.canipy.tx.signal_info,
-            underline=6
+            underline=0
         )
-        debug_menu.add_command(
-            label="Fetch radio ID now",
+        fetch_menu.add_command(
+            label="Radio ID",
             command=self.canipy.tx.get_radioid,
-            underline=6
+            underline=0
+        )
+        fetch_menu.add_command(
+            label="Firmware info",
+            command=self.canipy.tx.firm_ver,
+            underline=0
+        )
+                # WX specific debug
+        wxfetch_menu = Menu(tools_menu, tearoff=0)
+        wxfetch_menu.add_command(
+            label="Ping",
+            command=self.canipy.wx.ping,
+            underline=0
+        )
+        wxfetch_menu.add_command(
+            label="Data RX version",
+            command=self.canipy.wx.firm_ver,
+            underline=0
+        )
+        # end wx menu
+        fetch_menu.add_cascade(label="WX",menu=wxfetch_menu,underline=0)
+        # end of fetch
+        debug_menu.add_cascade(label="Fetch now",menu=fetch_menu,underline=0)
+        # Rest of debug
+        debug_menu.add_checkbutton(
+            label="Monitor radio diag",
+            variable=self.radiodiagToggle,
+            command=lambda:self.canipy.tx.diag_mon(self.radiodiagToggle.get()),
+            underline=17
         )
         debug_menu.add_separator()
         debug_menu.add_checkbutton(
@@ -142,6 +183,7 @@ class CaniTk(Tk):
             command=lambda:setattr(self.canipy,"verbose",self.verboseToggle.get()),
             underline=7
         )
+        # End of debug menu
         self.menuBar.add_cascade(label="Debug",menu=debug_menu,underline=0)
 
         # Help menu
@@ -215,7 +257,7 @@ class CaniTk(Tk):
             "<<ComboboxSelected>>",
             lambda e: self.open_com_port(
                 self.baudOpts[self.hwtypeSelect.get()]
-            ) if self.baudOpts[self.hwtypeSelect.get()] else self.set_direct_device()
+            )
         )
 
         Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down(pwr_sav=True)).grid(column=1,row=1)
@@ -269,20 +311,20 @@ class CaniTk(Tk):
             self.canipy.close()
         # get com port
         com_port = self.comEntry.get()
+        # If baud provided is 0, then it's direct
+        is_direct = not baud
+        if is_direct: baud = 9600
+        # open connection
         self.canipy.open(port=com_port, baud=baud)
         if self.canipy.serial_conn is not None:
             self.infobox(f"Connected to {com_port} ({baud} baud)")
-    
-    def set_direct_device(self):
-        self.open_com_port()
-        if self.canipy.serial_conn is not None:
-            self.canipy.dx.enable()
+            if is_direct: self.canipy.dx.enable()
 
     def wx_sequence(self):
         # Check if we're using a data receiver
         if self.canipy.baud_rate not in (38400, 115200):
-            self.errorbox("A weather data receiver is required to use this feature")
             self.wxToggle.set(False)
+            self.errorbox("A weather data receiver is required to use this feature")
             return
         # Begin data
         if self.wxToggle.get():

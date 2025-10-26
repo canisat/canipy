@@ -92,7 +92,7 @@ class CaniThread:
         while not self.thread_signal.is_set():
             buf = self.thread_buffer()
             if not buf: continue  # sure wish i was buff..
-            self.parent.rx.conductor(buf)
+            self.parent.conductor.go(buf)
 
     def thread_buffer(self) -> bytes:
         """

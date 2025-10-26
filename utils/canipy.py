@@ -5,6 +5,7 @@ from collections.abc import Callable
 
 from .comm.canirx import CaniRX
 from .comm.canitx import CaniTX
+from .comm.caniconductor import CaniConductor
 from .comm.special.canidx import CaniDX
 from .comm.special.caniwx import CaniWX
 
@@ -44,7 +45,7 @@ class CaniPy:
 
         sat_datetime (datetime): Stores the date-time value from the service when reported by the radio.
 
-        self.radio_id (str): The ID of the tuner hardware assigned by the service provider.
+        radio_id (str): The ID of the tuner hardware assigned by the service provider.
 
         direct_idleframes (int): Counter for every time the Direct reports F2 hex.
 
@@ -52,6 +53,7 @@ class CaniPy:
         tx (CaniTX): Functions related to transmission of commands.
         dx (CaniDX): Functions related to Direct receiver commands.
         wx (CaniWX): Functions related to data commands, notably to weather data receivers.
+        conductor (CaniConductor): Relays received responses to corresponding functions.
 
         thread (CaniThread): Threaded instance reading the port for responses from the radio.
 
@@ -105,6 +107,7 @@ class CaniPy:
         self.tx = CaniTX(self)
         self.dx = CaniDX(self)
         self.wx = CaniWX(self)
+        self.conductor = CaniConductor(self)
 
         self.thread = CaniThread(self)
 
