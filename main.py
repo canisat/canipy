@@ -45,10 +45,10 @@ class CaniTk(Tk):
             textvariable=self.chGuiVar,
             width=8
         )
-        self.hwtypeSelect = StringVar(value="Select device...")
+        self.hwtypeSelect = StringVar(value="Select radio type...")
 
         # placeholders
-        self.chEntry.set("Set ch.")
+        self.chEntry.set("Enter ch")
         self.labelVars = {}
 
         self.initialize()
@@ -109,10 +109,10 @@ class CaniTk(Tk):
         tools_menu.add_separator()
         # Data
         tools_menu.add_checkbutton(
-            label="Weather data",
+            label="Download WX data",
             variable=self.wxToggle,
             command=self.wx_sequence,
-            underline=0
+            underline=9
         )
         # End tools menu
         self.menuBar.add_cascade(label="Tools",menu=tools_menu,underline=0)
@@ -229,7 +229,7 @@ class CaniTk(Tk):
 
     def prep_labels(self):
         # frame for labels
-        self.labelFrame.grid(column=0,row=1,columnspan=2)
+        self.labelFrame.grid(column=0,row=1)
 
         attrs = [
             "ch_num",
@@ -252,6 +252,7 @@ class CaniTk(Tk):
             Label(self.labelFrame,textvariable=var).grid(column=0,row=i,sticky="w")
             self.labelVars[attr] = var
         
+        # Hide until debug toggle is enabled
         self.labelFrame.grid_remove()
 
     def update_labels(self):
