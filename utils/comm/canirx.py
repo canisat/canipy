@@ -66,7 +66,7 @@ class CaniRX:
             case 0x04:
                 match payload[2]:
                     case 0x0E:
-                        status_str += "Echo radio information"
+                        status_str += "Tune to channel 0 for radio ID"
                     case 0x10:
                         status_str += "No signal\n"
                         status_str += "Check if antenna is connected and has a clear view of the sky"
@@ -127,6 +127,11 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 78:
+            if (payload[1], payload[2]) == (0x04, 0x0E):
+                # Channel 0 is for reporting ID.
+                # just return radio ID.
+                self.parent.tx.get_radioid()
+                return
             self.parent.logprint("===Title  Info.===")
             self.parent.logprint(f"Channel {payload[3]}")
             if payload[1] != 0x01:
@@ -170,24 +175,9 @@ class CaniRX:
                 self.parent.ch_num = payload[3]
                 self.parent.ch_sid = payload[4]
             if (payload[1], payload[2]) == (0x04, 0x0E):
-                if payload[5] != 0x01:
-                    # Channel 0 contains radio info,
-                    # unless radio already cached ch info.
-                    # Structure to the size of a startup RX.
-                    self.parse_startup(
-                        bytes(
-                            bytes(4) +
-                            payload[6:13] +
-                            bytes(2) +
-                            payload[13:18] +
-                            bytes([0x08]) +
-                            payload[18:26]
-                        )
-                    )
-                else:
-                    # If station info's cached,
-                    # just return radio ID.
-                    self.parent.tx.get_radioid()
+                # Channel 0 is for reporting ID.
+                # just return radio ID.
+                self.parent.tx.get_radioid()
                 return
             self.parent.logprint("===Channel Info===")
             self.parent.logprint(f"Channel {payload[3]}")

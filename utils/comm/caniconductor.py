@@ -206,20 +206,18 @@ class CaniConductor:
                 # Counted, but generally just ignored.
                 self.parent.direct_idleframes += 1
             case 0xFF:
-                errstr = "Warning! Radio reported an error"
+                errstr = ""
                 if (payload[1], payload[2]) == (0x01, 0x00):
                     # 01 00 (aka OK) on error, typically corresponds to antenna
-                    errstr += "\nAntenna not detected, check antenna"
+                    errstr += "Antenna not detected, check antenna"
                 elif (payload[1], payload[2]) == (0xFF, 0xFF):
                     # If it's all F's, it's something serious!!!
                     # (Likely has a message, print it out!)
-                    errstr += f"\n{payload[3:].decode('utf-8')}"
+                    errstr += payload[3:].decode('utf-8')
                 else:
-                    errstr += f"\n{self.parent.rx.fetch_status(payload)}"
+                    errstr += self.parent.rx.fetch_status(payload)
                 if self.parent.verbose:
                     errstr += f"\n{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}"
-                errstr += "\nRadio may still be operated"
-                errstr += "\nIf errors persist, check or power-cycle the radio"
                 self.parent.errorprint(errstr)
             case _:
                 self.parent.logprint(f"Unknown return code {hex(payload[0])}")
