@@ -26,63 +26,63 @@ class CaniRX:
             payload (bytes): The data to parse the status from.
 
         Returns:
-            str: Message corresponding to notice code.
+            status_str: Message corresponding to notice code.
         """
-        str = ""
+        status_str = ""
         match payload[1]:
             case 0x01:
                 if payload[2] == 0x00:
-                    str += "OK"
+                    status_str += "OK"
                 else:
-                    str += "Normal status"
+                    status_str += "Normal status"
             case 0x02:
                 match payload[2]:
                     case 0x01:
                         # Data is of unidentified type?
                         # Common to see this with overlay channels,
                         # so prompt user that ch is overlay only.
-                        str += "Channel requires Overlay receiver"
+                        status_str += "Channel requires Overlay receiver"
                     case 0x02:
                         # Not exactly sure what this is yet.
                         # Maybe to indicate a data service?
-                        str += "Channel is a data service"
+                        status_str += "Channel is a data service"
                     case 0x03:
                         # 02 03 indicates entitled data product
-                        str += "Data stream available"
+                        status_str += "Data stream available"
                     case 0x04:
-                        str += "Tuner not on correct mode for channel"
+                        status_str += "Tuner not on correct mode for channel"
                     case 0x06:
-                        str += "Irregular power state"
+                        status_str += "Irregular power state"
                     case 0x12:
-                        str += "Extended info only fetched when tuner is active!\n"
-                        str += "Tune to a channel first before checking info"
+                        status_str += "Extended info only fetched when tuner is active!\n"
+                        status_str += "Tune to a channel first before checking info"
                     case _:
-                        str += "Radio alert"
+                        status_str += "Radio alert"
             case 0x03:
                 # Subscriber entitlement alert
-                str += "Not subscribed"
+                status_str += "Not subscribed"
                 if payload[2] == 0x09:
-                    str += "\nContact service provider to subscribe"
+                    status_str += "\nContact service provider to subscribe"
                 if payload[2] == 0x0a:
-                    str += "\nNot available for current subscription"
+                    status_str += "\nNot available for current subscription"
             case 0x04:
                 match payload[2]:
                     case 0x0E:
-                        str += "Echo radio information"
+                        status_str += "Echo radio information"
                     case 0x10:
-                        str += "No signal\n"
-                        str += "Check if antenna is connected and has a clear view of the sky"
+                        status_str += "No signal\n"
+                        status_str += "Check if antenna is connected and has a clear view of the sky"
                     case _:
-                        str += "Tuning alert"
+                        status_str += "Tuning alert"
             case 0x07:
                 if payload[2] == 0x10:
                     # 07 10, sending commands to a radio tuner that is not on yet
-                    str += "Please power up the tuner before sending commands"
+                    status_str += "Please power up the tuner before sending commands"
                 else:
-                    str += "Command alert"
+                    status_str += "Command alert"
             case _:
-                str += f"Radio reported alert {payload[1]:02X} {payload[2]:02X}"
-        return str
+                status_str += f"Radio reported alert {payload[1]:02X} {payload[2]:02X}"
+        return status_str
 
     def parse_startup(self, payload:bytes):
         """
