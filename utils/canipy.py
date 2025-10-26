@@ -121,6 +121,8 @@ class CaniPy:
         """
         Halt thread and close connection when object is destroyed.
         """
+        # Stop verbose output when destroyed
+        self.verbose = False
         self.close()
 
     def open(self, port:str, baud:int):

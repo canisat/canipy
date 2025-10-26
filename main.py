@@ -325,10 +325,14 @@ class CaniTk(Tk):
     def update_labels(self):
         if not self.winfo_exists(): return
         for attr, var in self.labelVars.items():
-            var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
+            # only update if value changed
+            # less expensive doing so
+            new_val = getattr(self.canipy,attr,"")
+            if var.get() != f"{attr}: {new_val}":
+                var.set(f"{attr}: {new_val}")
         # recursive loop
-        # 1 is more stable than either 0 or after_idle
-        self.after(1,self.update_labels)
+        # set to 100 so it doesnt chew cpu time..
+        self.after(100,self.update_labels)
     
     def toggle_logfield(self):
         self.canipy.verbose = self.verboseToggle.get()
