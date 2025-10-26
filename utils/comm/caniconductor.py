@@ -215,9 +215,9 @@ class CaniConductor:
                     # (Likely has a message, print it out!)
                     errstr += f"\n{payload[3:].decode('utf-8')}"
                 else:
-                    errstr += self.parent.rx.fetch_status(payload)
+                    errstr += f"\n{self.parent.rx.fetch_status(payload)}"
                 if self.parent.verbose:
-                    errstr += f"{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}"
+                    errstr += f"\n{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}"
                 errstr += "\nRadio may still be operated"
                 errstr += "\nIf errors persist, check or power-cycle the radio"
                 self.parent.errorprint(errstr)
