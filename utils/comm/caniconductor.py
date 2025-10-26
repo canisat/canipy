@@ -23,7 +23,7 @@ class CaniConductor:
             case 0x80:
                 self.parent.rx.parse_startup(payload)
             case 0x81:
-                self.parent.infoprint("Radio is now powered off.\nGoodnight!")
+                self.parent.infoprint("Radio is now powered off\nGoodnight!")
             case 0x8b:
                 self.parent.logprint(
                     f"Line level set to "
@@ -61,6 +61,11 @@ class CaniConductor:
             case 0xA2:
                 self.parent.rx.parse_extinfo(payload)
             case 0xA5:
+                if (payload[1], payload[2]) == (0x04, 0x0E):
+                    # Channel 0 is for reporting ID.
+                    # just return radio ID.
+                    self.parent.tx.get_radioid()
+                    return
                 self.parent.rx.parse_chan(payload)
             case 0xB1:
                 if len(payload) != 12:

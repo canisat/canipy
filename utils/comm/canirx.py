@@ -66,18 +66,22 @@ class CaniRX:
             case 0x04:
                 match payload[2]:
                     case 0x0E:
-                        status_str += "Tune to channel 0 for radio ID"
+                        status_str += "Tuner will provide radio ID"
                     case 0x10:
                         status_str += "No signal\n"
                         status_str += "Check if antenna is connected and has a clear view of the sky"
                     case _:
                         status_str += "Tuning alert"
             case 0x07:
-                if payload[2] == 0x10:
-                    # 07 10, sending commands to a radio tuner that is not on yet
-                    status_str += "Please power up the tuner before sending commands"
-                else:
-                    status_str += "Command alert"
+                match payload[2]:
+                    case 0x0C:
+                        # 07 0C, notably when attempting to fetch ext info for ch0
+                        status_str += "Command is not supported for this channel"
+                    case 0x10:
+                        # 07 10, sending commands to a radio tuner that is not on yet
+                        status_str += "Please power up the tuner before sending commands"
+                    case _:
+                        status_str += "Command alert"
             case _:
                 status_str += f"Radio reported alert {payload[1]:02X} {payload[2]:02X}"
         return status_str
@@ -127,11 +131,6 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 78:
-            if (payload[1], payload[2]) == (0x04, 0x0E):
-                # Channel 0 is for reporting ID.
-                # just return radio ID.
-                self.parent.tx.get_radioid()
-                return
             self.parent.logprint("===Title  Info.===")
             self.parent.logprint(f"Channel {payload[3]}")
             if payload[1] != 0x01:
@@ -174,11 +173,6 @@ class CaniRX:
                 is_currchan = True
                 self.parent.ch_num = payload[3]
                 self.parent.ch_sid = payload[4]
-            if (payload[1], payload[2]) == (0x04, 0x0E):
-                # Channel 0 is for reporting ID.
-                # just return radio ID.
-                self.parent.tx.get_radioid()
-                return
             self.parent.logprint("===Channel Info===")
             self.parent.logprint(f"Channel {payload[3]}")
             if self.parent.verbose:
