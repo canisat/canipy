@@ -21,6 +21,7 @@ class CaniConductor:
         # except if it's an event driven response.
         match payload[0]:
             case 0x80:
+                self.parent.infoprint("Radio started")
                 self.parent.rx.parse_startup(payload)
             case 0x81:
                 self.parent.infoprint("Radio is now powered off\nGoodnight!")
@@ -61,6 +62,12 @@ class CaniConductor:
             case 0xA2:
                 self.parent.rx.parse_extinfo(payload)
             case 0xA5:
+                if (payload[1], payload[2]) == (0x02, 0x04):
+                    # If trying to fetch A5 on a data ch,
+                    # it's usually a callback from 90.
+                    # Report to user that data is starting.
+                    self.parent.infoprint("Data download started")
+                    return
                 if (payload[1], payload[2]) == (0x04, 0x0E):
                     # Channel 0 is for reporting ID.
                     # just return radio ID.
@@ -86,17 +93,17 @@ class CaniConductor:
                 # 'A' cmds are WX specific!
                 if payload[1] == 0x40:
                     if payload[2] == 0xff:
-                        self.parent.logprint(f"WX - Error setting up data RX on {payload[4]}")
+                        self.parent.logprint(f"Error setting up data RX on {payload[4]}")
                         if payload[3] == 0x08:
                             # Not exactly sure if this correct...
                             self.parent.logprint("Unable to listen as data")
                         if payload[3] == 0x0a:
                             self.parent.logprint("Data track not available for current subscription")
                         return
-                    if payload[4] != 0xff:
-                        self.parent.logprint(f"WX - Ready for data from {payload[4]}")
-                    else:
-                        self.parent.logprint("WX - Data stopped")
+                    if payload[4] == 0xff:
+                        self.parent.infoprint("Data download stopped")
+                        return
+                    self.parent.logprint(f"Ready for data from {payload[4]}")
                     return
                 if payload[1] == 0x43:
                     self.parent.infoprint("WX ping received")

@@ -48,7 +48,8 @@ class CaniRX:
                         # 02 03 indicates entitled data product
                         status_str += "Data stream available"
                     case 0x04:
-                        status_str += "Tuner not on correct mode for channel"
+                        # 02 04 typically when fetching info on a data channel
+                        status_str += "Function unavailable for data channel"
                     case 0x06:
                         status_str += "Irregular power state"
                     case 0x12:

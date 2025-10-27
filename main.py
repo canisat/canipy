@@ -81,7 +81,9 @@ class CaniTk(Tk):
     def logbox(self, msg:str):
         # enable, write, then disable and scroll
         self.logField.config(state="normal")
-        self.logField.insert(END,f"{msg}\n")
+        # Check if empty; only newline if not the first element
+        is_empty = self.logField.index("end-1c") == "1.0"
+        self.logField.insert(END,f"{'' if is_empty else '\n'}{msg}")
         self.logField.config(state="disabled")
         self.logField.see(END)
 
@@ -201,6 +203,12 @@ class CaniTk(Tk):
             variable=self.verboseToggle,
             command=self.toggle_logfield,
             underline=7
+        )
+        debug_menu.add_separator()
+        debug_menu.add_command(
+            label="Clear verbose log",
+            command=self.clear_logfield,
+            underline=0
         )
         # End of debug menu
         self.menuBar.add_cascade(label="Debug",menu=debug_menu,underline=0)
@@ -337,6 +345,11 @@ class CaniTk(Tk):
     def toggle_logfield(self):
         self.canipy.verbose = self.verboseToggle.get()
         self.logFrame.grid() if self.verboseToggle.get() else self.logFrame.grid_remove()
+    
+    def clear_logfield(self):
+        self.logField.config(state="normal")
+        self.logField.delete("1.0",END)
+        self.logField.config(state="disabled")
 
     def open_com_port(self, baud:int=9600):
         # Close com if any open
