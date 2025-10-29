@@ -368,7 +368,7 @@ class CaniTk(Tk):
 
     def wx_sequence(self):
         # Check if we're using a data receiver
-        if self.canipy.baud_rate not in (38400, 115200):
+        if self.canipy.baud_rate not in (38400, 115200) or self.canipy.serial_conn is None:
             self.wxToggle.set(False)
             self.errorbox("A weather data receiver is required to use this feature")
             return
