@@ -1,14 +1,22 @@
 # CaniPy
-Serial SDARS receiver control in Python.
+### Serial SDARS receiver control in Python
+
+<img width="382" height="160" alt="image" src="https://github.com/user-attachments/assets/651138ce-80e1-4ac8-a8fa-58406f79a7b2" />
 
 CaniPy provides a modern foundation for hobbyists to continue using supported SDARS hardware.
 
 The project can either be used by itself, currently a prototype GUI for both regular use and as a subsystem sample, or as a module that can be imported to support other scripts.
 
 ## Requirements
-Python 3.10 or higher is required to run the code.
+Python 3.10 or higher is required to run the codebase, along with the [pySerial](https://pypi.org/project/pyserial/) extension.
 
-The current implementation supports the commands used by these devices, which receive the **XM service** by Sirius XM Radio LLC.
+```
+pip install pyserial
+```
+
+_**Note:** Packaged releases already come with the prerequisites and thus do not need additional software setup other than fulfilling the minimum operating system requirements for the 3.10 version of Python._
+
+The current implementation supports the commands used by the following list of devices, which receive the **XM service** by Sirius XM Radio LLC.
 
 Further support for other devices may be implemented in the future.
 
@@ -20,11 +28,43 @@ Further support for other devices may be implemented in the future.
 | [WxWorx](https://www.wxworx.com/) (Portable) | 38400 |
 | WxWorx (Certified) | 115200 |
 
-## Why Python?
-CaniPy takes advantage of Python's ease of code legibility for others to better understand the control commands of the supported hardware.
+## Setup
+The program can be run standalone via the main script or by using [the latest packaged executable from the releases page](https://github.com/canisat/canipy/releases).
 
-## External Libraries
-* [pySerial](https://pypi.org/project/pyserial/)
+**Windows**
+
+Simply download the EXE, or alternatively can run from source following the instructions.
+
+You can identify which COM port corresponds to the radio's serial controller through Device Manager.
+
+**Mac**
+
+Download the source code package and run the script using Terminal following the steps.
+
+Your serial port device path should be designated as `/dev/cu.usbserial*` or `/dev/tty.usbserial*`.
+
+**Linux**
+
+Download the source code package and run the script from your shell in a graphical environment following the steps.
+
+Your serial port device path should be designated as `/dev/ttyUSB*` or `/dev/ttyS*`.
+
+## Usage
+
+1. Connect the tuner to the computer.
+2. Start the GUI from the script (`python3 main.py`) or by running the packaged executable.
+3. Verify the device's COM/TTY port path. If the device is using a different port, change it first in the top-left input box.
+4. Select the corresponding device from the drop-down menu and power it on.
+5. Change channels if needed by entering the channel number on the channel input field and clicking the button underneath.
+6. Power off when done.
+
+## Module
+To use CaniPy as an extension for your own project, if using Git for version tracking, it is possible to add this as a submodule (`git submodule add //link/to/canisat.git`). Otherwise, simply download this repo and add the root contents to a `canipy` directory located in your code root.
+
+Once CaniPy is added to a project, import it to the script using `from canipy import CaniPy` and start a `CaniPy()` instance.
+
+## Why Python?
+CaniPy takes advantage of Python's more legible syntax for others to better understand the control commands that the supported hardware can understand.
 
 ## Notice
 This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timothy Canham, under the Apache 2.0 license.
