@@ -101,7 +101,7 @@ class CaniTX:
             Power off, no power save.
 
         Args:
-            pwr_sav (bool, optional): Set radio to a power save (sleep) state instead. Default to False.
+            pwr_sav (bool, optional): Set radio to a power save state. Default to False.
 
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.

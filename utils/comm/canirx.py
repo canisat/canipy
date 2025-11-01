@@ -62,7 +62,7 @@ class CaniRX:
                 status_str += "Not subscribed"
                 if payload[2] == 0x09:
                     status_str += "\nContact service provider to subscribe"
-                if payload[2] == 0x0a:
+                if payload[2] == 0x0A:
                     status_str += "\nNot available for current subscription"
             case 0x04:
                 match payload[2]:
@@ -73,6 +73,12 @@ class CaniRX:
                         status_str += "Check if antenna is connected and has a clear view of the sky"
                     case _:
                         status_str += "Tuning alert"
+            case 0x06:
+                if payload[2] == 0x0B:
+                    status_str += "An error occurred when fetching activation info\n"
+                    status_str += "Please restart radio or contact the service provider to refresh"
+                else:
+                    status_str += "Activation alert"
             case 0x07:
                 match payload[2]:
                     case 0x0C:
@@ -99,7 +105,14 @@ class CaniRX:
             self.parent.radio_id = payload[19:27].decode('utf-8')
             self.parent.logprint("===Radio Info===")
             if payload[1]:
-                self.parent.logprint(f"Activated: {'No' if payload[1] == 0x03 else 'Yes'}")
+                act_status = "N/A"
+                if payload[1] == 0x01:
+                    act_status = "Yes"
+                elif payload[1] == 0x03:
+                    act_status = "No"
+                else:
+                    self.parent.warnprint(self.fetch_status(payload))
+                self.parent.logprint(f"Activated: {act_status}")
             # No idea what payload[3] might be yet, always 0 in pcaps.
             # Could be to indicate we're starting at ch0??
             # Ignoring it for now.

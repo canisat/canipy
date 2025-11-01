@@ -278,12 +278,12 @@ RX payload:
 TX payload:
 5aa5 - start
 0002 - 2 bytes
-0100 - Power off, power save mode off (nap)
+0100 - Power off, power save mode off
 eded - end
 RX payload:
 5aa5 - start
 0004 - 4 bytes
-81010000 - Powering off, napping. Goodnight!
+81010000 - Powering off. Goodnight!
 0185 - sum
 
 90 03 0a f0 f0 01 - 240 not subscribed

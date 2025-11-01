@@ -191,6 +191,11 @@ class CaniConductor:
                 self.parent.infoprint("Fetched activation info")
             case 0xE1:
                 self.parent.warnprint("Fetched deactivation info")
+            case 0xE2:
+                self.parent.warnprint(
+                    f"An error occurred when fetching activation info\n"
+                    f"Please restart radio or contact the service provider to refresh"
+                )
             case 0xE3:
                 self.parent.rx.parse_firminf(payload)
             case 0xE4 | 0xF4:
@@ -233,3 +238,5 @@ class CaniConductor:
                 self.parent.errorprint(errstr)
             case _:
                 self.parent.logprint(f"Unknown return code {hex(payload[0])}")
+                # Best to print out the whole thing if not known, likely undocumented!
+                self.parent.logprint(f"Received: {' '.join(f'{b:02X}' for b in payload)}")

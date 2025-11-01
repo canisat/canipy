@@ -287,7 +287,7 @@ class CaniTk(Tk):
             )
         )
 
-        Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down(pwr_sav=True)).grid(column=1,row=1)
+        Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down()).grid(column=1,row=1)
         Button(self.buttonFrame,text="Change Ch",command=lambda:self.canipy.tx.change_channel(int(self.chEntry.get()))).grid(column=2,row=1)
         Button(self.buttonFrame,text="Ext Ch Info",command=lambda:self.canipy.tx.ext_info(int(self.chEntry.get()))).grid(column=3,row=1)
         Button(self.buttonFrame,text="Unmute",command=self.canipy.tx.unmute).grid(column=4,row=1)
