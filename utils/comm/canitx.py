@@ -387,7 +387,7 @@ class CaniTX:
     def firm_ver(self, magic:int=5) -> bytes:
         """
         Sends in a command to the tuner to report its firmware version info and build dates.
-        By default, SDEC, CMB, and RX versions are reported.
+        By default, the HW, SDEC (DSP), CBM, and RX stack versions are reported.
 
         Example:
             The radio will be provided with "70 05".

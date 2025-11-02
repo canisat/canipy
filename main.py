@@ -168,7 +168,7 @@ class CaniTk(Tk):
             command=self.canipy.tx.firm_ver,
             underline=0
         )
-                # WX specific debug
+        # WX specific debug
         wxfetch_menu = Menu(tools_menu, tearoff=0)
         wxfetch_menu.add_command(
             label="Ping",

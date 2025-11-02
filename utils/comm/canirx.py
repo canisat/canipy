@@ -117,12 +117,12 @@ class CaniRX:
             # Could be to indicate we're starting at ch0??
             # Ignoring it for now.
             if self.parent.verbose:
-                self.parent.logprint(f"RX Version: {'.'.join(list(str(payload[4])))}")
+                self.parent.logprint(f"RX Version: {payload[4]:X}")
                 self.parent.logprint(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
                 self.parent.logprint(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
                 self.parent.logprint(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
-                self.parent.logprint(f"CMB Version: {'.'.join(list(str(payload[13])))}")
-                self.parent.logprint(f"CMB Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
+                self.parent.logprint(f"CBM Version: {payload[13]:X}")
+                self.parent.logprint(f"CBM Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
             self.parent.logprint(f"Radio ID: {payload[19:27].decode('utf-8')}")
             self.parent.logprint("================")
             return
@@ -356,7 +356,7 @@ class CaniRX:
 
     def parse_firminf(self, payload:bytes):
         """
-        Takes in a firmware info response (E3 hex) to print out relevant information.
+        Takes in a firmware stack info response (E3 hex) to print out its information.
         At this time, verification of the command is by checking if it contains 19 bytes.
 
         Args:
@@ -366,12 +366,13 @@ class CaniRX:
             self.parent.logprint("===FirmwareInfo===")
             # TODO: Versioning will need to be examined again.
             # I don't have the PCR with me at the moment...
-            # For now, just print whatever
-            self.parent.logprint(f"SDEC Version: {'.'.join(list(str(payload[3])))}, {'.'.join(list(str(payload[4])))}")
+            # For now, I believe this is close enough
+            self.parent.logprint(f"HW Version: {payload[3]:X}")
+            self.parent.logprint(f"SDEC Version: {payload[4]:X}")
             self.parent.logprint(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-            self.parent.logprint(f"CMB Version: {'.'.join(list(str(payload[9])))}")
-            self.parent.logprint(f"CMB Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
-            self.parent.logprint(f"RX Version: {'.'.join(list(str(payload[14])))}")
+            self.parent.logprint(f"CBM Version: {payload[9]:X}")
+            self.parent.logprint(f"CBM Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
+            self.parent.logprint(f"RX Version: {payload[14]:X}")
             self.parent.logprint(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
             self.parent.logprint("==================")
             return
