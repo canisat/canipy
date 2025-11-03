@@ -24,7 +24,7 @@ function Publish-Project {
     python -m PyInstaller @argsArray @archArray -n $Project $SrcEntry
 }
 
-function Clean-Build {
+function Remove-Build {
     Write-Host "Cleaning build artifacts..."
     Remove-Item -Recurse -Force "dist", "build", "$Project.spec" -ErrorAction SilentlyContinue
 }
@@ -44,11 +44,11 @@ switch ($Task.ToLower()) {
         break
     }
     "clean" {
-        Clean-Build
+        Remove-Build
         break
     }
     "rebuild" {
-        Clean-Build
+        Remove-Build
         if ($SkipDeps -eq 0) { Install-Deps }
         Publish-Project
         break
