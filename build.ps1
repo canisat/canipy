@@ -17,7 +17,7 @@ function Install-Deps {
     }
 }
 
-function Build-Project {
+function Publish-Project {
     Write-Host "Packaging CaniPy..."
     $argsArray = $PyInstArgs -split " "
     $archArray = $ArchFlags -split " "
@@ -31,7 +31,7 @@ function Clean-Build {
 
 switch ($Task.ToLower()) {
     "build" {
-        Build-Project
+        Publish-Project
         break
     }
     "deps" {
@@ -40,7 +40,7 @@ switch ($Task.ToLower()) {
     }
     "all" {
         Install-Deps
-        Build-Project
+        Publish-Project
         break
     }
     "clean" {
@@ -50,7 +50,7 @@ switch ($Task.ToLower()) {
     "rebuild" {
         Clean-Build
         if ($SkipDeps -eq 0) { Install-Deps }
-        Build-Project
+        Publish-Project
         break
     }
     default {

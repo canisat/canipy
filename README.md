@@ -16,13 +16,13 @@ The current implementation supports the commands used by the following list of d
 
 Further support for other devices may be implemented in the future.
 
-| Device | Baud Rate |
-| :- | -: |
-| [PCR](https://en.wikipedia.org/wiki/XM_PCR) | 9600 |
-| Direct | 9600 |
-| Commander | 9600 |
-| [WxWorx](https://www.wxworx.com/) (Portable) | 38400 |
-| WxWorx (Certified) | 115200 |
+| Device                                       | Baud Rate |
+|:---------------------------------------------|----------:|
+| [PCR](https://en.wikipedia.org/wiki/XM_PCR)  |      9600 |
+| Direct                                       |      9600 |
+| Commander                                    |      9600 |
+| [WxWorx](https://www.wxworx.com/) (Portable) |     38400 |
+| WxWorx (Certified)                           |    115200 |
 
 ## Setup
 

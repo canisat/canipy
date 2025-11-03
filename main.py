@@ -83,7 +83,7 @@ class CaniTk(Tk):
         self.logField.config(state="normal")
         # Check if empty; only newline if not the first element
         is_empty = self.logField.index("end-1c") == "1.0"
-        self.logField.insert(END,f"{'' if is_empty else '\n'}{msg}")
+        self.logField.insert(END,("" if is_empty else "\n")+msg)
         self.logField.config(state="disabled")
         self.logField.see(END)
 
