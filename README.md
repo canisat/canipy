@@ -10,11 +10,13 @@ The project can either be used by itself, currently a prototype GUI for both reg
 
 ## Requirements
 
-Python 3.10 or higher is required to run the codebase, along with the [pySerial](https://pypi.org/project/pyserial/) extension.
+The following are required to run CaniPy:
 
-The current implementation supports the commands used by the following list of devices, which receive the **XM service** by Sirius XM Radio LLC.
-
-Further support for other devices may be implemented in the future.
+* A system that meets the minimum system requirements for **Python 3.10**
+    * Windows 8.1 or higher
+    * macOS 10.9 or higher
+    * Linux
+* A compatible serial-controlled satellite radio that is listed below, which receives the **XM service** by Sirius XM Radio LLC
 
 | Device                                       | Baud Rate |
 |:---------------------------------------------|----------:|
@@ -24,19 +26,25 @@ Further support for other devices may be implemented in the future.
 | [WxWorx](https://www.wxworx.com/) (Portable) |     38400 |
 | WxWorx (Certified)                           |    115200 |
 
-## Setup
+(Further support for other devices may be implemented in the future)
 
-The program can either be run standalone via the main script (`python3 main.py`), using [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), or by making a packaged executable in the target system.
+## Usage
 
-> [!NOTE]
-> Pre-packaged executable downloads already work on their own and thus do not need additional setup other than fulfilling the minimum operating system requirements for the 3.10 version of Python.
+> [!IMPORTANT]
+> On Windows, the standalone EXE may get flagged due to its use of PyInstaller for packaging. This is a false positive. You may alternatively download the repo and run the main script directly instead.
+
+The program can be run via either the main script (`python3 main.py`), [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), or by making a packaged executable in the target system.
+
+1. Connect the tuner to the computer.
+2. Open the main program to start the CaniPy UI.
+3. Verify the device's COM/TTY port path. See below for guidance depending on your operating system. If the device is using a different path, change it first in the top-left input box.
+4. Select the corresponding device from the drop-down menu and power it on.
+5. Change channels if needed by entering the channel number on the channel input field and clicking the button underneath.
+6. Power off when done.
 
 ### Windows
 
 You can identify which COM port corresponds to the radio's serial controller through Device Manager.
-
-> [!IMPORTANT]
-> The EXE may get flagged due to its use of PyInstaller for packaging to a single EXE. This is a false positive. You may alternatively download the source and run the main script instead of using the EXE.
 
 ### Linux
 
@@ -44,22 +52,13 @@ Your serial port device path should be designated as `/dev/ttyUSB*` or `/dev/tty
 
 ### Mac
 
-Your serial port device path should be designated as `/dev/cu.usbserial*` or `/dev/tty.usbserial*`.
-
-## Usage
-
-1. Connect the tuner to the computer.
-2. Open the main program to start the CaniPy GUI.
-3. Verify the device's COM/TTY port path. If the device is using a different port, change it first in the top-left input box.
-4. Select the corresponding device from the drop-down menu and power it on.
-5. Change channels if needed by entering the channel number on the channel input field and clicking the button underneath.
-6. Power off when done.
+Your serial port device path should be designated as `/dev/cu.usbserial*` or `/dev/cu.*`.
 
 ## Packaging
 
-After cloning the repo (`git clone //link/to/canisat.git`), if making a packaged CaniPy executable, [PyInstaller](https://pypi.org/project/pyinstaller/) must also be installed.
+If making a standalone CaniPy executable, first clone the repo (`git clone //link/to/canisat.git`) then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
 
-All necessary prerequisites will be installed automatically via `pip` when using either `make all` or `make deps`. They can alternatively be installed manually following the `requirements.txt` list.
+These prerequisites will be installed automatically via `pip` when using either `make all` or `make deps`. They can alternatively be installed manually following the `requirements.txt` list.
 
 ```sh
 # Recommended (deps, build)
@@ -91,7 +90,7 @@ make rebuild SKIP_DEPS=1
 
 ## Module
 
-To use CaniPy as an extension for your own project, if using Git for version tracking, it is possible to add this as a submodule (`git submodule add //link/to/canisat.git`). Otherwise, simply clone this repo and add the root contents to a `canipy` directory located in your own repo.
+To use CaniPy as an extension for your project, if using Git for version tracking, it is possible to add the repo as a submodule (`git submodule add //link/to/canisat.git`). Otherwise, simply clone this repo in your project root.
 
 Once CaniPy is added to a project, import it to the script using `from canipy import CaniPy` and start a `CaniPy()` instance.
 
