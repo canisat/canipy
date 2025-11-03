@@ -1,6 +1,6 @@
 # CaniPy
 
-### Serial SDARS receiver control in Python
+**Serial SDARS receiver control in Python**
 
 <img width="383" height="104" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/f28d4da7-18f9-4fe9-bf3a-c04387398c6b" />
 
@@ -31,18 +31,18 @@ The program can either be run standalone via the main script (`python3 main.py`)
 > [!NOTE]
 > Pre-packaged executable downloads already work on their own and thus do not need additional setup other than fulfilling the minimum operating system requirements for the 3.10 version of Python.
 
-**Windows**
+### Windows
 
 You can identify which COM port corresponds to the radio's serial controller through Device Manager.
 
 > [!IMPORTANT]
 > The EXE may get flagged due to its use of PyInstaller for packaging to a single EXE. This is a false positive. You may alternatively download the source and run the main script instead of using the EXE.
 
-**Linux**
+### Linux
 
 Your serial port device path should be designated as `/dev/ttyUSB*` or `/dev/ttyS*`.
 
-**Mac**
+### Mac
 
 Your serial port device path should be designated as `/dev/cu.usbserial*` or `/dev/tty.usbserial*`.
 
