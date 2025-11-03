@@ -28,11 +28,15 @@ Further support for other devices may be implemented in the future.
 
 The program can either be run standalone via the main script (`python3 main.py`), using [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), or by making a packaged executable in the target system.
 
-_**Note:** Pre-packaged executable downloads already work on their own and thus do not need additional setup other than fulfilling the minimum operating system requirements for the 3.10 version of Python._
+> [!NOTE]
+> Pre-packaged executable downloads already work on their own and thus do not need additional setup other than fulfilling the minimum operating system requirements for the 3.10 version of Python.
 
 **Windows**
 
 You can identify which COM port corresponds to the radio's serial controller through Device Manager.
+
+> [!IMPORTANT]
+> The EXE may get flagged due to its use of PyInstaller for packaging to a single EXE. This is a false positive. You may alternatively download the source and run the main script instead of using the EXE.
 
 **Linux**
 
