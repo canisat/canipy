@@ -1,5 +1,8 @@
+import serial.tools.list_ports
+
 from tkinter import *
 from tkinter import messagebox, ttk
+
 import time
 
 from utils import CaniPy
@@ -23,7 +26,7 @@ class CaniTk(Tk):
 
         # frames
         self.buttonFrame = Frame(self)
-        self.labelFrame = ttk.LabelFrame(self,text="Debug Values")
+        self.labelFrame = ttk.LabelFrame(self,text="Display")
         
         # log elements
         self.logFrame = Frame(self)
@@ -39,18 +42,20 @@ class CaniTk(Tk):
         self.canipy = CaniPy(gui=self)
 
         # vars
-        self.sigmonToggle = BooleanVar()
-        self.clockmonToggle = BooleanVar()
+        self.muteToggle = BooleanVar()
+        self.sigmonToggle = BooleanVar(value=True)
+        self.clockmonToggle = BooleanVar(value=True)
         self.wxToggle = BooleanVar()
         self.chGuiVar = IntVar(value=self.canipy.ch_num)
-        self.labeldbgToggle = BooleanVar()
+        self.labeldbgToggle = BooleanVar(value=True)
         self.verboseToggle = BooleanVar(value=self.canipy.verbose)
         self.radiodiagToggle = BooleanVar()
         self.wrgpsToggle = BooleanVar()
 
         # input fields
-        self.comEntry = Entry(self.buttonFrame)
+        #self.comEntry = Entry(self.buttonFrame)
         #self.chEntry = Entry(self.buttonFrame)
+        #self.chEntry.set("Enter ch")
         self.chEntry = ttk.Spinbox(
             self.buttonFrame,
             from_=0,
@@ -58,11 +63,27 @@ class CaniTk(Tk):
             textvariable=self.chGuiVar,
             width=8
         )
-        self.hwtypeSelect = StringVar(value="Select radio type...")
+        self.portList = [port.device for port in serial.tools.list_ports.comports()]
+        self.portSelect = StringVar()
+        if self.portList:
+            # Default to first value in port list
+            self.portSelect.set(self.portList[0])
+        else:
+            # Prompt user to enter port path if no list
+            self.portSelect.set("Enter device here")
+        self.hwtypeSelect = StringVar(value="Pick type to begin")
 
-        # placeholders
-        self.chEntry.set("Enter ch")
-        self.labelVars = {}
+        # Labels for display
+        self.labelVars = {
+            "sig_strength":StringVar(),
+            "ch_name":StringVar(),
+            "artist_name":StringVar(),
+            "sat_datetime":StringVar(),
+            "ter_strength":StringVar(),
+            "ch_num":StringVar(),
+            "title_name":StringVar(),
+            "radio_id":StringVar()
+        }
 
         self.initialize()
 
@@ -101,38 +122,20 @@ class CaniTk(Tk):
         self.update_labels()
     
     def prep_menu(self):
-        # File menu
+        # === File menu ===
         file_menu = Menu(self.menuBar,tearoff=False)
+        file_menu.add_checkbutton(
+            label="Mute",
+            variable=self.muteToggle,
+            command=lambda:self.canipy.tx.set_mute(self.muteToggle.get()),
+            underline=0
+        )
+        file_menu.add_separator()
         file_menu.add_command(label="Exit",command=self.destroy,underline=1)
         self.menuBar.add_cascade(label="File",menu=file_menu,underline=0)
 
-        # Tools menu
+        # === Tools menu ===
         tools_menu = Menu(self.menuBar,tearoff=False)
-        # Monitor submenu
-        mon_menu = Menu(tools_menu, tearoff=0)
-        mon_menu.add_command(
-            label="Tuned channel",
-            command=lambda:self.canipy.tx.chan_mon(
-                self.canipy.ch_num,
-                self.wxToggle.get()
-            ),
-            underline=6
-        )
-        mon_menu.add_separator()
-        mon_menu.add_checkbutton(
-            label="Date/time",
-            variable=self.clockmonToggle,
-            command=lambda:self.canipy.tx.clock_mon(self.clockmonToggle.get()),
-            underline=0
-        )
-        mon_menu.add_checkbutton(
-            label="Signal",
-            variable=self.sigmonToggle,
-            command=lambda:self.canipy.tx.signal_mon(self.sigmonToggle.get()),
-            underline=0
-        )
-        tools_menu.add_cascade(label="Monitor",menu=mon_menu,underline=0)
-        tools_menu.add_separator()
         # Data
         tools_menu.add_checkbutton(
             label="Toggle WX data download",
@@ -146,30 +149,46 @@ class CaniTk(Tk):
             command=lambda:self.canipy.wx.wrgps_conn(self.wrgpsToggle.get()),
             underline=10
         )
-        # End tools menu
+        # === End tools menu ===
         self.menuBar.add_cascade(label="Tools",menu=tools_menu,underline=0)
 
-        # Debug menu
+        # === Debug menu ===
         debug_menu = Menu(self.menuBar,tearoff=False)
         # Fetch menu
-        fetch_menu = Menu(tools_menu, tearoff=0)
-        fetch_menu.add_command(
-            label="Signal info",
-            command=self.canipy.tx.signal_info,
-            underline=0
-        )
+        fetch_menu = Menu(debug_menu, tearoff=0)
         fetch_menu.add_command(
             label="Radio ID",
             command=self.canipy.tx.get_radioid,
             underline=0
         )
         fetch_menu.add_command(
-            label="Firmware info",
+            label="Firmware",
             command=self.canipy.tx.firm_ver,
             underline=0
         )
+        fetch_menu.add_separator()
+        fetch_menu.add_command(
+            label="Selected channel",
+            command=lambda:self.canipy.tx.channel_info(
+                self.chEntry.get()
+            ),
+            underline=9
+        )
+        fetch_menu.add_command(
+            label="Extended channel",
+            command=lambda:self.canipy.tx.ext_info(
+                self.chEntry.get()
+            ),
+            underline=0
+        )
+        fetch_menu.add_command(
+            label="Signal",
+            command=self.canipy.tx.signal_info,
+            underline=0
+        )
+        fetch_menu.add_separator()
         # WX specific debug
-        wxfetch_menu = Menu(tools_menu, tearoff=0)
+        wxfetch_menu = Menu(fetch_menu, tearoff=0)
         wxfetch_menu.add_command(
             label="Ping",
             command=self.canipy.wx.ping,
@@ -183,14 +202,38 @@ class CaniTk(Tk):
         # end wx menu
         fetch_menu.add_cascade(label="WX",menu=wxfetch_menu,underline=0)
         # end of fetch
-        debug_menu.add_cascade(label="Fetch now",menu=fetch_menu,underline=0)
-        # Rest of debug
-        debug_menu.add_checkbutton(
-            label="Monitor radio diag",
+        debug_menu.add_cascade(label="Fetch info now",menu=fetch_menu,underline=0)
+        # Debug monitoring menu
+        mond_menu = Menu(debug_menu, tearoff=0)
+        mond_menu.add_checkbutton(
+            label="Radio diag",
             variable=self.radiodiagToggle,
             command=lambda:self.canipy.tx.diag_mon(self.radiodiagToggle.get()),
-            underline=17
+            underline=9
         )
+        mond_menu.add_separator()
+        mond_menu.add_command(
+            label="Selected channel",
+            command=lambda:self.canipy.tx.chan_mon(
+                self.chEntry.get()
+            ),
+            underline=9
+        )
+        mond_menu.add_separator()
+        mond_menu.add_checkbutton(
+            label="Date/time",
+            variable=self.clockmonToggle,
+            command=lambda:self.canipy.tx.clock_mon(self.clockmonToggle.get()),
+            underline=0
+        )
+        mond_menu.add_checkbutton(
+            label="Signal",
+            variable=self.sigmonToggle,
+            command=lambda:self.canipy.tx.signal_mon(self.sigmonToggle.get()),
+            underline=0
+        )
+        debug_menu.add_cascade(label="Debug Monitor",menu=mond_menu,underline=6)
+        # Rest of debug
         debug_menu.add_separator()
         debug_menu.add_checkbutton(
             label="Toggle label display",
@@ -260,37 +303,50 @@ class CaniTk(Tk):
         self.buttonFrame.grid(column=0,row=0)
 
         # field for com port
-        self.comEntry.grid(column=0,row=0)
-        self.comEntry.insert(END,"COM3")  #self.comEntry.set("COM3")
+        port_combo = ttk.Combobox(
+            self.buttonFrame,
+            textvariable=self.portSelect,
+            values=self.portList,
+            width=16
+        )
+        port_combo.grid(column=0,row=0)
 
-        Button(self.buttonFrame,text="Power On",command=self.canipy.tx.power_up).grid(column=1,row=0)
+        # self.comEntry.grid(column=0,row=0)
+        # self.comEntry.insert(END,"COM3")
+        #self.comEntry.set("COM3")
 
-        # channel number
-        self.chEntry.grid(column=2,row=0)
-        #self.chEntry.insert(END,"1")
-
-        Button(self.buttonFrame,text="Ch Info",command=lambda:self.canipy.tx.channel_info(int(self.chEntry.get()))).grid(column=3,row=0)
-        Button(self.buttonFrame,text="Mute",command=self.canipy.tx.mute).grid(column=4,row=0)
-
-        combo = ttk.Combobox(
+        hwtype_combo = ttk.Combobox(
             self.buttonFrame,
             textvariable=self.hwtypeSelect,
             values=list(self.baudOpts.keys()),
             state="readonly",
             width=16
         )
-        combo.grid(column=0,row=1)
-        combo.bind(
+        hwtype_combo.grid(column=0,row=1)
+        hwtype_combo.bind(
             "<<ComboboxSelected>>",
             lambda e: self.open_com_port(
                 self.baudOpts[self.hwtypeSelect.get()]
             )
         )
 
-        Button(self.buttonFrame,text="Power Off",command=lambda:self.canipy.tx.power_down()).grid(column=1,row=1)
-        Button(self.buttonFrame,text="Change Ch",command=lambda:self.canipy.tx.change_channel(int(self.chEntry.get()))).grid(column=2,row=1)
-        Button(self.buttonFrame,text="Ext Ch Info",command=lambda:self.canipy.tx.ext_info(int(self.chEntry.get()))).grid(column=3,row=1)
-        Button(self.buttonFrame,text="Unmute",command=self.canipy.tx.unmute).grid(column=4,row=1)
+        Label(
+            self.buttonFrame,
+            text="Channel"
+        ).grid(column=1,row=0)
+
+        Button(
+            self.buttonFrame,
+            text=">",
+            height=2,
+            command=lambda:self.canipy.tx.change_channel(
+                int(self.chEntry.get())
+            )
+        ).grid(column=2,row=0,rowspan=2)
+
+        # channel number
+        self.chEntry.grid(column=1,row=1)
+        #self.chEntry.insert(END,"1")
         
         # Buttons used during debug
         #Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx.firm_ver).grid(column=9,row=0)
@@ -300,29 +356,14 @@ class CaniTk(Tk):
         # frame for labels
         self.labelFrame.grid(column=0,row=1)
 
-        attrs = [
-            "ch_num",
-            "ch_sid",
-            "ch_name",
-            "artist_name",
-            "title_name",
-            "cat_name",
-            "cat_id",
-            "sig_strength",
-            "ant_strength",
-            "ter_strength",
-            "sat_datetime",
-            "radio_id"
-        ]
+        for i, (attr, var) in enumerate(self.labelVars.items()):
+            #var.set(f"{getattr(self.canipy,attr,'')}")
+            Label(self.labelFrame,textvariable=var).grid(
+                column=i//4,row=i%4,sticky=("e" if i//4 else "w")
+            )
 
-        for i, attr in enumerate(attrs):
-            var = StringVar()
-            var.set(f"{attr}: {getattr(self.canipy,attr,'')}")
-            Label(self.labelFrame,textvariable=var).grid(column=i//6,row=i%6,sticky="w")
-            self.labelVars[attr] = var
-        
-        # Hide until debug toggle is enabled
-        self.labelFrame.grid_remove()
+        # Remove if not enabled by default
+        if not self.labeldbgToggle.get(): self.labelFrame.grid_remove()
     
     def prep_logfield(self):
         self.logFrame.grid(column=0,row=2)
@@ -332,12 +373,26 @@ class CaniTk(Tk):
 
     def update_labels(self):
         if not self.winfo_exists(): return
+
         for attr, var in self.labelVars.items():
+            new_val = getattr(self.canipy,attr,"")
+            new_label = ""
+            match attr:
+                case "sig_strength" | "ter_strength":
+                    new_label += "SAT " if attr == "sig_strength" else "TER "
+                    if any(x < 0 for x in (new_val, self.canipy.ant_strength)):
+                        new_label += "X"
+                    else:
+                        new_label += str(new_val)
+                case "sat_datetime":
+                    new_label += f"{new_val.strftime('%H:%M')} UTC"
+                case _:
+                    new_label += str(new_val)
             # only update if value changed
             # less expensive doing so
-            new_val = getattr(self.canipy,attr,"")
-            if var.get() != f"{attr}: {new_val}":
-                var.set(f"{attr}: {new_val}")
+            if var.get() != f"{new_label}":
+                var.set(f"{new_label}")
+
         # recursive loop
         # set to 100 so it doesnt chew cpu time..
         self.after(100,self.update_labels)
@@ -356,7 +411,7 @@ class CaniTk(Tk):
         if self.canipy.serial_conn is not None:
             self.canipy.close()
         # get com port
-        com_port = self.comEntry.get()
+        com_port = self.portSelect.get()
         # If baud provided is 0, then it's direct
         is_direct = not baud
         if is_direct: baud = 9600
@@ -364,7 +419,10 @@ class CaniTk(Tk):
         self.canipy.open(port=com_port, baud=baud)
         if self.canipy.serial_conn is not None:
             self.infobox(f"Connected to {com_port} ({baud} baud)")
-            if is_direct: self.canipy.dx.enable()
+            if is_direct:
+                self.canipy.dx.enable()
+            else:
+                self.canipy.tx.power_up()
 
     def wx_sequence(self):
         # Check if we're using a data receiver
@@ -374,6 +432,8 @@ class CaniTk(Tk):
             return
         # Begin data
         if self.wxToggle.get():
+            # Indicate we're in data mode
+            self.canipy.data_in_use = True
             # Change to data service
             self.canipy.tx.channel_cancel(0xf0, True)
             time.sleep(1)
@@ -396,6 +456,8 @@ class CaniTk(Tk):
                 self.canipy.wx.set_datachan(pid)
                 time.sleep(0.5)
         else:
+            # Sometimes 4F may linger unless radio is shut off first...
+            #self.canipy.data_in_use = False
             # Halt all data download
             self.canipy.wx.data_stop()
         

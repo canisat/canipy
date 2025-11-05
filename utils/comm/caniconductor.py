@@ -23,7 +23,25 @@ class CaniConductor:
             case 0x80:
                 self.parent.infoprint("Radio started")
                 self.parent.rx.parse_startup(payload)
+                # Autostart clock and signal monitoring if GUI
+                if self.parent.gui:
+                    self.parent.tx.clock_mon(True)
+                    self.parent.tx.signal_mon(True)
             case 0x81:
+                # Reset display values to defaults!
+                self.parent.ch_num = 0
+                self.parent.ch_sid = 0
+                self.parent.ch_name = ""
+                self.parent.artist_name = ""
+                self.parent.title_name = ""
+                self.parent.cat_name = ""
+                self.parent.cat_id = 0
+                self.parent.sig_strength = -1
+                self.parent.ant_strength = -1
+                self.parent.ter_strength = -1
+                self.parent.data_in_use = False
+                self.parent.radio_id = ""
+                # Prompt shut off
                 self.parent.infoprint("Radio is now powered off\nGoodnight!")
             case 0x8b:
                 self.parent.logprint(
@@ -39,13 +57,26 @@ class CaniConductor:
                     # Might be to indicate auxiliary tuning is enabled
                     # to allow simultaneous audio and data tuning.
                     self.parent.logprint(f"Data aux is on")
-                if (payload[1], payload[2]) not in [(0x01, 0x00), (0x04, 0x0E)]:
-                    # Report status if alert, or not ch0
+                    # Data is on in this case
+                    self.parent.data_in_use = True
+                if (payload[1], payload[2]) == (0x04, 0x0E):
+                    # Channel 0 is for reporting ID.
+                    # just return radio ID.
+                    self.parent.tx.get_radioid()
+                    return
+                if (payload[1], payload[2]) != (0x01, 0x00):
+                    # Report status if alert
                     self.parent.warnprint(self.parent.rx.fetch_status(payload))
                     return
+                # Set as current ch
                 self.parent.ch_sid = payload[3]
                 self.parent.ch_num = payload[4]
+                # Fetch channel info
                 self.parent.tx.channel_info(payload[4])
+                self.parent.tx.ext_info(payload[4])
+                # If using a GUI subsystem, also monitor channel.
+                if self.parent.gui:
+                    self.parent.tx.chan_mon(payload[4])
             case 0x91:
                 # Hacky way to distinguish, but if it's data, it's usually SID
                 # Or maybe 11/91 is exclusively sid, im not sure...
@@ -118,14 +149,14 @@ class CaniConductor:
                 # achieve the same thing, especially with
                 # receivers that are also tuned to data!
                 if payload[3]:
-                    self.parent.infoprint(f"Monitoring channel {payload[3]}")
+                    self.parent.logprint(f"Monitoring channel {payload[3]}")
                     return
-                self.parent.infoprint("Channel monitoring stopped")
+                self.parent.logprint("Channel monitoring stopped")
             case 0xD1:
                 if payload[2] == 0x01:
                     # Store only if channel numbers match!
                     if payload[1] == self.parent.ch_num:
-                        self.parent.ch_name = payload[3:19].decode('utf-8')
+                        self.parent.ch_name = payload[3:19].decode('utf-8').strip()
                     self.parent.logprint("===Channel Name===")
                     self.parent.logprint(f"Channel {payload[1]}")
                     self.parent.logprint(payload[3:19].decode('utf-8'))
@@ -139,7 +170,7 @@ class CaniConductor:
                 if payload[3] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.cat_id = payload[2]
-                        self.parent.cat_name = payload[4:].decode('utf-8')
+                        self.parent.cat_name = payload[4:].decode('utf-8').strip()
                     self.parent.logprint("===Ch. Category===")
                     self.parent.logprint(f"Channel {payload[1]}")
                     self.parent.logprint(payload[4:].decode('utf-8'))
@@ -149,8 +180,8 @@ class CaniConductor:
             case 0xD3:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:19].decode('utf-8')
-                        self.parent.title_name = payload[19:].decode('utf-8')
+                        self.parent.artist_name = payload[3:19].decode('utf-8').strip()
+                        self.parent.title_name = payload[19:].decode('utf-8').strip()
                     self.parent.logprint("===Program Info===")
                     self.parent.logprint(f"Channel {payload[1]}")
                     self.parent.logprint(payload[3:19].decode('utf-8'))
@@ -159,7 +190,7 @@ class CaniConductor:
             case 0xD4:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                        self.parent.artist_name = payload[3:].decode('utf-8').rstrip(chr(0)).strip()
                     self.parent.logprint("===Artist Info.===")
                     self.parent.logprint(f"Channel {payload[1]}")
                     self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))
@@ -167,7 +198,7 @@ class CaniConductor:
             case 0xD5:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.title_name = payload[3:].decode('utf-8').rstrip(chr(0))
+                        self.parent.title_name = payload[3:].decode('utf-8').rstrip(chr(0)).strip()
                     self.parent.logprint("===Title  Info.===")
                     self.parent.logprint(f"Channel {payload[1]}")
                     self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))

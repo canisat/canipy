@@ -153,13 +153,13 @@ class CaniRX:
                 return
             if payload[4] == 0x01:
                 if payload[3] == self.parent.ch_num:
-                    self.parent.artist_name = payload[5:37].decode('utf-8').rstrip(chr(0))
+                    self.parent.artist_name = payload[5:37].decode('utf-8').rstrip(chr(0)).strip()
                 self.parent.logprint(payload[5:37].decode('utf-8').rstrip(chr(0)))
                 if self.parent.verbose:
                     self.parent.logprint(' '.join(f'{b:02X}' for b in payload[37:41]))
             if payload[41] == 0x01:
                 if payload[3] == self.parent.ch_num:
-                    self.parent.title_name = payload[42:74].decode('utf-8').rstrip(chr(0))
+                    self.parent.title_name = payload[42:74].decode('utf-8').rstrip(chr(0)).strip()
                 self.parent.logprint(payload[42:74].decode('utf-8').rstrip(chr(0)))
                 if self.parent.verbose:
                     self.parent.logprint(' '.join(f'{b:02X}' for b in payload[74:]))
@@ -197,17 +197,17 @@ class CaniRX:
                 return
             if payload[5] == 0x01:
                 if is_currchan:
-                    self.parent.ch_name = payload[6:22].decode('utf-8')
+                    self.parent.ch_name = payload[6:22].decode('utf-8').strip()
                 self.parent.logprint(payload[6:22].decode('utf-8'))
             if payload[40] == 0x01:
                 if is_currchan:
-                    self.parent.artist_name = payload[41:57].decode('utf-8')
-                    self.parent.title_name = payload[57:73].decode('utf-8')
+                    self.parent.artist_name = payload[41:57].decode('utf-8').strip()
+                    self.parent.title_name = payload[57:73].decode('utf-8').strip()
                 self.parent.logprint(payload[41:57].decode('utf-8'))
                 self.parent.logprint(payload[57:73].decode('utf-8'))
             if payload[22] == 0x01:
                 if is_currchan:
-                    self.parent.cat_name = payload[24:40].decode('utf-8')
+                    self.parent.cat_name = payload[24:40].decode('utf-8').strip()
                     self.parent.cat_id = payload[23]
                 self.parent.logprint(payload[24:40].decode('utf-8'))
                 if self.parent.verbose:

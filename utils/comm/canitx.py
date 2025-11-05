@@ -161,10 +161,10 @@ class CaniTX:
                 f"Changing to {'channel' if not is_sid else 'ID'} {channel}"
                 f"{' (Data)' if data else ''}"
             )
-        if not is_sid:
-            self.parent.ch_num = channel
-        else:
-            self.parent.ch_sid = channel
+        # if not is_sid:
+        #     self.parent.ch_num = channel
+        # else:
+        #     self.parent.ch_sid = channel
         return self.send(bytes([0x10, 0x02 - is_sid, channel, data, prg_type, 0x01 + data]))
 
     def channel_cancel(self, channel:int=0, data:bool=False) -> bytes:
@@ -329,7 +329,7 @@ class CaniTX:
             self.parent.logprint(f"Turning {'on' if toggle else 'off'} the clock")
         return self.send(bytes([0x4E, toggle]))
 
-    def chan_mon(self, channel:int, is_data_on:bool=False, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True) -> bytes:
+    def chan_mon(self, channel:int, serv_mon:bool=True, prgtype_mon:bool=True, inf_mon:bool=True, ext_mon:bool=True, mode_override:bool=False) -> bytes:
         """
         Sends in a command to the tuner to monitor and periodically report information for the given channel number.
 
@@ -339,11 +339,11 @@ class CaniTX:
 
         Args:
             channel (int): The channel value.
-            is_data_on (bool, optional): Ensure this gets set to True if using the data RX. Default is false.
             serv_mon (bool, optional): Monitor changes to the channel's service ID. Default is true.
             prgtype_mon (bool, optional): Monitor changes to the channel's program type. Default is true.
             inf_mon (bool, optional): Monitor changes in the program info for the channel. Default is true.
             ext_mon (bool, optional): Monitor changes in the extended program info for the channel. Default is true.
+            mode_override (bool, optional): Enable to force command type depending on data state. Default is false.
 
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
@@ -359,7 +359,9 @@ class CaniTX:
             ext_mon = False
         if self.parent.verbose:
             self.parent.logprint(f"Asking radio to monitor channel {channel}")
-        return self.send(bytes([0x50 - is_data_on, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
+        # Use 4F instead of 50 if using data service or if overridden, and vice versa (XOR)
+        mon_while_data = self.parent.data_in_use ^ mode_override
+        return self.send(bytes([0x50 - mon_while_data, channel, serv_mon, prgtype_mon, inf_mon, ext_mon]))
 
     def diag_mon(self, toggle:bool) -> bytes:
         """

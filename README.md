@@ -2,7 +2,7 @@
 
 **Serial SDARS receiver control in Python**
 
-<img width="383" height="104" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/f28d4da7-18f9-4fe9-bf3a-c04387398c6b" />
+<img width="207" height="197" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/e150fd5e-d812-4268-b9fa-86cf4edd7d3e" />
 
 CaniPy provides a modern foundation for hobbyists to continue using supported SDARS hardware, taking advantage of Python's more legible syntax so others can better adapt this code for their needs and understand the control commands of the supported hardware.
 
@@ -37,10 +37,11 @@ The program can be run via either the main script (`python3 main.py`), [the late
 
 1. Connect the tuner to the computer.
 2. Open the main program to start the CaniPy UI.
-3. Verify the device's COM/TTY port path. See below for guidance depending on your operating system. If the device is using a different path, change it first in the top-left input box.
-4. Select the corresponding device from the drop-down menu and power it on.
-5. Change channels if needed by entering the channel number on the channel input field and clicking the button underneath.
-6. Power off when done.
+3. Select and verify the device's COM/TTY port path from the drop-down menu. See below for guidance depending on your operating system. If the device is using a different path, you may change it by typing in the device port box.
+4. Select the corresponding device type from the drop-down menu underneath to connect and power it on.
+5. Change channels if needed by entering the channel number on the channel input field and clicking the button on the right.
+6. Mute and unmute the audio by going to "File" > "Mute".
+7. Close the program when done.
 
 ### Windows
 
@@ -52,7 +53,7 @@ Your serial port device path should be designated as `/dev/ttyUSB*` or `/dev/tty
 
 ### Mac
 
-Your serial port device path should be designated as `/dev/cu.usbserial*` or `/dev/cu.*`.
+Your serial port device path should be designated as `/dev/tty.usbserial*` or `/dev/tty.*`.
 
 ## Packaging
 

@@ -32,6 +32,10 @@ class CaniDX:
         # RX might not be received when unmuting,
         # Let the function finish as-is after this
         self.dac_mute(False)
+        time.sleep(1)
+
+        # Power up the radio
+        self.parent.tx.power_up()
 
     def com_listen(self, toggle:bool) -> bytes:
         """
