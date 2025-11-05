@@ -356,7 +356,8 @@ class CaniTk(Tk):
         # frame for labels
         self.labelFrame.grid(column=0,row=1)
 
-        for i, (attr, var) in enumerate(self.labelVars.items()):
+        for i, (_, var) in enumerate(self.labelVars.items()):
+            # ignoring attr (using _) for now, only using in update
             #var.set(f"{getattr(self.canipy,attr,'')}")
             Label(self.labelFrame,textvariable=var).grid(
                 column=i//4,row=i%4,sticky=("e" if i//4 else "w")

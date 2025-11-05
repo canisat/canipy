@@ -71,6 +71,10 @@ make all  # Linux, Mac
 make
 .\build.ps1
 
+# Package terminal version only
+make term
+.\build.ps1 -Task term
+
 # Install req's only
 make deps
 .\build.ps1 -Task deps

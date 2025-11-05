@@ -34,6 +34,13 @@ switch ($Task.ToLower()) {
         Publish-Project
         break
     }
+    "term" {
+        $SrcEntry = "term.py"
+        $PyInstArgs = "--onefile"
+        $Project = "canipy-term"
+        Publish-Project
+        break
+    }
     "deps" {
         Install-Deps
         break
@@ -55,7 +62,7 @@ switch ($Task.ToLower()) {
     }
     default {
         Write-Host "Unknown task: $Task" -ForegroundColor Red
-        Write-Host "Available tasks: build, deps, all, clean, rebuild"
+        Write-Host "Available tasks: build, term, deps, all, clean, rebuild"
         break
     }
 }

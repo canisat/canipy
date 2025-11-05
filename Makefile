@@ -8,6 +8,7 @@ ARCH_FLAGS?=
 PROJECT?=canipy
 SRC=main.py
 REQS?=requirements.txt
+PYINST_ARGS?=--onefile --noconsole
 
 # If rebuilding, overrides if dependencies are to not be re-processed
 SKIP_DEPS?=0
@@ -15,7 +16,10 @@ SKIP_DEPS?=0
 # Just build when "make" is run
 build:
 	@echo "Packaging CaniPy..."
-	$(PYINSTALLER) --onefile --noconsole $(ARCH_FLAGS) -n $(PROJECT) $(SRC)
+	$(PYINSTALLER) $(PYINST_ARGS) $(ARCH_FLAGS) -n $(PROJECT) $(SRC)
+
+term:
+	$(MAKE) build SRC=term.py PYINST_ARGS=--onefile PROJECT=canipy-term
 
 # Installs dependencies
 deps:
