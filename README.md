@@ -2,7 +2,7 @@
 
 **Serial SDARS receiver control in Python**
 
-<img width="207" height="197" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/e150fd5e-d812-4268-b9fa-86cf4edd7d3e" />
+<img width="320" height="240" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/0bd820bd-90e3-447e-9f33-3bdddafba0bd" />
 
 CaniPy provides a modern foundation for hobbyists to continue using supported SDARS hardware, taking advantage of Python's more legible syntax so others can better adapt this code for their needs and understand the control commands of the supported hardware.
 
