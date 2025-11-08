@@ -59,8 +59,8 @@ class CaniTX:
         Returns:
             bytes: Echoes back the payload it's been given for debugging purposes.
         """
-        if self.parent.serial_conn is None or not self.parent.serial_conn.is_open:
-            self.parent.errorprint("No serial port in use")
+        if self.parent.serial_conn is None or not getattr(self.parent.serial_conn,"is_open",False):
+            self.parent.errorprint("No device in use")
             return b""
         length = len(payload).to_bytes(2, byteorder='big')
         command = self.parent.header + length + payload + self.parent.tail

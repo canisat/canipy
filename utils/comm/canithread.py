@@ -108,7 +108,7 @@ class CaniThread:
         Returns:
             bytes: Returns the payload that was read.
         """
-        if self.parent.serial_conn is None or not self.parent.serial_conn.is_open:
+        if self.parent.serial_conn is None or not getattr(self.parent.serial_conn,"is_open",False):
             # wait for port to be connected
             time.sleep(1)
             return b""

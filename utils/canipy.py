@@ -40,6 +40,8 @@ class CaniPy:
         cat_name (str): Display name for the current channel's assigned category (Rock, Pop, News, etc).
         cat_id (int): The ID number corresponding to the current channel's assigned category.
 
+        ticker (str): Text used for scrolling information.
+
         sig_strength (int): Overall satellite signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
         ant_strength (int): Indicates whether the antenna is connected or not (Exp: -1 inactive, 0 none, 3 connected).
         ter_strength (int): Overall terrestrial signal strength (Exp: -1 inactive, 0 none, 1 low, 2 med, 3 hi).
@@ -89,6 +91,8 @@ class CaniPy:
 
         self.cat_name = ""
         self.cat_id = 0
+
+        self.ticker = ""
 
         self.sig_strength = -1
         self.ant_strength = -1
@@ -145,7 +149,7 @@ class CaniPy:
         try:
             self.serial_conn = serial.Serial(port=port, baudrate=baud, timeout=1)
         except serial.SerialException:
-            self.errorprint("Port is unavailable")
+            self.errorprint("Device port is unavailable")
             self.serial_conn = None
             return
         # start com port read thread
@@ -155,7 +159,7 @@ class CaniPy:
         """
         Close the connection to the serial device.
         """
-        if self.serial_conn is None or not self.serial_conn.is_open:
+        if self.serial_conn is None or not getattr(self.serial_conn,"is_open",False):
             if self.verbose: self.logprint("Port already closed")
             # stop thread
             self.thread.stop()

@@ -20,13 +20,29 @@ class CaniTk(Tk):
             "WX (Certified)": 115200
         }
 
+        # pre-flight vars
+        self.muteToggle = BooleanVar()
+        self.sigmonToggle = BooleanVar(value=True)
+        self.clockmonToggle = BooleanVar(value=True)
+        self.wxToggle = BooleanVar()
+        self.labelToggle = BooleanVar(value=True)
+        self.logboxToggle = BooleanVar()
+        self.logfileToggle = BooleanVar()
+        self.radiodiagToggle = BooleanVar()
+        self.wrgpsToggle = BooleanVar()
+
         # menu bar
         self.menuBar = Menu(self)
         self.config(menu=self.menuBar)
 
         # frames
         self.buttonFrame = Frame(self)
-        self.labelFrame = ttk.LabelFrame(self,text="Display")
+        self.labelFrame = ttk.LabelFrame(
+            self,
+            width=320,
+            height=148,
+            labelanchor="n"
+        )
         
         # log elements
         self.logFrame = Frame(self)
@@ -41,21 +57,12 @@ class CaniTk(Tk):
         # canipy instance
         self.canipy = CaniPy(gui=self)
 
-        # vars
-        self.muteToggle = BooleanVar()
-        self.sigmonToggle = BooleanVar(value=True)
-        self.clockmonToggle = BooleanVar(value=True)
-        self.wxToggle = BooleanVar()
+        # post-flight vars
         self.chGuiVar = IntVar(value=self.canipy.ch_num)
-        self.labeldbgToggle = BooleanVar(value=True)
         self.verboseToggle = BooleanVar(value=self.canipy.verbose)
-        self.radiodiagToggle = BooleanVar()
-        self.wrgpsToggle = BooleanVar()
 
         # input fields
-        #self.comEntry = Entry(self.buttonFrame)
         #self.chEntry = Entry(self.buttonFrame)
-        #self.chEntry.set("Enter ch")
         self.chEntry = ttk.Spinbox(
             self.buttonFrame,
             from_=0,
@@ -74,32 +81,101 @@ class CaniTk(Tk):
         self.hwtypeSelect = StringVar(value="Pick type to begin")
 
         # Labels for display
+        # with position values
         self.labelVars = {
-            "sig_strength":StringVar(),
-            "ch_name":StringVar(),
-            "artist_name":StringVar(),
-            "sat_datetime":StringVar(),
-            "ter_strength":StringVar(),
-            "ch_num":StringVar(),
-            "title_name":StringVar(),
-            "radio_id":StringVar()
+            "signal":{
+                "var":StringVar(),
+                "row":0,
+                "column":0,
+                "anchor":"w",
+                "columnspan":1
+            },
+            "cat_name":{
+                "var":StringVar(),
+                "row":0,
+                "column":1,
+                "anchor":"e",
+                "columnspan":1
+            },
+            "ch_name":{
+                "var":StringVar(),
+                "row":1,
+                "column":0,
+                "anchor":"w",
+                "columnspan":1
+            },
+            "ch_num":{
+                "var":StringVar(),
+                "row":1,
+                "column":1,
+                "anchor":"e",
+                "columnspan":1
+            },
+            "artist_name":{
+                "var":StringVar(),
+                "row":2,
+                "column":0,
+                "anchor":"e",
+                "columnspan":2
+            },
+            "title_name":{
+                "var":StringVar(),
+                "row":3,
+                "column":0,
+                "anchor":"e",
+                "columnspan":2
+            },
+            "ticker":{
+                "var":StringVar(),
+                "row":4,
+                "column":0,
+                "anchor":"n",
+                "columnspan":2
+            }
         }
+
+        # Marquee checks
+        # Run ticker at half clock
+        self.tickerThrottle = False
+        # Buffer for comparing
+        self.tickerBuffer = ""
 
         self.initialize()
 
-    @staticmethod
-    def infobox(msg:str):
+    def infobox(self, msg:str):
+        if self.logfileToggle.get():
+            # write to logfile if enabled
+            with open("canipy.log", "a") as file:
+                file.write(
+                    f"[{self.canipy.sat_datetime}] [INF] {repr(msg)}\n"
+                )
         messagebox.showinfo("CaniPy",msg)
 
-    @staticmethod
-    def warnbox(msg:str):
+    def warnbox(self, msg:str):
+        if self.logfileToggle.get():
+            # write to logfile if enabled
+            with open("canipy.log", "a") as file:
+                file.write(
+                    f"[{self.canipy.sat_datetime}] [WRN] {repr(msg)}\n"
+                )
         messagebox.showwarning("CaniPy",msg)
 
-    @staticmethod
-    def errorbox(msg:str):
+    def errorbox(self, msg:str):
+        if self.logfileToggle.get():
+            # write to logfile if enabled
+            with open("canipy.log", "a") as file:
+                file.write(
+                    f"[{self.canipy.sat_datetime}] [ERR] {repr(msg)}\n"
+                )
         messagebox.showerror("CaniPy",msg)
     
     def logbox(self, msg:str):
+        if self.logfileToggle.get():
+            # write to logfile if enabled
+            with open("canipy.log", "a") as file:
+                file.write(
+                    f"[{self.canipy.sat_datetime}] [DBG] {repr(msg)}\n"
+                )
         # enable, write, then disable and scroll
         self.logField.config(state="normal")
         # Check if empty; only newline if not the first element
@@ -131,24 +207,33 @@ class CaniTk(Tk):
             underline=0
         )
         file_menu.add_separator()
+        file_menu.add_command(
+            label="Power off",
+            command=self.canipy.tx.power_down,
+            underline=0
+        )
+        file_menu.add_separator()
         file_menu.add_command(label="Exit",command=self.destroy,underline=1)
         self.menuBar.add_cascade(label="File",menu=file_menu,underline=0)
 
         # === Tools menu ===
         tools_menu = Menu(self.menuBar,tearoff=False)
+        wxtools_menu = Menu(tools_menu, tearoff=0)
         # Data
-        tools_menu.add_checkbutton(
-            label="Toggle WX data download",
+        wxtools_menu.add_checkbutton(
+            label="Toggle data download",
             variable=self.wxToggle,
             command=self.wx_sequence,
             underline=7
         )
-        tools_menu.add_checkbutton(
-            label="Toggle WR GPS module",
+        wxtools_menu.add_checkbutton(
+            label="Toggle GPS module",
             variable=self.wrgpsToggle,
             command=lambda:self.canipy.wx.wrgps_conn(self.wrgpsToggle.get()),
-            underline=10
+            underline=7
         )
+        # end wx menu
+        tools_menu.add_cascade(label="WX",menu=wxtools_menu,underline=0)
         # === End tools menu ===
         self.menuBar.add_cascade(label="Tools",menu=tools_menu,underline=0)
 
@@ -157,27 +242,16 @@ class CaniTk(Tk):
         # Fetch menu
         fetch_menu = Menu(debug_menu, tearoff=0)
         fetch_menu.add_command(
-            label="Radio ID",
-            command=self.canipy.tx.get_radioid,
-            underline=0
-        )
-        fetch_menu.add_command(
-            label="Firmware",
-            command=self.canipy.tx.firm_ver,
-            underline=0
-        )
-        fetch_menu.add_separator()
-        fetch_menu.add_command(
             label="Selected channel",
             command=lambda:self.canipy.tx.channel_info(
-                self.chEntry.get()
+                int(self.chEntry.get())
             ),
             underline=9
         )
         fetch_menu.add_command(
             label="Extended channel",
             command=lambda:self.canipy.tx.ext_info(
-                self.chEntry.get()
+                int(self.chEntry.get())
             ),
             underline=0
         )
@@ -192,11 +266,6 @@ class CaniTk(Tk):
         wxfetch_menu.add_command(
             label="Ping",
             command=self.canipy.wx.ping,
-            underline=0
-        )
-        wxfetch_menu.add_command(
-            label="Data RX version",
-            command=self.canipy.wx.firm_ver,
             underline=0
         )
         # end wx menu
@@ -215,7 +284,7 @@ class CaniTk(Tk):
         mond_menu.add_command(
             label="Selected channel",
             command=lambda:self.canipy.tx.chan_mon(
-                self.chEntry.get()
+                int(self.chEntry.get())
             ),
             underline=9
         )
@@ -232,26 +301,48 @@ class CaniTk(Tk):
             command=lambda:self.canipy.tx.signal_mon(self.sigmonToggle.get()),
             underline=0
         )
-        debug_menu.add_cascade(label="Debug Monitor",menu=mond_menu,underline=6)
+        debug_menu.add_cascade(label="Monitor",menu=mond_menu,underline=0)
         # Rest of debug
         debug_menu.add_separator()
         debug_menu.add_checkbutton(
-            label="Toggle label display",
-            variable=self.labeldbgToggle,
-            command=lambda:self.labelFrame.grid() if self.labeldbgToggle.get() else self.labelFrame.grid_remove(),
+            label="Toggle verbose logging",
+            variable=self.verboseToggle,
+            command=lambda:setattr(self.canipy,"verbose",self.verboseToggle.get()),
             underline=7
         )
         debug_menu.add_checkbutton(
-            label="Toggle verbose output",
-            variable=self.verboseToggle,
-            command=self.toggle_logfield,
-            underline=7
+            label="Toggle log file output",
+            variable=self.logfileToggle,
+            underline=16
         )
         debug_menu.add_separator()
+        debug_menu.add_checkbutton(
+            label="Show log box",
+            variable=self.logboxToggle,
+            command=lambda:self.logFrame.grid() if self.logboxToggle.get() else self.logFrame.grid_remove(),
+            underline=9
+        )
         debug_menu.add_command(
-            label="Clear verbose log",
+            label="Clear log box",
             command=self.clear_logfield,
             underline=0
+        )
+        debug_menu.add_separator()
+        debug_menu.add_checkbutton(
+            label="Show display",
+            variable=self.labelToggle,
+            command=lambda:self.labelFrame.grid() if self.labelToggle.get() else self.labelFrame.grid_remove(),
+            underline=5
+        )
+        # Did you know
+        debug_menu.add_command(
+            label="Feed money to stock ticker",
+            command=lambda:setattr(
+                self.canipy,
+                "ticker",
+                self.canipy.ticker+"$"
+            ),
+            underline=20
         )
         # End of debug menu
         self.menuBar.add_cascade(label="Debug",menu=debug_menu,underline=0)
@@ -259,7 +350,28 @@ class CaniTk(Tk):
         # Help menu
         help_menu = Menu(self.menuBar,tearoff=False)
         help_menu.add_command(
-            label="About",
+            label="Radio ID",
+            command=self.canipy.tx.get_radioid,
+            underline=6
+        )
+        help_menu.add_command(
+            label="Firmware info",
+            command=self.canipy.tx.firm_ver,
+            underline=0
+        )
+        help_menu.add_separator()
+        # WX specific debug
+        wxhelp_menu = Menu(help_menu, tearoff=0)
+        wxhelp_menu.add_command(
+            label="Data RX version",
+            command=self.canipy.wx.firm_ver,
+            underline=0
+        )
+        # end wx menu
+        help_menu.add_cascade(label="WX",menu=wxhelp_menu,underline=0)        
+        help_menu.add_separator()
+        help_menu.add_command(
+            label="About CaniPy",
             command=lambda:messagebox.showinfo(
                 "About",
                 f"CaniPy - Version 0.25\n"
@@ -310,11 +422,6 @@ class CaniTk(Tk):
             width=16
         )
         port_combo.grid(column=0,row=0)
-
-        # self.comEntry.grid(column=0,row=0)
-        # self.comEntry.insert(END,"COM3")
-        #self.comEntry.set("COM3")
-
         hwtype_combo = ttk.Combobox(
             self.buttonFrame,
             textvariable=self.hwtypeSelect,
@@ -329,78 +436,137 @@ class CaniTk(Tk):
                 self.baudOpts[self.hwtypeSelect.get()]
             )
         )
+        
+        Label(
+            self.buttonFrame,
+            text="Port"
+        ).grid(column=1,row=0,sticky="w")
+        Label(
+            self.buttonFrame,
+            text="Device"
+        ).grid(column=1,row=1,sticky="w")
+
+        Frame(
+            self.buttonFrame,
+            width=55
+        ).grid(column=2,row=0,rowspan=2)
 
         Label(
             self.buttonFrame,
             text="Channel"
-        ).grid(column=1,row=0)
+        ).grid(column=3,row=0)
+        # channel number
+        self.chEntry.grid(column=3,row=1)
+        #self.chEntry.insert(END,"1")
 
         Button(
             self.buttonFrame,
-            text=">",
+            text="Enter",
+            width=4,
             height=2,
             command=lambda:self.canipy.tx.change_channel(
                 int(self.chEntry.get())
             )
-        ).grid(column=2,row=0,rowspan=2)
-
-        # channel number
-        self.chEntry.grid(column=1,row=1)
-        #self.chEntry.insert(END,"1")
-        
-        # Buttons used during debug
-        #Button(self.buttonFrame,text="WX FirmVer",command=self.canipy.wx.firm_ver).grid(column=9,row=0)
-        #Button(self.buttonFrame,text="WX Ping",command=self.canipy.wx.ping).grid(column=9,row=1)
+        ).grid(column=4,row=0,rowspan=2)
 
     def prep_labels(self):
         # frame for labels
         self.labelFrame.grid(column=0,row=1)
+        self.labelFrame.grid_propagate(False)
 
-        for i, (_, var) in enumerate(self.labelVars.items()):
-            # ignoring attr (using _) for now, only using in update
-            #var.set(f"{getattr(self.canipy,attr,'')}")
-            Label(self.labelFrame,textvariable=var).grid(
-                column=i//4,row=i%4,sticky=("e" if i//4 else "w")
+        for _, meta in self.labelVars.items():
+            lbl = Label(
+                self.labelFrame,
+                textvariable=meta["var"],
+                anchor=meta["anchor"]
             )
+            lbl.grid(
+                row=meta["row"],
+                column=meta["column"],
+                sticky="ew",
+                columnspan=meta["columnspan"]
+            )
+            lbl.config(font=("TkDefaultFont",12))
+            match meta["row"]:
+                case 1:
+                    lbl.config(bg="black",fg="white")
+                case 2:
+                    lbl.config(font=("TkDefaultFont",16,"bold"))
+
+        # Set weight for columns to even out the labels
+        for c in range(2):
+            self.labelFrame.columnconfigure(c,weight=1)
 
         # Remove if not enabled by default
-        if not self.labeldbgToggle.get(): self.labelFrame.grid_remove()
+        if not self.labelToggle.get(): self.labelFrame.grid_remove()
     
     def prep_logfield(self):
         self.logFrame.grid(column=0,row=2)
         self.logField.grid(column=0,row=0)
-        if not self.verboseToggle.get():
+        if not self.logboxToggle.get():
             self.logFrame.grid_remove()
 
     def update_labels(self):
         if not self.winfo_exists(): return
 
-        for attr, var in self.labelVars.items():
-            new_val = getattr(self.canipy,attr,"")
+        # update clock
+        self.labelFrame.config(
+            text=f"""{self.canipy.sat_datetime.strftime(
+                '%H:%M'
+            )} UTC"""
+        )
+
+        for attr, meta in self.labelVars.items():
             new_label = ""
             match attr:
-                case "sig_strength" | "ter_strength":
-                    new_label += "SAT " if attr == "sig_strength" else "TER "
-                    if any(x < 0 for x in (new_val, self.canipy.ant_strength)):
-                        new_label += "X"
-                    else:
-                        new_label += str(new_val)
-                case "sat_datetime":
-                    new_label += f"{new_val.strftime('%H:%M')} UTC"
+                case "signal":
+                    # Not the prettiest..
+                    new_label += f"""SAT {'[]'*self.canipy.sig_strength+'  '*(
+                        3-self.canipy.sig_strength
+                    ) if self.canipy.sig_strength > 0 else 'X   '} """
+                    new_label += "TER "
+                    new_label += f"{'[]'*self.canipy.ter_strength if self.canipy.ter_strength > 0 else 'X'}"
+                case "ticker":
+                    # If there's ticker data at all
+                    # Otherwise if remnant marquee, clear it
+                    if self.canipy.ticker:
+                        self.update_ticker(meta["var"])
+                    elif meta["var"].get():
+                        meta["var"].set("")
                 case _:
-                    new_label += str(new_val)
+                    new_label += f"{getattr(self.canipy,attr,'')}"
             # only update if value changed
-            # less expensive doing so
-            if var.get() != f"{new_label}":
-                var.set(f"{new_label}")
+            # less expensive doing so.
+            # Disregard marquee as that's updated externally
+            if attr != "ticker":
+                if meta["var"].get() != f"{new_label}":
+                    meta["var"].set(f"{new_label}")
 
         # recursive loop
         # set to 100 so it doesnt chew cpu time..
         self.after(100,self.update_labels)
     
-    def toggle_logfield(self):
-        self.canipy.verbose = self.verboseToggle.get()
-        self.logFrame.grid() if self.verboseToggle.get() else self.logFrame.grid_remove()
+    def update_ticker(self, marquee:StringVar):
+            # If marquee is empty or ticker updated, populate
+            if not marquee.get() or (self.tickerBuffer != self.canipy.ticker):
+                marquee.set(self.canipy.ticker)
+                # buffer it
+                self.tickerBuffer = self.canipy.ticker
+                # Pad at least up to 96
+                if len(marquee.get()) < 96:
+                    marquee.set(
+                        marquee.get()+ " " * (
+                            96 - len(marquee.get()) % 96 + 3
+                        )
+                    )
+            # Run ticker at half speed
+            if self.tickerThrottle:
+                marquee.set(
+                    marquee.get()[1:]+marquee.get()[0]
+                )
+                self.tickerThrottle = False
+            else:
+                self.tickerThrottle = True
     
     def clear_logfield(self):
         self.logField.config(state="normal")
@@ -421,9 +587,11 @@ class CaniTk(Tk):
         if self.canipy.serial_conn is not None:
             self.infobox(f"Connected to {com_port} ({baud} baud)")
             if is_direct:
+                # Use enable instead of normal
+                # powerup if device is direct
                 self.canipy.dx.enable()
-            else:
-                self.canipy.tx.power_up()
+                return
+            self.canipy.tx.power_up()
 
     def wx_sequence(self):
         # Check if we're using a data receiver

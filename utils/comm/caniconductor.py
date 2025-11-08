@@ -36,11 +36,15 @@ class CaniConductor:
                 self.parent.title_name = ""
                 self.parent.cat_name = ""
                 self.parent.cat_id = 0
+                self.parent.ticker = ""
                 self.parent.sig_strength = -1
                 self.parent.ant_strength = -1
                 self.parent.ter_strength = -1
                 self.parent.data_in_use = False
                 self.parent.radio_id = ""
+                if (payload[1], payload[2]) != (0x01, 0x00):
+                    # Report status if alert
+                    self.parent.warnprint(self.parent.rx.fetch_status(payload))
                 # Prompt shut off
                 self.parent.infoprint("Radio is now powered off\nGoodnight!")
             case 0x8b:
@@ -114,7 +118,7 @@ class CaniConductor:
                 # if good, print characters
                 self.parent.radio_id = payload[4:12].decode('utf-8')
                 self.parent.infoprint(
-                    f"Radio ID:\n{payload[4:12].decode('utf-8')}"
+                    f"Radio ID\n\n{payload[4:12].decode('utf-8')}"
                 )
             case 0xC1 | 0xC3:
                 self.parent.rx.parse_sig(payload)
@@ -141,7 +145,7 @@ class CaniConductor:
                     return
                 if payload[1] == 0x64:
                     self.parent.infoprint(
-                        f"WX version:\n"
+                        f"WX Version\n\n"
                         f"{payload[2:].decode('utf-8').rstrip(chr(0))}"
                     )
             case 0xCF | 0xD0:

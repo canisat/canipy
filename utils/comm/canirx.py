@@ -58,8 +58,12 @@ class CaniRX:
                     case _:
                         status_str += "Radio alert"
             case 0x03:
-                # Subscriber entitlement alert
-                status_str += "Not subscribed"
+                if payload[2] == 0x0F:
+                    status_str += "Error encountered with programmed activation!\n"
+                    status_str += "Reconnect radio or contact the service provider to refresh"
+                else: 
+                    # Subscriber entitlement alert
+                    status_str += "Not subscribed"
                 if payload[2] == 0x09:
                     status_str += "\nContact service provider to subscribe"
                 if payload[2] == 0x0A:
@@ -75,8 +79,10 @@ class CaniRX:
                         status_str += "Tuning alert"
             case 0x06:
                 if payload[2] == 0x0B:
-                    status_str += "An error occurred when fetching activation info\n"
-                    status_str += "Please restart radio or contact the service provider to refresh"
+                    status_str += "An issue occurred when fetching activation info!\n"
+                    status_str += "Activation or lineup may be updating or corrupted\n"
+                    status_str += "\nPlease wait a while, otherwise restart the radio\n"
+                    status_str += "or contact the service provider to refresh"
                 else:
                     status_str += "Activation alert"
             case 0x07:
@@ -363,18 +369,19 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 19:
-            self.parent.logprint("===FirmwareInfo===")
             # TODO: Versioning will need to be examined again.
             # I don't have the PCR with me at the moment...
             # For now, I believe this is close enough
-            self.parent.logprint(f"HW Version: {payload[3]:X}")
-            self.parent.logprint(f"SDEC Version: {payload[4]:X}")
-            self.parent.logprint(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
-            self.parent.logprint(f"CBM Version: {payload[9]:X}")
-            self.parent.logprint(f"CBM Date: {payload[10]:02X}/{payload[11]:02X}/{payload[12]:02X}{payload[13]:02X}")
-            self.parent.logprint(f"RX Version: {payload[14]:X}")
-            self.parent.logprint(f"RX Date: {payload[15]:02X}/{payload[16]:02X}/{payload[17]:02X}{payload[18]:02X}")
-            self.parent.logprint("==================")
+            self.parent.infoprint(
+                f"Radio Firmware\n\n"
+                f"HW: {payload[3]:X}\n"
+                f"SDEC/DSP: {payload[4]:X} "
+                f"({payload[5]:X}/{payload[6]:X}/{payload[7]:X}{payload[8]:02X})\n"
+                f"CBM: {payload[9]:X} "
+                f"({payload[10]:X}/{payload[11]:X}/{payload[12]:X}{payload[13]:02X})\n"
+                f"RX: {payload[14]:X} "
+                f"({payload[15]:X}/{payload[16]:X}/{payload[17]:X}{payload[18]:02X})"
+            )
             return
         self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:
