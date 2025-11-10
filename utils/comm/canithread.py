@@ -76,7 +76,9 @@ class CaniThread:
             self.parent.logprint("CaniThread started")
 
     def stop(self):
-        # Stop thread upon window exit
+        """
+        Stop thread upon window exit
+        """
         self.thread_signal.set()
         if not self.com_thread:
             if self.parent.verbose:
