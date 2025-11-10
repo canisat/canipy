@@ -9,6 +9,14 @@ class InterfaceCfg:
                 "tz": "Eastern",
                 "dst": "False",
                 "miltime": "False"
+            },
+            "preset": {
+                "1": "0",
+                "2": "0",
+                "3": "0",
+                "4": "0",
+                "5": "0",
+                "6": "0"
             }
         }
 
@@ -17,6 +25,14 @@ class InterfaceCfg:
                 "tz": self.parent.tzGuiVar,
                 "dst": self.parent.dstToggle,
                 "miltime": self.parent.milclockToggle
+            },
+            "preset": {
+                "1": self.parent.chPresets[0],
+                "2": self.parent.chPresets[1],
+                "3": self.parent.chPresets[2],
+                "4": self.parent.chPresets[3],
+                "5": self.parent.chPresets[4],
+                "6": self.parent.chPresets[5]
             }
         }
 
@@ -25,6 +41,14 @@ class InterfaceCfg:
                 "tz": self.parent.timezoneOptions,
                 "dst": ("True", "False"),
                 "miltime": ("True", "False")
+            },
+            "preset": {
+                "1": range(0, 256),
+                "2": range(0, 256),
+                "3": range(0, 256),
+                "4": range(0, 256),
+                "5": range(0, 256),
+                "6": range(0, 256)
             }
         }
 
@@ -37,32 +61,52 @@ class InterfaceCfg:
     def update_tz(self, name:str):
         self.parent.tzGuiVar.set(name)
         self.save_file()
+
+    def set_preset(self, preset:int, ch:int):
+        # set if greater than 0
+        if ch > 0:
+            self.parent.chPresets[preset].set(ch)
+            self.settings["preset"][str(preset+1)] = str(ch)
+            self.save_file()
+            self.parent.infobox(f"Preset {preset+1} set to channel {ch}")
+
+    def clear_preset(self, preset:int):
+        self.parent.chPresets[preset].set(0)
+        self.settings["preset"][str(preset+1)] = "0"
+        self.save_file()
+        self.parent.infobox(f"Preset {preset+1} cleared")
     
-    def load_clock_defaults(self):
-        self.settings["clock"] = self.defaults["clock"]
+    def clear_all_presets(self):
+        for i in range(len(self.parent.chPresets)):
+            self.parent.chPresets[i].set(0)
+        self.settings["preset"] = self.defaults["preset"]
+        self.save_file()
+        self.parent.infobox(f"All presets cleared")
+
+    def load_defaults(self, section:str):
+        self.settings[section] = self.defaults[section]
 
     def load_all_defaults(self):
         # defaults to load
-        self.load_clock_defaults()
-
-        # write config
-        self.save_file()
+        for section in self.defaults.keys():
+            self.load_defaults(section)
     
-    def check_clock_settings(self):
+    def check_settings(self, section:str):
         # Check if section exists
-        if not self.settings.has_section("clock"):
+        if not self.settings.has_section(section):
             # Load defaults if not present
-            self.load_clock_defaults()
+            self.load_defaults(section)
             return
         # Check validity of options
-        for option in self.defaults["clock"]:
-            fileval = self.settings["clock"].get(option, self.defaults["clock"][option])
-            if fileval not in self.validity["clock"][option]:
-                fileval = self.defaults["clock"][option]
-            self.settings["clock"][option] = fileval
+        for option in self.defaults[section]:
+            fileval = self.settings[section].get(option, self.defaults[section][option])
+            if fileval not in map(str,self.validity[section][option]):
+                fileval = self.defaults[section][option]
+            self.settings[section][option] = fileval
 
     def check_all_settings(self):
-        self.check_clock_settings()
+        for section in self.defaults.keys():
+            self.check_settings(section)
 
     def load_file(self):
         try:

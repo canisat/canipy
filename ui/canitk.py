@@ -35,12 +35,18 @@ class CaniTk(Tk):
         }
 
         # settings preflight
+        # presets
+        self.chPresets = [IntVar() for _ in range(6)]
         self.tzGuiVar = StringVar()
         self.dstToggle = BooleanVar()
         self.milclockToggle = BooleanVar()
 
         # load configs
         self.uicfg = InterfaceCfg(self)
+        for num in range(len(self.chPresets)):
+            self.chPresets[num].set(
+                self.uicfg.settings["preset"][str(num+1)]
+            )
         self.tzGuiVar.set(
             self.uicfg.settings["clock"]["tz"]
         )
@@ -71,7 +77,7 @@ class CaniTk(Tk):
         self.labelFrame = ttk.LabelFrame(
             self,
             width=320,
-            height=148,
+            height=138,
             labelanchor="ne"
         )
         

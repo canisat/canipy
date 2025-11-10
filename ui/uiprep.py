@@ -77,7 +77,24 @@ class InterfacePrep:
                 command=lambda t=tz_name: self.parent.uicfg.update_tz(t),
                 underline=1 if tz_name == "Alaska" else 0
             )
+        # end tz settings
         prefs_menu.add_cascade(label="Clock",menu=tz_menu,underline=0)
+        # preset clear settings
+        prere_menu = Menu(prefs_menu,tearoff=0)
+        for preset in range(len(self.parent.chPresets)):
+            prere_menu.add_command(
+                label=preset+1,
+                command=lambda p=preset: self.parent.uicfg.clear_preset(p),
+                underline=0
+            )
+        prere_menu.add_separator()
+        prere_menu.add_command(
+            label="All",
+            command=self.parent.uicfg.clear_all_presets,
+            underline=0
+        )
+        # end preset
+        prefs_menu.add_cascade(label="Clear preset",menu=prere_menu,underline=4)
         # END prefs menu
         self.parent.menuBar.add_cascade(label="Settings",menu=prefs_menu,underline=0)
 
@@ -257,6 +274,15 @@ class InterfacePrep:
         # frame for command buttons
         self.parent.buttonFrame.grid(column=0,row=0)
 
+        Label(
+            self.parent.buttonFrame,
+            text="Port"
+        ).grid(column=0,row=0,sticky="e")
+        Label(
+            self.parent.buttonFrame,
+            text="Device"
+        ).grid(column=0,row=1,sticky="e")
+
         # field for com port
         port_combo = ttk.Combobox(
             self.parent.buttonFrame,
@@ -264,7 +290,7 @@ class InterfacePrep:
             values=self.parent.portList,
             width=16
         )
-        port_combo.grid(column=0,row=0)
+        port_combo.grid(column=1,row=0)
         hwtype_combo = ttk.Combobox(
             self.parent.buttonFrame,
             textvariable=self.parent.hwtypeSelect,
@@ -272,33 +298,35 @@ class InterfacePrep:
             state="readonly",
             width=16
         )
-        hwtype_combo.grid(column=0,row=1)
+        hwtype_combo.grid(column=1,row=1)
         hwtype_combo.bind(
             "<<ComboboxSelected>>",
             lambda e: self.parent.open_com_port()
         )
-        
-        Label(
-            self.parent.buttonFrame,
-            text="Port"
-        ).grid(column=1,row=0,sticky="w")
-        Label(
-            self.parent.buttonFrame,
-            text="Device"
-        ).grid(column=1,row=1,sticky="w")
-
-        Frame(
-            self.parent.buttonFrame,
-            width=55
-        ).grid(column=2,row=0,rowspan=2)
 
         Label(
             self.parent.buttonFrame,
             text="Channel"
-        ).grid(column=3,row=0)
+        ).grid(column=2,row=0)
         # channel number
-        self.parent.chEntry.grid(column=3,row=1)
+        self.parent.chEntry.grid(column=2,row=1)
         #self.parent.chEntry.insert(END,"1")
+
+        preset_btns = Frame(
+            self.parent.buttonFrame,
+            width=55
+        )
+        for num in range(len(self.parent.chPresets)):
+            Button(
+                preset_btns,
+                text=num+1,
+                command=lambda p=num:self.parent.canipy.tx.change_channel(
+                    self.parent.chPresets[p].get()
+                ) if self.parent.chPresets[p].get() > 0 else self.parent.uicfg.set_preset(
+                    p,self.parent.canipy.ch_num
+                )
+            ).grid(column=num%3,row=num//3)
+        preset_btns.grid(column=3,row=0,rowspan=2)
 
         Button(
             self.parent.buttonFrame,
@@ -327,12 +355,14 @@ class InterfacePrep:
                 sticky="ew",
                 columnspan=meta["columnspan"]
             )
-            lbl.config(font=("TkDefaultFont",12))
+            lbl.config(font=("TkDefaultFont",10))
             match meta["row"]:
                 case 1:
                     lbl.config(bg="black",fg="white")
                 case 2:
                     lbl.config(font=("TkDefaultFont",16,"bold"))
+                case 3:
+                    lbl.config(font=("TkDefaultFont",12))
 
         # Set weight for columns to even out the labels
         for c in range(2):
