@@ -62,7 +62,7 @@ class CaniTX:
         if self.parent.serial_conn is None or not getattr(self.parent.serial_conn,"is_open",False):
             self.parent.errorprint("No device in use")
             return b""
-        length = len(payload).to_bytes(2, byteorder='big')
+        length = len(payload).to_bytes(2, byteorder="big")
         command = self.parent.header + length + payload + self.parent.tail
         self.parent.serial_conn.write(command)
         if self.parent.verbose:

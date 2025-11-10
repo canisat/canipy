@@ -28,10 +28,10 @@ class InterfaceThread:
                     )
                 )
                 if self.parent.milclockToggle.get():
-                    hfmt = curtime.strftime('%H:%M')
+                    hfmt = curtime.strftime("%H:%M")
                 else:
                     # platform agnostic approach for 12h
-                    hfmt = curtime.strftime('%I:%M').lstrip('0')
+                    hfmt = curtime.strftime("%I:%M").lstrip("0")
                 self.parent.labelFrame.config(
                     text=hfmt
                 )

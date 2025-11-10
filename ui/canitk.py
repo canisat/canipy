@@ -4,6 +4,7 @@ from tkinter import Tk, StringVar, BooleanVar, IntVar, Menu, Frame, Text, END, m
 
 from utils import CaniPy
 
+from .uicfg import InterfaceCfg
 from .uithread import InterfaceThread
 from .uiprep import InterfacePrep
 from .uiwx import InterfaceWX
@@ -32,9 +33,23 @@ class CaniTk(Tk):
             "Hawaii": -10,
             "UTC": 0
         }
-        self.tzGuiVar = StringVar(value="Eastern")
-        self.dstToggle = BooleanVar(value=False)
-        self.milclockToggle = BooleanVar(value=False)
+
+        # settings preflight
+        self.tzGuiVar = StringVar()
+        self.dstToggle = BooleanVar()
+        self.milclockToggle = BooleanVar()
+
+        # load configs
+        self.uicfg = InterfaceCfg(self)
+        self.tzGuiVar.set(
+            self.uicfg.settings["clock"]["tz"]
+        )
+        self.dstToggle.set(
+            self.uicfg.settings["clock"].getboolean("dst",False)
+        )
+        self.milclockToggle.set(
+            self.uicfg.settings["clock"].getboolean("miltime",False)
+        )
 
         # bools
         self.muteToggle = BooleanVar()
@@ -245,5 +260,9 @@ class CaniTk(Tk):
 
     def shut_down_com(self):
         if self.canipy.serial_conn is not None:
+            # Power down radio if connection is still active
             self.canipy.tx.power_down()
+        # Save settings
+        self.uicfg.save_file()
+        # Destroy window
         self.destroy()

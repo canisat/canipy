@@ -58,12 +58,14 @@ class InterfacePrep:
         tz_menu.add_checkbutton(
             label="Daylight savings",
             variable=self.parent.dstToggle,
+            command=self.parent.uicfg.save_file,
             underline=9
         )
         tz_menu.add_separator()
         tz_menu.add_checkbutton(
             label="24-hour display",
             variable=self.parent.milclockToggle,
+            command=self.parent.uicfg.save_file,
             underline=8
         )
         tz_menu.add_separator()
@@ -72,7 +74,7 @@ class InterfacePrep:
                 label=tz_name,
                 variable=self.parent.tzGuiVar,
                 value=tz_name,
-                command=lambda t=tz_name: self.parent.tzGuiVar.set(t),
+                command=lambda t=tz_name: self.parent.uicfg.update_tz(t),
                 underline=1 if tz_name == "Alaska" else 0
             )
         prefs_menu.add_cascade(label="Clock",menu=tz_menu,underline=0)

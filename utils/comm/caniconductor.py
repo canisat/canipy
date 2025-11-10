@@ -104,7 +104,7 @@ class CaniConductor:
                         self.parent.logprint(f"Exp 12, got {len(payload)}")
                     return
                 # if good, print characters
-                self.parent.radio_id = payload[4:12].decode('utf-8')
+                self.parent.radio_id = payload[4:12].decode("utf-8")
                 self.parent.infoprint(
                     f"Radio ID\n\n{payload[4:12].decode('utf-8')}"
                 )
@@ -113,7 +113,7 @@ class CaniConductor:
             case 0xC2:
                 self.parent.logprint("Signal strength monitoring status updated")
             case 0xCA:
-                # 'A' cmds are WX specific!
+                # "A" cmds are WX specific!
                 if payload[1] == 0x40:
                     if payload[2] == 0xff:
                         self.parent.logprint(f"Error setting up data RX on {payload[4]}")
@@ -148,52 +148,52 @@ class CaniConductor:
                 if payload[2] == 0x01:
                     # Store only if channel numbers match!
                     if payload[1] == self.parent.ch_num:
-                        self.parent.ch_name = payload[3:19].decode('utf-8').strip()
+                        self.parent.ch_name = payload[3:19].decode("utf-8").strip()
                     self.parent.logprint("===Channel Name===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:19].decode('utf-8'))
+                    self.parent.logprint(payload[3:19].decode("utf-8"))
                     # Trailing bytes, this could be length side effect?
                     # Like with whats happening with extended info?
                     # Treat as debug info for now.
                     if self.parent.verbose:
-                        self.parent.logprint(' '.join(f'{b:02X}' for b in payload[19:]))
+                        self.parent.logprint(" ".join(f'{b:02X}' for b in payload[19:]))
                     self.parent.logprint("==================")
             case 0xD2:
                 if payload[3] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.cat_id = payload[2]
-                        self.parent.cat_name = payload[4:].decode('utf-8').strip()
+                        self.parent.cat_name = payload[4:].decode("utf-8").strip()
                     self.parent.logprint("===Ch. Category===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[4:].decode('utf-8'))
+                    self.parent.logprint(payload[4:].decode("utf-8"))
                     if self.parent.verbose:
                         self.parent.logprint(f"Cat ID: {payload[2]:02X}")
                     self.parent.logprint("==================")
             case 0xD3:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:19].decode('utf-8').strip()
-                        self.parent.title_name = payload[19:].decode('utf-8').strip()
+                        self.parent.artist_name = payload[3:19].decode("utf-8").strip()
+                        self.parent.title_name = payload[19:].decode("utf-8").strip()
                     self.parent.logprint("===Program Info===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:19].decode('utf-8'))
-                    self.parent.logprint(payload[19:].decode('utf-8'))
+                    self.parent.logprint(payload[3:19].decode("utf-8"))
+                    self.parent.logprint(payload[19:].decode("utf-8"))
                     self.parent.logprint("==================")
             case 0xD4:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:].decode('utf-8').rstrip(chr(0)).strip()
+                        self.parent.artist_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
                     self.parent.logprint("===Artist Info.===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
                     self.parent.logprint("==================")
             case 0xD5:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.title_name = payload[3:].decode('utf-8').rstrip(chr(0)).strip()
+                        self.parent.title_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
                     self.parent.logprint("===Title  Info.===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:].decode('utf-8').rstrip(chr(0)))
+                    self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
                     self.parent.logprint("==================")
             case 0xD6:
                 if payload[3] == 0x01 or payload[4] == 0x01:
@@ -239,7 +239,7 @@ class CaniConductor:
                 if self.parent.verbose:
                     # TODO: examine how diag is laid out, appears to be 8 or 9 fields
                     self.parent.logprint("=== DIAGNOSTIC ===")
-                    self.parent.logprint(payload[2:].decode('utf-8'))
+                    self.parent.logprint(payload[2:].decode("utf-8"))
                     self.parent.logprint("==================")
             case 0xF2:
                 # Direct idle frames.
@@ -253,7 +253,7 @@ class CaniConductor:
                 elif (payload[1], payload[2]) == (0xFF, 0xFF):
                     # If it's all F's, it's something serious!!!
                     # (Likely has a message, print it out!)
-                    errstr += payload[3:].decode('utf-8')
+                    errstr += payload[3:].decode("utf-8")
                 else:
                     errstr += self.parent.rx.fetch_status(payload)
                 if self.parent.verbose:

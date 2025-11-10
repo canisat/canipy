@@ -182,10 +182,10 @@ class CaniWX:
                 )
                 #print("===    DATA    ===")
                 # Safely print out bare data
-                #print(payload[12:].decode('utf-8', errors='replace'))
+                #print(payload[12:].decode("utf-8", errors="replace"))
                 #print("===    HEX!    ===")
                 # Print out hex dump
-                #print(' '.join(f'{b:02X}' for b in payload[12:]))
+                #print(" ".join(f'{b:02X}' for b in payload[12:]))
         else:
             self.parent.logprint("Sum mismatch!")
             if self.parent.verbose:
