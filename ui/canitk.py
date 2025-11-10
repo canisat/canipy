@@ -1,4 +1,4 @@
-import serial.tools.list_ports, time, configparser, os
+import serial.tools.list_ports, time
 
 from tkinter import Tk, StringVar, BooleanVar, IntVar, Menu, Frame, Text, END, messagebox, ttk
 
