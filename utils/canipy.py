@@ -1,16 +1,10 @@
 import serial
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from collections.abc import Callable
 
-from .comm.canirx import CaniRX
-from .comm.canitx import CaniTX
-from .comm.caniconductor import CaniConductor
-from .comm.special.canidx import CaniDX
-from .comm.special.caniwx import CaniWX
-
-from .comm.canithread import CaniThread
+from .comm import CaniRX, CaniTX, CaniConductor, CaniThread, CaniDX, CaniWX
 
 class CaniPy:
     """
@@ -99,7 +93,7 @@ class CaniPy:
         self.ter_strength = -1
 
         # Assume minimum date value means not set
-        self.sat_datetime = datetime.min
+        self.sat_datetime = datetime(1900,1,1,tzinfo=timezone.utc)
 
         self.data_in_use = False
 
@@ -134,6 +128,25 @@ class CaniPy:
         self.verbose = False
         self.close()
 
+    def reset_display(self):
+        """
+        Resets all display values stored by the instance.
+        """
+        self.ch_num = 0
+        self.ch_sid = 0
+        self.ch_name = ""
+        self.artist_name = ""
+        self.title_name = ""
+        self.cat_name = ""
+        self.cat_id = 0
+        self.ticker = ""
+        self.sig_strength = -1
+        self.ant_strength = -1
+        self.ter_strength = -1
+        self.sat_datetime = datetime(1900,1,1,tzinfo=timezone.utc)
+        self.data_in_use = False
+        self.radio_id = ""
+
     def open(self, port:str, baud:int):
         """
         Configure a new connection to the serial device.
@@ -159,15 +172,13 @@ class CaniPy:
         """
         Close the connection to the serial device.
         """
-        if self.serial_conn is None or not getattr(self.serial_conn,"is_open",False):
-            if self.verbose: self.logprint("Port already closed")
-            # stop thread
-            self.thread.stop()
-            return
-        # Power down radio if not already
-        self.tx.power_down()
+        # clear display vars
+        self.reset_display()
         # stop thread
         self.thread.stop()
+        if self.serial_conn is None or not getattr(self.serial_conn,"is_open",False):
+            if self.verbose: self.logprint("Port already closed")
+            return
         self.serial_conn.close()
 
     def infoprint(self, msg:str):

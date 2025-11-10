@@ -1,5 +1,4 @@
-import time
-import threading
+import time, threading
 from datetime import datetime
 
 class CaniThread:

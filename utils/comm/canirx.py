@@ -102,7 +102,7 @@ class CaniRX:
     def parse_startup(self, payload:bytes):
         """
         Takes in a power-on event response (80 hex) to print out relevant information.
-        At this time, verification of the command is by checking if it contains 27 bytes.
+        Verification of the command is by checking if it contains 27 bytes.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
@@ -140,12 +140,12 @@ class CaniRX:
         """
         Takes in a extended label response (A2 hex) to print out relevant information.
         Relevant program information is stored in respective attributes before printout.
-        At this time, verification of the command is by checking if it contains 78 bytes
-        as community implementations read extended length assuming 0x24 label size was
-        passed during power-on. Given how setting it to another length before caused
-        strange results, I think it was deliberately set to 0x24 to work around a glitch
-        with the tuner firmware. Function will only report 32 of the 36 bytes per line,
-        following what other community projects have done.
+        Verification of the command is by checking if it contains 78 bytes as community 
+        implementations read extended length assuming 0x24 label size was passed during
+        power-on. Given how setting it to another length before caused strange results,
+        I think it was deliberately set to 0x24 to work around a glitch with the tuner 
+        firmware. Function will only report 32 of the 36 bytes per line, following what
+        other community projects have done.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
@@ -179,7 +179,7 @@ class CaniRX:
         """
         Takes in a channel info response (A5 hex) to print out relevant information.
         Relevant channel information is stored in respective attributes before printout.
-        At this time, verification of the command is by checking if it contains 77 bytes.
+        Verification of the command is by checking if it contains 77 bytes.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
@@ -228,7 +228,7 @@ class CaniRX:
         """
         Takes in a signal info response (C1 or C3 hex) to print out relevant information.
         Relevant signal strength information is stored in respective attributes before printout.
-        At this time, verification of the command is by checking if it contains 22 or 26 bytes.
+        Verification of the command is by checking if it contains 22 or 26 bytes.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
@@ -280,18 +280,19 @@ class CaniRX:
         if self.parent.verbose:
             self.parent.logprint(f"Exp 22 or 26, got {len(payload)}")
 
-    def parse_clock(self, payload:bytes, miltime:bool=False):
+    def parse_clock(self, payload:bytes, debug:bool=False, miltime:bool=False,):
         """
-        Takes in a date-time info response (DF hex) to print and store relevant info.
+        Takes in a date-time info response (DF hex) to store relevant info.
         Service stamp is reported in coordinated universal time (UTC).
-        At this time, verification of the command is by checking if it contains 19 bytes.
+        Verification of the command is by checking if it contains 19 bytes.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
-            miltime (bool, optional): Report the time in 24-hour format. Default to false.
+            debug (bool, optional): Chattier output. Default to false.
+            miltime (bool, optional): Report debug print time in 24h format. Default to false.
         """
         if len(payload) == 11:
-            # Eventually move to primarily using this
+            # Store as datetime
             self.parent.sat_datetime = datetime(
                 (payload[1]*100)+payload[2],
                 payload[3],
@@ -301,60 +302,61 @@ class CaniRX:
                 payload[7] & 0x7F,
                 tzinfo=timezone.utc
             )
-            # TODO: The heck is with these toggled MSBs in seconds and cycle??
-            # This is a semi-long-term analysis!
-            weekdaylabel = {
-                0x02:"Monday",
-                0x04:"Tuesday",
-                0x06:"Wednesday",
-                0x08:"Thursday",
-                0x0A:"Friday",
-                0x0C:"Saturday",
-                0x0E:"Sunday"
-            }
-            self.parent.logprint("===  DateTime  ===")
-            # Weekday
-            self.parent.logprint(
-                f"{weekdaylabel.get((payload[4]>>4) - ((payload[4]>>4) % 2),f'?({payload[4]})')}"
-            )
-            # Date
-            self.parent.logprint(
-                f"{payload[1]:02d}{payload[2]:02d}-"
-                f"{payload[3]:02d}-"
-                f"{((payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0)):02d}"
-            )
-            # Time
-            self.parent.logprint(
-                f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
-                f"{payload[6]:02d}:"
-                f"{(payload[7] & 0x7F):02d}"
-                f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
-            )
-            # I'll need to do more testing before this goes to primetime...
-            #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
-            if self.parent.verbose:
-                self.parent.logprint(f"Datetime stored: {self.parent.sat_datetime}")
+            if debug:
+                # TODO: The heck is with these toggled MSBs in seconds and cycle??
+                # This is a semi-long-term analysis!
+                weekdaylabel = {
+                    0x02:"Monday",
+                    0x04:"Tuesday",
+                    0x06:"Wednesday",
+                    0x08:"Thursday",
+                    0x0A:"Friday",
+                    0x0C:"Saturday",
+                    0x0E:"Sunday"
+                }
+                self.parent.logprint("===  DateTime  ===")
+                # Weekday
                 self.parent.logprint(
-                    f"TPS: "
-                    f"{self.parent.thread.calc_delta():.2f}"
+                    f"{weekdaylabel.get((payload[4]>>4) - ((payload[4]>>4) % 2),f'?({payload[4]})')}"
                 )
-                # Tick maxes out at 0xFC before rollover gets counted.
-                # Day maxes out at 3 1F FC. All tick resets to 0 by midnight.
-                # Could be usable to append to datetime for RNG seed, i guess..
-                # TODO: Implement a "lucky number" feature for fun
-                self.parent.logprint(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
+                # Date
                 self.parent.logprint(
-                    f"Day cycle {payload[8]+1 & 0x7F} of 4, "
-                    f"hi bit {'on' if payload[8] & 0x80 else 'off'}"
+                    f"{payload[1]:02d}{payload[2]:02d}-"
+                    f"{payload[3]:02d}-"
+                    f"{((payload[4] & 0x0F) + (16 if (payload[4]>>4) % 2 else 0)):02d}"
                 )
-                # Seconds & cycle have high bit on for some reason...
-                # Could either of these be daylight savings??
+                # Time
                 self.parent.logprint(
-                    f"Raw seconds, cycle: "
-                    f"{payload[7]:02X} "
-                    f"{payload[8]:02X}"
+                    f"{(((payload[5] % 12) or 12) if not miltime else payload[5]):02d}:"
+                    f"{payload[6]:02d}:"
+                    f"{(payload[7] & 0x7F):02d}"
+                    f"{(' PM' if payload[5] >= 12 else ' AM') if not miltime else ''} UTC"
                 )
-            self.parent.logprint("==================")
+                # I'll need to do more testing before this goes to primetime...
+                #print(f"Daylight savings {'' if payload[7] & 0x80 else 'not '}in effect")
+                if self.parent.verbose:
+                    self.parent.logprint(f"Datetime stored: {self.parent.sat_datetime}")
+                    self.parent.logprint(
+                        f"TPS: "
+                        f"{self.parent.thread.calc_delta():.2f}"
+                    )
+                    # Tick maxes out at 0xFC before rollover gets counted.
+                    # Day maxes out at 3 1F FC. All tick resets to 0 by midnight.
+                    # Could be usable to append to datetime for RNG seed, i guess..
+                    # TODO: Implement a "lucky number" feature for fun
+                    self.parent.logprint(f"Tick {payload[10]:02X}, rolled over {payload[9]} time(s)")
+                    self.parent.logprint(
+                        f"Day cycle {payload[8]+1 & 0x7F} of 4, "
+                        f"hi bit {'on' if payload[8] & 0x80 else 'off'}"
+                    )
+                    # Seconds & cycle have high bit on for some reason...
+                    # Could either of these be daylight savings??
+                    self.parent.logprint(
+                        f"Raw seconds, cycle: "
+                        f"{payload[7]:02X} "
+                        f"{payload[8]:02X}"
+                    )
+                self.parent.logprint("==================")
             return
         self.parent.logprint("Payload not of correct length")
         if self.parent.verbose:

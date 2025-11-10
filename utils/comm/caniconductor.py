@@ -29,19 +29,7 @@ class CaniConductor:
                     self.parent.tx.signal_mon(True)
             case 0x81:
                 # Reset display values to defaults!
-                self.parent.ch_num = 0
-                self.parent.ch_sid = 0
-                self.parent.ch_name = ""
-                self.parent.artist_name = ""
-                self.parent.title_name = ""
-                self.parent.cat_name = ""
-                self.parent.cat_id = 0
-                self.parent.ticker = ""
-                self.parent.sig_strength = -1
-                self.parent.ant_strength = -1
-                self.parent.ter_strength = -1
-                self.parent.data_in_use = False
-                self.parent.radio_id = ""
+                self.parent.reset_display()
                 if (payload[1], payload[2]) != (0x01, 0x00):
                     # Report status if alert
                     self.parent.warnprint(self.parent.rx.fetch_status(payload))
