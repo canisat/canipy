@@ -1,11 +1,11 @@
 import serial.tools.list_ports, time, configparser, os
 
-from datetime import datetime, timezone, timedelta
-
 from tkinter import *
 from tkinter import messagebox, ttk
 
 from utils import CaniPy
+
+from ui.uithread import InterfaceThread
 
 class CaniTk(Tk):  
     def __init__(self):
@@ -149,14 +149,10 @@ class CaniTk(Tk):
             }
         }
 
-        # Marquee checks
-        # Run ticker at half clock
-        self.tickerThrottle = False
-        # Buffer for comparing
-        self.tickerBuffer = ""
-
         # Run before destroying window
         self.protocol("WM_DELETE_WINDOW",self.shut_down_com)
+
+        self.uithread = InterfaceThread(self)
 
         self.initialize()
 
@@ -213,7 +209,7 @@ class CaniTk(Tk):
         self.update()
         #self.geometry(self.geometry())
 
-        self.update_labels()
+        self.uithread.update()
     
     def prep_menu(self):
         # === File menu ===
@@ -549,84 +545,6 @@ class CaniTk(Tk):
         self.logField.grid(column=0,row=0)
         if not self.logboxToggle.get():
             self.logFrame.grid_remove()
-
-    def update_labels(self):
-        if not self.winfo_exists(): return
-
-        # Populate only when connection is up
-        if self.canipy.serial_conn is not None:
-            # update clock if set
-            if self.canipy.sat_datetime > datetime(1900,1,1,tzinfo=timezone.utc):
-                curtime = self.canipy.sat_datetime.astimezone(
-                    timezone(
-                        timedelta(
-                            hours=self.timezoneOptions[
-                                self.tzGuiVar.get()
-                            ] + self.dstToggle.get()
-                        )
-                    )
-                )
-                if self.milclockToggle.get():
-                    hfmt = curtime.strftime('%H:%M')
-                else:
-                    # platform agnostic approach for 12h
-                    hfmt = curtime.strftime('%I:%M').lstrip('0')
-                self.labelFrame.config(
-                    text=hfmt
-                )
-            for attr, meta in self.labelVars.items():
-                new_label = ""
-                match attr:
-                    case "signal":
-                        # pick the strongest signal
-                        sigpwr = max(self.canipy.sig_strength, self.canipy.ter_strength)
-                        # Not the prettiest..
-                        # new_label += f"""SAT {'[]'*self.canipy.sig_strength+'  '*(
-                        #     3-self.canipy.sig_strength
-                        # ) if self.canipy.sig_strength > 0 else 'X   '} """
-                        # new_label += "TER "
-                        new_label += f"T {'[]'*sigpwr}"
-                    case "ticker":
-                        # If there's ticker data at all
-                        # Otherwise if remnant marquee, clear it
-                        if self.canipy.ticker:
-                            self.update_ticker(meta["var"])
-                        elif meta["var"].get():
-                            meta["var"].set("")
-                    case _:
-                        new_label += f"{getattr(self.canipy,attr,'')}"
-                # only update if value changed
-                # less expensive doing so.
-                # Disregard marquee as that's updated externally
-                if attr != "ticker":
-                    if meta["var"].get() != f"{new_label}":
-                        meta["var"].set(f"{new_label}")
-
-        # recursive loop
-        # set to 100 so it doesnt chew cpu time..
-        self.after(100,self.update_labels)
-    
-    def update_ticker(self, marquee:StringVar):
-            # If marquee is empty or ticker updated, populate
-            if not marquee.get() or (self.tickerBuffer != self.canipy.ticker):
-                marquee.set(self.canipy.ticker)
-                # buffer it
-                self.tickerBuffer = self.canipy.ticker
-                # Pad at least up to 96
-                if len(marquee.get()) < 96:
-                    marquee.set(
-                        marquee.get()+ " " * (
-                            96 - len(marquee.get()) % 96 + 3
-                        )
-                    )
-            # Run ticker at half speed
-            if self.tickerThrottle:
-                marquee.set(
-                    marquee.get()[1:]+marquee.get()[0]
-                )
-                self.tickerThrottle = False
-            else:
-                self.tickerThrottle = True
     
     def clear_logfield(self):
         self.logField.config(state="normal")
