@@ -58,3 +58,6 @@ target/
 
 # Data downloads
 data/
+
+# GUI config file
+canipy.ini
