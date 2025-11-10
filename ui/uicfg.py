@@ -17,6 +17,12 @@ class InterfaceCfg:
                 "4": "0",
                 "5": "0",
                 "6": "0"
+            },
+            "debug": {
+                "log": "False",
+                "verbose": "False",
+                "box": "False",
+                "clock": "False"
             }
         }
 
@@ -33,6 +39,12 @@ class InterfaceCfg:
                 "4": self.parent.chPresets[3],
                 "5": self.parent.chPresets[4],
                 "6": self.parent.chPresets[5]
+            },
+            "debug": {
+                "log": self.parent.logfileToggle,
+                "verbose": self.parent.verboseToggle,
+                "box": self.parent.logboxToggle,
+                "clock": self.parent.clkdbgToggle
             }
         }
 
@@ -49,6 +61,12 @@ class InterfaceCfg:
                 "4": range(0, 256),
                 "5": range(0, 256),
                 "6": range(0, 256)
+            },
+            "debug": {
+                "log": ("True", "False"),
+                "verbose": ("True", "False"),
+                "box": ("True", "False"),
+                "clock": ("True", "False")
             }
         }
 

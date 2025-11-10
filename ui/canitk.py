@@ -41,6 +41,12 @@ class CaniTk(Tk):
         self.dstToggle = BooleanVar()
         self.milclockToggle = BooleanVar()
 
+        # debug toggles
+        self.logfileToggle = BooleanVar()
+        self.verboseToggle = BooleanVar()
+        self.logboxToggle = BooleanVar()
+        self.clkdbgToggle = BooleanVar()
+
         # load configs
         self.uicfg = InterfaceCfg(self)
         for num in range(len(self.chPresets)):
@@ -62,9 +68,6 @@ class CaniTk(Tk):
         self.sigmonToggle = BooleanVar(value=True)
         self.clockmonToggle = BooleanVar(value=True)
         self.wxToggle = BooleanVar()
-        self.labelToggle = BooleanVar(value=True)
-        self.logboxToggle = BooleanVar()
-        self.logfileToggle = BooleanVar()
         self.radiodiagToggle = BooleanVar()
         self.wrgpsToggle = BooleanVar()
 
@@ -85,8 +88,8 @@ class CaniTk(Tk):
         self.logFrame = Frame(self)
         self.logField = Text(
             self.logFrame,
-            width=64,
-            height=12,
+            width=38,
+            height=8,
             wrap="word",
             state="disabled"
         )
@@ -94,9 +97,22 @@ class CaniTk(Tk):
         # canipy instance
         self.canipy = CaniPy(gui=self)
 
-        # post-flight vars
+        # post-flight assignments
+        self.logfileToggle.set(
+            self.uicfg.settings["debug"].getboolean("log",False)
+        )
+        self.verboseToggle.set(
+            self.uicfg.settings["debug"].getboolean("verbose",False)
+        )
+        self.logboxToggle.set(
+            self.uicfg.settings["debug"].getboolean("box",False)
+        )
+        self.clkdbgToggle.set(
+            self.uicfg.settings["debug"].getboolean("clock",False)
+        )
+        self.canipy.verbose = self.verboseToggle.get()
+        self.canipy.clock_logging = self.clkdbgToggle.get()
         self.chGuiVar = IntVar(value=self.canipy.ch_num)
-        self.verboseToggle = BooleanVar(value=self.canipy.verbose)
 
         # input fields
         #self.chEntry = Entry(self.buttonFrame)
@@ -142,7 +158,7 @@ class CaniTk(Tk):
                 "columnspan":1
             },
             "ch_num":{
-                "var":StringVar(value="Version 0.25"),
+                "var":StringVar(value="Version 0.30"),
                 "row":1,
                 "column":1,
                 "anchor":"e",

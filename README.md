@@ -4,15 +4,17 @@
 
 <img width="320" height="240" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/0bd820bd-90e3-447e-9f33-3bdddafba0bd" />
 
-CaniPy provides a modern foundation for hobbyists to continue using supported SDARS hardware, taking advantage of Python's more legible syntax so others can better adapt this code for their needs and understand the control commands of the supported hardware.
+CaniPy provides a modern foundation for hobbyists to continue using supported satellite radio hardware.
 
-The project can either be used by itself, currently a prototype GUI for both regular use and as a subsystem sample, or as a module that can be imported to support other scripts.
+The project can either be used by itself with a GUI or as a module that can be imported to support other scripts.
+
+Taking advantage of Python's more legible syntax, other projects can adapt this code for their needs and understand the control commands of the supported hardware.
 
 ## Requirements
 
 The following are required to run CaniPy:
 
-* A system that meets the minimum system requirements for **Python 3.10**
+* A system that meets the minimum requirements for **Python 3.10**
     * Windows 8.1 or higher
     * macOS 10.9 or higher
     * Linux
@@ -31,35 +33,37 @@ The following are required to run CaniPy:
 ## Usage
 
 > [!IMPORTANT]
-> On Windows, the standalone EXE may get flagged due to its use of PyInstaller for packaging. This is a false positive. You may alternatively download the repo and run the main script directly instead.
+> On Windows, the standalone EXE may get flagged due to its use of PyInstaller for packaging. This is a false positive. You may alternatively download the source code package and run the main script directly instead.
 
-The program can be run via either the main script (`python3 main.py`), [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), or by making a packaged executable in the target system.
+The program can be run via either [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), the main script if using the source code (`python3 main.py`), or by making a packaged executable in the target system.
 
 1. Connect the tuner to the computer.
 2. Open the main program to start the CaniPy UI.
 3. Select and verify the device's COM/TTY port path from the drop-down menu. See below for guidance depending on your operating system. If the device is using a different path, you may change it by typing in the device port box.
 4. Select the corresponding device type from the drop-down menu underneath to connect and power it on.
-5. Change channels if needed by entering the channel number on the channel input field and clicking the button on the right.
-6. Mute and unmute the audio by going to "File" > "Mute".
-7. Close the program when done.
+5. Change channels if needed by first changing the number on the channel input field and then clicking the "Enter" button.
+6. Assign a channel to a preset by clicking one of the 6 buttons. Clear the button first by going to "Settings" > "Clear preset" and selecting the button number to reset it for assigning another channel.
+7. Mute and unmute the audio by going to "File" > "Mute".
+8. Set the time zone and clock display settings in "Settings" > "Clock".
+9. Close the program when done. Time display settings and presets will be stored in a configuration file.
 
 ### Windows
 
-You can identify which COM port corresponds to the radio's serial controller through Device Manager.
+You can verify the COM port corresponding to the radio through the [Device Manager](https://support.microsoft.com/en-us/windows/open-device-manager-a7f2db46-faaf-24f0-8b7b-9e4a6032fc8c) and expanding the "Ports (COM & LPT)" dropdown.
 
 ### Linux
 
-Your serial port device path should be designated as `/dev/ttyUSB*` or `/dev/ttyS*`.
+The serial port device path starts with etiher `/dev/ttyUSB*` or `/dev/ttyS*`.
 
 ### Mac
 
-Your serial port device path should be designated as `/dev/tty.usbserial*` or `/dev/tty.*`.
+The serial port device path starts with etiher `/dev/tty.usbserial*` or `/dev/tty.*`.
 
 ## Packaging
 
-If making a standalone CaniPy executable, first clone the repo (`git clone //link/to/canisat.git`) then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
+If making a standalone CaniPy executable, first [download the released source ZIP or TAR.GZ](https://github.com/canisat/canipy/releases) or clone the repo (`git clone //link/to/canisat.git`), then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
 
-These prerequisites will be installed automatically via `pip` when using either `make all` or `make deps`. They can alternatively be installed manually following the `requirements.txt` list.
+These prerequisites will be installed via `pip` automatically when using either `make all` or `make deps`. They can alternatively be installed manually following the `requirements.txt` list.
 
 ```sh
 # Recommended (deps, build)

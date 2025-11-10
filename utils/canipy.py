@@ -71,8 +71,9 @@ class CaniPy:
         self.port_name = port
         self.baud_rate = baud
 
-        # Verbose output toggle
+        # Verbose output toggles
         self.verbose = False
+        self.clock_logging = False
 
         # Audio and signal info
         # Assume radios start at 0

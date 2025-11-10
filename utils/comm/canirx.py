@@ -280,7 +280,7 @@ class CaniRX:
         if self.parent.verbose:
             self.parent.logprint(f"Exp 22 or 26, got {len(payload)}")
 
-    def parse_clock(self, payload:bytes, debug:bool=False, miltime:bool=False,):
+    def parse_clock(self, payload:bytes, logging:bool=False, miltime:bool=False):
         """
         Takes in a date-time info response (DF hex) to store relevant info.
         Service stamp is reported in coordinated universal time (UTC).
@@ -288,7 +288,7 @@ class CaniRX:
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
-            debug (bool, optional): Chattier output. Default to false.
+            logging (bool, optional): Full printout of every datetime response. Default to false.
             miltime (bool, optional): Report debug print time in 24h format. Default to false.
         """
         if len(payload) == 11:
@@ -302,7 +302,8 @@ class CaniRX:
                 payload[7] & 0x7F,
                 tzinfo=timezone.utc
             )
-            if debug:
+            # wrapping all this cus logs can get crowded with this on
+            if logging:
                 # TODO: The heck is with these toggled MSBs in seconds and cycle??
                 # This is a semi-long-term analysis!
                 weekdaylabel = {

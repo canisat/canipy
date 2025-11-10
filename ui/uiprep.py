@@ -83,7 +83,7 @@ class InterfacePrep:
         prere_menu = Menu(prefs_menu,tearoff=0)
         for preset in range(len(self.parent.chPresets)):
             prere_menu.add_command(
-                label=preset+1,
+                label=str(preset+1),
                 command=lambda p=preset: self.parent.uicfg.clear_preset(p),
                 underline=0
             )
@@ -95,13 +95,45 @@ class InterfacePrep:
         )
         # end preset
         prefs_menu.add_cascade(label="Clear preset",menu=prere_menu,underline=4)
-        # END prefs menu
-        self.parent.menuBar.add_cascade(label="Settings",menu=prefs_menu,underline=0)
-
-        # === Tools menu ===
-        tools_menu = Menu(self.parent.menuBar,tearoff=0)
+        prefs_menu.add_separator()
+        # DEBUG MENU
+        prefdbg_menu = Menu(prefs_menu,tearoff=0)
+        prefdbg_menu.add_checkbutton(
+            label="Log file output",
+            variable=self.parent.logfileToggle,
+            command=self.parent.uicfg.save_file,
+            underline=9
+        )
+        # yyyyeah, these won't autosave when toggled...
+        # space is already taken by setattr, sorry.
+        # closing ui or applying another setting will save anyway.
+        prefdbg_menu.add_checkbutton(
+            label="Verbose logging",
+            variable=self.parent.verboseToggle,
+            command=lambda:setattr(self.parent.canipy,"verbose",self.parent.verboseToggle.get()),
+            underline=0
+        )
+        prefdbg_menu.add_checkbutton(
+            label="Clock logging",
+            variable=self.parent.clkdbgToggle,
+            command=lambda:setattr(self.parent.canipy,"clock_logging",self.parent.clkdbgToggle.get()),
+            underline=4
+        )
+        prefdbg_menu.add_separator()
+        prefdbg_menu.add_checkbutton(
+            label="Show log box",
+            variable=self.parent.logboxToggle,
+            command=lambda:self.parent.logFrame.grid() if self.parent.logboxToggle.get() else self.parent.logFrame.grid_remove(),
+            underline=9
+        )
+        prefdbg_menu.add_command(
+            label="Clear log box",
+            command=self.parent.clear_logfield,
+            underline=0
+        )
+        prefdbg_menu.add_separator()
         # Fetch menu
-        fetch_menu = Menu(tools_menu, tearoff=0)
+        fetch_menu = Menu(prefdbg_menu, tearoff=0)
         fetch_menu.add_command(
             label="Selected channel",
             command=lambda:self.parent.canipy.tx.channel_info(
@@ -132,9 +164,9 @@ class InterfacePrep:
         # end wx menu
         fetch_menu.add_cascade(label="WX",menu=wxfetch_menu,underline=0)
         # end of fetch
-        tools_menu.add_cascade(label="Fetch info now",menu=fetch_menu,underline=0)
+        prefdbg_menu.add_cascade(label="Fetch info now",menu=fetch_menu,underline=0)
         # Debug monitoring menu
-        mond_menu = Menu(tools_menu, tearoff=0)
+        mond_menu = Menu(prefdbg_menu, tearoff=0)
         mond_menu.add_checkbutton(
             label="Radio diag",
             variable=self.parent.radiodiagToggle,
@@ -162,50 +194,22 @@ class InterfacePrep:
             command=lambda:self.parent.canipy.tx.signal_mon(self.parent.sigmonToggle.get()),
             underline=0
         )
-        tools_menu.add_cascade(label="Monitor",menu=mond_menu,underline=0)
+        prefdbg_menu.add_cascade(label="Monitor",menu=mond_menu,underline=0)
         # Rest of tools
-        tools_menu.add_separator()
-        tools_menu.add_checkbutton(
-            label="Toggle verbose logging",
-            variable=self.parent.verboseToggle,
-            command=lambda:setattr(self.parent.canipy,"verbose",self.parent.verboseToggle.get()),
-            underline=7
-        )
-        tools_menu.add_checkbutton(
-            label="Toggle log file output",
-            variable=self.parent.logfileToggle,
-            underline=16
-        )
-        tools_menu.add_separator()
-        tools_menu.add_checkbutton(
-            label="Show log box",
-            variable=self.parent.logboxToggle,
-            command=lambda:self.parent.logFrame.grid() if self.parent.logboxToggle.get() else self.parent.logFrame.grid_remove(),
-            underline=9
-        )
-        tools_menu.add_command(
-            label="Clear log box",
-            command=self.parent.clear_logfield,
-            underline=0
-        )
-        tools_menu.add_separator()
-        tools_menu.add_checkbutton(
-            label="Show display",
-            variable=self.parent.labelToggle,
-            command=lambda:self.parent.labelFrame.grid() if self.parent.labelToggle.get() else self.parent.labelFrame.grid_remove(),
-            underline=5
-        )
-        tools_menu.add_command(
-            label="Feed money to stock ticker",
+        prefdbg_menu.add_separator()
+        prefdbg_menu.add_command(
+            label="Populate ticker",
             command=lambda:setattr(
                 self.parent.canipy,
                 "ticker",
-                self.parent.canipy.ticker+"$"
+                self.parent.canipy.ticker+"#"
             ),
-            underline=20
+            underline=9
         )
-        # === End tools menu ===
-        self.parent.menuBar.add_cascade(label="Toolbox",menu=tools_menu,underline=0)
+        # END DEBUG
+        prefs_menu.add_cascade(label="Debug",menu=prefdbg_menu,underline=0)
+        # END prefs menu
+        self.parent.menuBar.add_cascade(label="Options",menu=prefs_menu,underline=0)
 
         # Help menu
         help_menu = Menu(self.parent.menuBar,tearoff=0)
@@ -234,7 +238,7 @@ class InterfacePrep:
             label="About CaniPy",
             command=lambda:messagebox.showinfo(
                 "About",
-                f"CaniPy - Version 0.25\n"
+                f"CaniPy - Version 0.30\n"
                 f"SDARS hardware control in Python\n"
                 f"Licensed under Apache 2.0\n"
                 f"\n"
@@ -274,48 +278,28 @@ class InterfacePrep:
         # frame for command buttons
         self.parent.buttonFrame.grid(column=0,row=0)
 
-        Label(
-            self.parent.buttonFrame,
-            text="Port"
-        ).grid(column=0,row=0,sticky="e")
-        Label(
-            self.parent.buttonFrame,
-            text="Device"
-        ).grid(column=0,row=1,sticky="e")
+        # These are all arranged by tab order!
+        # Row/Col assignments are gonna be a tad willy nilly
 
-        # field for com port
-        port_combo = ttk.Combobox(
-            self.parent.buttonFrame,
-            textvariable=self.parent.portSelect,
-            values=self.parent.portList,
-            width=16
-        )
-        port_combo.grid(column=1,row=0)
-        hwtype_combo = ttk.Combobox(
-            self.parent.buttonFrame,
-            textvariable=self.parent.hwtypeSelect,
-            values=list(self.parent.baudOpts.keys()),
-            state="readonly",
-            width=16
-        )
-        hwtype_combo.grid(column=1,row=1)
-        hwtype_combo.bind(
-            "<<ComboboxSelected>>",
-            lambda e: self.parent.open_com_port()
-        )
-
+        # ch num box label
         Label(
             self.parent.buttonFrame,
             text="Channel"
-        ).grid(column=2,row=0)
+        ).grid(column=0,row=0)
         # channel number
-        self.parent.chEntry.grid(column=2,row=1)
-        #self.parent.chEntry.insert(END,"1")
-
-        preset_btns = Frame(
+        self.parent.chEntry.grid(column=0,row=1)
+        Button(
             self.parent.buttonFrame,
-            width=55
-        )
+            text="Enter",
+            width=4,
+            height=2,
+            command=lambda:self.parent.canipy.tx.change_channel(
+                int(self.parent.chEntry.get())
+            )
+        ).grid(column=2,row=0,rowspan=2)
+
+        # Preset buttons
+        preset_btns = Frame(self.parent.buttonFrame)
         for num in range(len(self.parent.chPresets)):
             Button(
                 preset_btns,
@@ -326,17 +310,37 @@ class InterfacePrep:
                     p,self.parent.canipy.ch_num
                 )
             ).grid(column=num%3,row=num//3)
-        preset_btns.grid(column=3,row=0,rowspan=2)
+        preset_btns.grid(column=1,row=0,rowspan=2)
 
-        Button(
+        # Combobox labels
+        Label(
             self.parent.buttonFrame,
-            text="Enter",
-            width=4,
-            height=2,
-            command=lambda:self.parent.canipy.tx.change_channel(
-                int(self.parent.chEntry.get())
-            )
-        ).grid(column=4,row=0,rowspan=2)
+            text="Port"
+        ).grid(column=3,row=0,sticky="e")
+        Label(
+            self.parent.buttonFrame,
+            text="Device"
+        ).grid(column=3,row=1,sticky="e")
+        # field for com port
+        port_combo = ttk.Combobox(
+            self.parent.buttonFrame,
+            textvariable=self.parent.portSelect,
+            values=self.parent.portList,
+            width=16
+        )
+        port_combo.grid(column=4,row=0)
+        hwtype_combo = ttk.Combobox(
+            self.parent.buttonFrame,
+            textvariable=self.parent.hwtypeSelect,
+            values=list(self.parent.baudOpts.keys()),
+            state="readonly",
+            width=16
+        )
+        hwtype_combo.grid(column=4,row=1)
+        hwtype_combo.bind(
+            "<<ComboboxSelected>>",
+            lambda e: self.parent.open_com_port()
+        )
 
     def prep_labels(self):
         # frame for labels
@@ -367,9 +371,6 @@ class InterfacePrep:
         # Set weight for columns to even out the labels
         for c in range(2):
             self.parent.labelFrame.columnconfigure(c,weight=1)
-
-        # Remove if not enabled by default
-        if not self.parent.labelToggle.get(): self.parent.labelFrame.grid_remove()
     
     def prep_logfield(self):
         self.parent.logFrame.grid(column=0,row=2)

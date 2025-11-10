@@ -209,7 +209,7 @@ class CaniConductor:
             case 0xDE:
                 self.parent.logprint("Clock monitoring status updated")
             case 0xDF:
-                self.parent.rx.parse_clock(payload)
+                self.parent.rx.parse_clock(payload, self.parent.clock_logging)
             case 0xE0:
                 self.parent.infoprint("Fetched activation info")
             case 0xE1:
