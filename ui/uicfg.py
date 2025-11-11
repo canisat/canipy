@@ -22,7 +22,8 @@ class InterfaceCfg:
                 "log": "False",
                 "verbose": "False",
                 "box": "False",
-                "clock": "False"
+                "clock": "False",
+                "data": "False"
             }
         }
 
@@ -44,7 +45,8 @@ class InterfaceCfg:
                 "log": self.parent.logfileToggle,
                 "verbose": self.parent.verboseToggle,
                 "box": self.parent.logboxToggle,
-                "clock": self.parent.clkdbgToggle
+                "clock": self.parent.clkdbgToggle,
+                "data": self.parent.datdbgToggle
             }
         }
 
@@ -66,7 +68,8 @@ class InterfaceCfg:
                 "log": ("True", "False"),
                 "verbose": ("True", "False"),
                 "box": ("True", "False"),
-                "clock": ("True", "False")
+                "clock": ("True", "False"),
+                "data": ("True", "False")
             }
         }
 
@@ -144,5 +147,9 @@ class InterfaceCfg:
         for section in self.savemapper:
             for option in self.savemapper[section]:
                 self.settings[section][option] = str(self.savemapper[section][option].get())
-        with open(self.cfgfile, "w") as file:
-            self.settings.write(file)
+        try:
+            with open(self.cfgfile, "w") as file:
+                self.settings.write(file)
+        except PermissionError:
+            # Skip saving if permission denied or FS is read-only
+            pass

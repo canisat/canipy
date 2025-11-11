@@ -71,8 +71,12 @@ class CaniWX:
         file = f"{frame:03}_{datetime.now().strftime('%y%m%d%H%M%S')}{crc_sum:04x}.bin"
         if not os.path.exists(path):
             os.makedirs(path)
-        with open(path+"/"+file, "wb") as file:
-            file.write(data)
+        try:
+            with open(path+"/"+file, "wb") as file:
+                file.write(data)
+        except PermissionError:
+            # Skip saving if permission denied or FS is read-only
+            pass
 
     def set_datachan(self, sid:int, datflagone:bool=False, datflagtwo:bool=False) -> bytes:
         """
@@ -149,7 +153,7 @@ class CaniWX:
             self.parent.logprint("WR - Check RX for GPS module confirmation")
         return self.parent.tx.send(bytes([0x4B, 0x09, 0x00, 0x01 if toggle else 0x03]))
 
-    def parse_data(self, payload:bytes, write:bool=False):
+    def parse_data(self, payload:bytes, write:bool=False, logging:bool=False):
         """
         Rudimentary data implementation.
         Prints out information about the data, and passes it to be saved if prompted.
@@ -157,11 +161,8 @@ class CaniWX:
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
             write (bool, optional): Write the contained data to disk after verify. Default set to false.
+            logging (bool, optional): Full printout of every data response. Default to false.
         """
-        self.parent.logprint("=== DATA  INFO ===")
-        self.parent.logprint(f"SID: {payload[2]}")
-        self.parent.logprint(f"Frame: {payload[3]}")
-        self.parent.logprint(f"Length: {payload[7]} bytes")
         # If CRC sums match, process it, otherwise report mismatch
         if (payload[11]|(payload[10]<<8)) == self.data_sum(payload[12:]):
             if write:
@@ -171,21 +172,27 @@ class CaniWX:
                     payload[12:],
                     payload[11]|(payload[10]<<8)
                 )
-            self.parent.logprint(
-                f"Bitrate: "
-                f"{(self.parent.thread.calc_bitrate(payload[7])/1000):.3f}"
-                f"kbps"
-            )
-            if self.parent.verbose:
+            if logging:
+                self.parent.logprint("=== DATA  INFO ===")
+                self.parent.logprint(f"SID: {payload[2]}")
+                self.parent.logprint(f"Frame: {payload[3]}")
+                self.parent.logprint(f"Length: {payload[7]} bytes")
+                self.parent.logprint(
+                    f"Bitrate: "
+                    f"{(self.parent.thread.calc_bitrate(payload[7])/1000):.3f}"
+                    f"kbps"
+                )
                 self.parent.logprint(
                     f"Sum: {''.join(f'{b:02X}' for b in payload[10:12])}"
                 )
+                # if self.parent.verbose:
                 #print("===    DATA    ===")
                 # Safely print out bare data
                 #print(payload[12:].decode("utf-8", errors="replace"))
                 #print("===    HEX!    ===")
                 # Print out hex dump
                 #print(" ".join(f'{b:02X}' for b in payload[12:]))
+                self.parent.logprint("==================")
         else:
             self.parent.logprint("Sum mismatch!")
             if self.parent.verbose:
@@ -193,4 +200,3 @@ class CaniWX:
                     f"Expected {''.join(f'{b:02X}' for b in payload[10:12])}, "
                     f"got {self.data_sum(payload[12:]):02X}"
                 )
-        self.parent.logprint("==================")

@@ -46,6 +46,7 @@ class CaniTk(Tk):
         self.verboseToggle = BooleanVar()
         self.logboxToggle = BooleanVar()
         self.clkdbgToggle = BooleanVar()
+        self.datdbgToggle = BooleanVar()
 
         # load configs
         self.uicfg = InterfaceCfg(self)
@@ -110,8 +111,12 @@ class CaniTk(Tk):
         self.clkdbgToggle.set(
             self.uicfg.settings["debug"].getboolean("clock",False)
         )
+        self.datdbgToggle.set(
+            self.uicfg.settings["debug"].getboolean("data",False)
+        )
         self.canipy.verbose = self.verboseToggle.get()
         self.canipy.clock_logging = self.clkdbgToggle.get()
+        self.canipy.data_logging = self.datdbgToggle.get()
         self.chGuiVar = IntVar(value=self.canipy.ch_num)
 
         # input fields
@@ -197,40 +202,33 @@ class CaniTk(Tk):
 
         self.initialize()
 
-    def infobox(self, msg:str):
+    def writelog(self, type:str, msg:str):
         if self.logfileToggle.get():
             # write to logfile if enabled
-            with open("canipy.log", "a") as file:
-                file.write(
-                    f"[{self.canipy.sat_datetime}] [INF] {repr(msg)}\n"
-                )
+            try:
+                with open("canipy.log", "a") as file:
+                    file.write(
+                        f"[{self.canipy.sat_datetime}] [{type}] {repr(msg)}\n"
+                    )
+            except PermissionError:
+                # Permission issues here are commonly due to race condition.
+                # Move along...
+                pass
+
+    def infobox(self, msg:str):
+        self.writelog("INF", msg)
         messagebox.showinfo("CaniPy",msg)
 
     def warnbox(self, msg:str):
-        if self.logfileToggle.get():
-            # write to logfile if enabled
-            with open("canipy.log", "a") as file:
-                file.write(
-                    f"[{self.canipy.sat_datetime}] [WRN] {repr(msg)}\n"
-                )
+        self.writelog("WRN", msg)
         messagebox.showwarning("CaniPy",msg)
 
     def errorbox(self, msg:str):
-        if self.logfileToggle.get():
-            # write to logfile if enabled
-            with open("canipy.log", "a") as file:
-                file.write(
-                    f"[{self.canipy.sat_datetime}] [ERR] {repr(msg)}\n"
-                )
+        self.writelog("ERR", msg)
         messagebox.showerror("CaniPy",msg)
     
     def logbox(self, msg:str):
-        if self.logfileToggle.get():
-            # write to logfile if enabled
-            with open("canipy.log", "a") as file:
-                file.write(
-                    f"[{self.canipy.sat_datetime}] [DBG] {repr(msg)}\n"
-                )
+        self.writelog("DBG", msg)
         # enable, write, then disable and scroll
         self.logField.config(state="normal")
         # Check if empty; only newline if not the first element

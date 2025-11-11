@@ -119,6 +119,12 @@ class InterfacePrep:
             command=lambda:setattr(self.parent.canipy,"clock_logging",self.parent.clkdbgToggle.get()),
             underline=4
         )
+        prefdbg_menu.add_checkbutton(
+            label="Data logging",
+            variable=self.parent.datdbgToggle,
+            command=lambda:setattr(self.parent.canipy,"data_logging",self.parent.datdbgToggle.get()),
+            underline=0
+        )
         prefdbg_menu.add_separator()
         prefdbg_menu.add_checkbutton(
             label="Show log box",

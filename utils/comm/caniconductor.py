@@ -63,6 +63,12 @@ class CaniConductor:
                 # Set as current ch
                 self.parent.ch_sid = payload[3]
                 self.parent.ch_num = payload[4]
+                # Clear display values
+                self.ch_name = ""
+                self.artist_name = ""
+                self.title_name = ""
+                self.cat_name = ""
+                self.cat_id = 0
                 # Fetch channel info
                 self.parent.tx.channel_info(payload[4])
                 self.parent.tx.ext_info(payload[4])
@@ -229,7 +235,7 @@ class CaniConductor:
             case 0xEA:
                 if payload[1] == 0xD0:
                     # Write data frames
-                    self.parent.wx.parse_data(payload, True)
+                    self.parent.wx.parse_data(payload, True, self.parent.data_logging)
                     return
                 # Ignore if unsupported packet (not D0)
                 self.parent.logprint("Data packet received")

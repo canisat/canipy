@@ -147,7 +147,7 @@ class CaniThread:
         if packet[:2] != self.parent.header:
             self.parent.logprint("Header not found")
             if self.parent.verbose:
-                self.parent.logprint(packet[:2])
+                self.parent.logprint(f"Received: {' '.join(f'{b:02X}' for b in packet[:2])}")
             #print(packet)
             return b""
         # Both of these do the same thing, but codebase
@@ -175,6 +175,10 @@ class CaniThread:
         # ignoring header, length, sum in printout
         buf = packet[4:]+rest_of_packet[:-2]
         if self.parent.verbose:
-            self.parent.logprint(f"Received: {' '.join(f'{b:02X}' for b in buf)}")
+            # Ignore clock responses unless logging them
+            if buf[0] != 0xDF or self.parent.clock_logging:
+                # Ignore data responses unless logging them
+                if buf[0] != 0xEA or self.parent.data_logging:
+                    self.parent.logprint(f"Received: {' '.join(f'{b:02X}' for b in buf)}")
         #return bytes([packet[4]])+rest_of_packet[:size-1]
         return buf

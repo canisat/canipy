@@ -74,6 +74,7 @@ class CaniPy:
         # Verbose output toggles
         self.verbose = False
         self.clock_logging = False
+        self.data_logging = False
 
         # Audio and signal info
         # Assume radios start at 0
