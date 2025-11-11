@@ -64,11 +64,11 @@ class CaniConductor:
                 self.parent.ch_sid = payload[3]
                 self.parent.ch_num = payload[4]
                 # Clear display values
-                self.ch_name = ""
-                self.artist_name = ""
-                self.title_name = ""
-                self.cat_name = ""
-                self.cat_id = 0
+                self.parent.ch_name = ""
+                self.parent.artist_name = ""
+                self.parent.title_name = ""
+                self.parent.cat_name = ""
+                self.parent.cat_id = 0
                 # Fetch channel info
                 self.parent.tx.channel_info(payload[4])
                 self.parent.tx.ext_info(payload[4])

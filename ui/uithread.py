@@ -39,14 +39,23 @@ class InterfaceThread:
                 new_label = ""
                 match attr:
                     case "signal":
-                        # pick the strongest signal
-                        sigpwr = max(self.parent.canipy.sig_strength, self.parent.canipy.ter_strength)
+                        sat = self.parent.canipy.sig_strength
+                        ter = self.parent.canipy.ter_strength
+                        # pick the strongest signal, unless sat is 0 and ter is 1
+                        # as terrestrial strength indicator is rather loose
+                        if sat == 0 and ter == 1:
+                            sigpwr = 0
+                        else:
+                            sigpwr = max(sat,ter)
                         # Not the prettiest..
                         # new_label += f"""SAT {'[]'*self.parent.canipy.sig_strength+'  '*(
                         #     3-self.parent.canipy.sig_strength
                         # ) if self.parent.canipy.sig_strength > 0 else 'X   '} """
                         # new_label += "TER "
-                        new_label += f"T {'[]'*sigpwr}"
+                        new_label += "T"
+                        # Report signal if antenna is connected
+                        if self.parent.canipy.ant_strength > 0:
+                            new_label += f" {'[]'*sigpwr}"
                     case "ticker":
                         # If there's ticker data at all
                         # Otherwise if remnant marquee, clear it

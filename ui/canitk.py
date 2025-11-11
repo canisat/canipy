@@ -202,13 +202,13 @@ class CaniTk(Tk):
 
         self.initialize()
 
-    def writelog(self, type:str, msg:str):
+    def writelog(self, msgtype:str, msg:str):
         if self.logfileToggle.get():
             # write to logfile if enabled
             try:
                 with open("canipy.log", "a") as file:
                     file.write(
-                        f"[{self.canipy.sat_datetime}] [{type}] {repr(msg)}\n"
+                        f"[{self.canipy.sat_datetime}] [{msgtype}] {repr(msg)}\n"
                     )
             except PermissionError:
                 # Permission issues here are commonly due to race condition.

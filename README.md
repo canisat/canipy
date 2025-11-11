@@ -42,7 +42,7 @@ The program can be run via either [the latest pre-packaged executable from the r
 3. Select and verify the device's COM/TTY port path from the drop-down menu. See below for guidance depending on your operating system. If the device is using a different path, you may change it by typing in the device port box.
 4. Select the corresponding device type from the drop-down menu underneath to connect and power it on.
 5. Change channels if needed by first changing the number on the channel input field and then clicking the "Enter" button.
-6. Assign a channel to a preset by clicking one of the 6 buttons. Clear the button first by going to "Settings" > "Clear preset" and selecting the button number to reset it for assigning another channel.
+6. Assign a channel to a preset by clicking one of the 6 buttons. To clear the preset, go to "Settings" > "Clear preset" and select the button's number.
 7. Mute and unmute the audio by going to "File" > "Mute".
 8. Set the time zone and clock display settings in "Settings" > "Clock".
 9. Close the program when done. Time display settings and presets will be stored in a configuration file.

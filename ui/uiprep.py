@@ -187,6 +187,14 @@ class InterfacePrep:
             ),
             underline=9
         )
+        mond_menu.add_command(
+            label="Selected channel (Data override)",
+            command=lambda:self.parent.canipy.tx.chan_mon(
+                int(self.parent.chEntry.get()),
+                mode_override=True
+            ),
+            underline=23
+        )
         mond_menu.add_separator()
         mond_menu.add_checkbutton(
             label="Date/time",
@@ -213,7 +221,7 @@ class InterfacePrep:
             underline=9
         )
         # END DEBUG
-        prefs_menu.add_cascade(label="Debug",menu=prefdbg_menu,underline=0)
+        prefs_menu.add_cascade(label="Advanced",menu=prefdbg_menu,underline=1)
         # END prefs menu
         self.parent.menuBar.add_cascade(label="Options",menu=prefs_menu,underline=0)
 
