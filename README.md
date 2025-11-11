@@ -2,7 +2,7 @@
 
 **Serial SDARS receiver control in Python**
 
-<img width="320" height="240" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/0bd820bd-90e3-447e-9f33-3bdddafba0bd" />
+<img width="320" height="240" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/cb6152cd-33fd-45df-8c28-e11f3eb5f4e0" />
 
 CaniPy provides a modern foundation for hobbyists to continue using supported satellite radio hardware.
 
