@@ -173,7 +173,9 @@ class CaniThread:
             return b""
         # combine the return code and data and return
         # ignoring header, length, sum in printout
-        buf = packet[4:]+rest_of_packet[:-2]
+        buf = packet[4:]
+        # bugfix specifically for the diag response
+        buf += rest_of_packet[:-2] if buf[0] != 0xF1 else rest_of_packet[:-1]
         if self.parent.verbose:
             # Ignore clock responses unless logging them
             if buf[0] != 0xDF or self.parent.clock_logging:

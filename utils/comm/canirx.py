@@ -123,12 +123,12 @@ class CaniRX:
             # Could be to indicate we're starting at ch0??
             # Ignoring it for now.
             if self.parent.verbose:
-                self.parent.logprint(f"RX Version: {payload[4]:X}")
-                self.parent.logprint(f"RX Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
+                self.parent.logprint(f"SDEC Version: {payload[4]:X}")
+                self.parent.logprint(f"SDEC Date: {payload[5]:02X}/{payload[6]:02X}/{payload[7]:02X}{payload[8]:02X}")
                 self.parent.logprint(f"Last SID 1: {payload[9]:02X}{' (Data)' if payload[10] else ''}")
                 self.parent.logprint(f"Last SID 2: {payload[11]:02X}{' (Data)' if payload[12] else ''}")
-                self.parent.logprint(f"CBM Version: {payload[13]:X}")
-                self.parent.logprint(f"CBM Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
+                self.parent.logprint(f"RXSTK Version: {payload[13]:X}")
+                self.parent.logprint(f"RXSTK Date: {payload[14]:02X}/{payload[15]:02X}/{payload[16]:02X}{payload[17]:02X}")
             self.parent.logprint(f"Radio ID: {payload[19:27].decode('utf-8')}")
             self.parent.logprint("================")
             return
@@ -304,7 +304,7 @@ class CaniRX:
             )
             # wrapping all this cus logs can get crowded with this on
             if logging:
-                # TODO: The heck is with these toggled MSBs in seconds and cycle??
+                # TODO: Figure out the MSBs in seconds and cycle
                 # This is a semi-long-term analysis!
                 weekdaylabel = {
                     0x02:"Monday",
@@ -372,17 +372,14 @@ class CaniRX:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
         """
         if len(payload) == 19:
-            # TODO: Versioning will need to be examined again.
-            # I don't have the PCR with me at the moment...
-            # For now, I believe this is close enough
             self.parent.infoprint(
                 f"Radio Firmware\n\n"
                 f"HW: {payload[3]:X}\n"
-                f"SDEC/DSP: {payload[4]:X} "
+                f"CBM: {payload[4]:X} "
                 f"({payload[5]:X}/{payload[6]:X}/{payload[7]:X}{payload[8]:02X})\n"
-                f"CBM: {payload[9]:X} "
+                f"RX Stack: {payload[9]:X} "
                 f"({payload[10]:X}/{payload[11]:X}/{payload[12]:X}{payload[13]:02X})\n"
-                f"RX: {payload[14]:X} "
+                f"SDEC/DSP: {payload[14]:X} "
                 f"({payload[15]:X}/{payload[16]:X}/{payload[17]:X}{payload[18]:02X})"
             )
             return

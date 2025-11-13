@@ -243,9 +243,12 @@ class CaniConductor:
                 self.parent.logprint("Diagnostic info monitoring status updated")
             case 0xF1:
                 if self.parent.verbose:
-                    # TODO: examine how diag is laid out, appears to be 8 or 9 fields
+                    # Print out diag info, 9 fields
                     self.parent.logprint("=== DIAGNOSTIC ===")
-                    self.parent.logprint(payload[2:].decode("utf-8"))
+                    diaginf = payload[1:].decode("utf-8")
+                    fields = [diaginf[i:i+8] for i in range(0, len(diaginf), 8)]
+                    for field in fields:
+                        self.parent.logprint(f"{field[0]}. {field[1:]}")
                     self.parent.logprint("==================")
             case 0xF2:
                 # Direct idle frames.

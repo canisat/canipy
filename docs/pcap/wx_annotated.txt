@@ -33,7 +33,7 @@ Console: Sending Power Up to Radio
 RX payload:
 5aa5 - Start
 001b - 27 bytes
-800309003311062003010000000812022004084142434431323334 - Inactive radio, RX 33 (6 Nov 2003), CBM 08 (2 Dec 2004), ID length 8, ABCD1234
+800309003311062003010000000812022004084142434431323334 - Inactive radio, SDEC 33 (6 Nov 2003), STK 08 (2 Dec 2004), ID length 8, ABCD1234
 0467 - Sum
 Console: Radio confirmed power up command
 Console: Radio serial number: ABCD1234
