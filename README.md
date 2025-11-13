@@ -17,7 +17,7 @@ The following are required to run CaniPy:
 * A system that meets the minimum requirements for **Python 3.10**
     * Windows 8.1 or higher
     * macOS 10.9 or higher
-    * Linux
+    * By default at least Ubuntu 22.04, Debian Bookworm, Fedora 35, EL 9, etc.
 * A compatible serial-controlled satellite radio that is listed below, which receives the **XM service** by Sirius XM Radio LLC
 
 | Device                                       | Baud Rate |
