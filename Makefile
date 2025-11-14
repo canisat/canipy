@@ -23,6 +23,8 @@ term:
 
 # Installs dependencies
 deps:
+	@echo "pip check..."
+	$(PYTHON) -m ensurepip --upgrade
 	@echo "Installing dependencies..."
 	$(PIP) install --upgrade -r $(REQS)
 
