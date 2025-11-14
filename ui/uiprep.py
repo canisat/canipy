@@ -261,28 +261,7 @@ class InterfacePrep:
                 f"Serial commands were documented from both current CaniSat "
                 f"research and prior work conducted by Nick Sayer, the "
                 f"linuXMPCR and Perl XM PCR projects, Hybrid Mobile "
-                f"Technologies, and the defunct XM Fan forums.\n"
-                f"\n"
-                f"CaniSat, a non-profit initiative, and its incubator NetOtt "
-                f"Solutions, LLC are not affiliated with either Sirius XM "
-                f"Holdings Inc., Sirius XM Radio LLC, or any of its products, "
-                f"partners, or subsidiaries. Sirius, XM, SiriusXM and all "
-                f"related indicia are trademarks of Sirius XM Holdings Inc.\n"
-                f"\n"
-                f"The data products distributed in the service(s) are "
-                f"intended to be supplemental and advisory per the provider. "
-                f"It is not recommended for use in circumstances that "
-                f"require immediate urgency to fulfill safety-critical work. "
-                f"Both CaniSat and the service provider are not responsible "
-                f"for errors and inaccuracies encountered when utilizing the "
-                f"service data products.\n"
-                f"\n"
-                f"CaniSat does not condone or encourage the use of its "
-                f"affiliated projects for unauthorized copying, duplication, "
-                f"or distribution of copyrighted materials received through "
-                f"the supported services. The end user is solely responsible "
-                f"for ensuring their activities comply with applicable "
-                f"copyright laws and service terms. Don't steal music.",
+                f"Technologies, and the defunct XM Fan forums.",
             ),
             underline=0
         )

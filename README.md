@@ -32,8 +32,10 @@ The following are required to run CaniPy:
 
 ## Usage
 
-> [!IMPORTANT]
-> On Windows, the standalone EXE may get flagged due to its use of PyInstaller for packaging. This is a false positive. You may alternatively download the source code package and run the main script directly instead.
+> [!WARNING]
+> On Windows, the standalone EXE may get flagged due to its use of PyInstaller for packaging. **This is a false positive!**
+>
+> You may alternatively download the source code package and run the main script directly if issues persist when attempting to run the packaged EXE.
 
 The program can be run via either [the latest pre-packaged executable from the releases page](https://github.com/canisat/canipy/releases), the main script if using the source code (`python3 main.py`), or by making a packaged executable in the target system.
 
@@ -60,6 +62,11 @@ The serial port device path starts with etiher `/dev/ttyUSB*` or `/dev/ttyS*`.
 The serial port device path starts with etiher `/dev/tty.usbserial*` or `/dev/tty.*`.
 
 ## Packaging
+
+> [!IMPORTANT]
+> Certain Linux distributions, such as those that descend from Debian or use its APT package manager (Ubuntu included), provide `pip` and the graphical interface library used by CaniPy as discrete packages.
+>
+> In this case, please make sure both `python3-pip` and `python3-tk` are installed through your distro's default package manager before building CaniPy.
 
 If making a standalone CaniPy executable, first [download the released source ZIP or TAR.GZ](https://github.com/canisat/canipy/releases) or clone the repo (`git clone //link/to/canisat.git`), then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
 
