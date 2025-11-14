@@ -10,8 +10,6 @@ param(
 
 function Install-Deps {
     if (Test-Path $ReqsTxt) {
-        Write-Host "pip check..."
-        python -m ensurepip --upgrade
         Write-Host "Installing dependencies..."
         python -m pip install -r $ReqsTxt
     } else {
