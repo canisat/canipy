@@ -59,7 +59,7 @@ The serial port device path starts with etiher `/dev/ttyUSB*` or `/dev/ttyS*`.
 
 ### Mac
 
-The serial port device path starts with etiher `/dev/tty.usbserial*` or `/dev/tty.*`.
+The serial port device path starts with etiher `/dev/cu.usbserial*` or `/dev/cu.*`.
 
 ## Packaging
 
