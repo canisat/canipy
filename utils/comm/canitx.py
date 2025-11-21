@@ -72,8 +72,7 @@ class CaniTX:
     def power_up(self, ch_lbl:int=16, cat_lbl:int=16, title_lbl:int=36, loss_exp:bool=True) -> bytes:
         """
         Sends in a command to power on the radio tuner.
-        Defaults are 16 characters long for channel and category labels, and 36 for title label
-        mainly due to a possible oversight with the radio firmware when fetching extended labels.
+        Defaults are 16 characters long for channel and category labels, and 36 for title label.
 
         Example:
             The radio will be provided with "00 10 10 24 01".

@@ -187,20 +187,26 @@ class CaniConductor:
                     self.parent.logprint("==================")
             case 0xD4:
                 if payload[2] == 0x01:
-                    if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
-                    self.parent.logprint("===Artist Info.===")
-                    self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
-                    self.parent.logprint("==================")
+                    # if payload[1] == self.parent.ch_num:
+                    #     self.parent.artist_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
+                    # self.parent.logprint("===Artist Info.===")
+                    # self.parent.logprint(f"Channel {payload[1]}")
+                    # self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
+                    # self.parent.logprint("==================")
+                    # Extinfo monitoring is weird as hell...
+                    # Just fetch manually instead
+                    self.parent.tx.ext_info(payload[1])
             case 0xD5:
                 if payload[2] == 0x01:
-                    if payload[1] == self.parent.ch_num:
-                        self.parent.title_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
-                    self.parent.logprint("===Title  Info.===")
-                    self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
-                    self.parent.logprint("==================")
+                    # if payload[1] == self.parent.ch_num:
+                    #     self.parent.title_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
+                    # self.parent.logprint("===Title  Info.===")
+                    # self.parent.logprint(f"Channel {payload[1]}")
+                    # self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
+                    # self.parent.logprint("==================")
+                    # Extinfo monitoring is weird as hell...
+                    # Just fetch manually instead
+                    self.parent.tx.ext_info(payload[1])
             case 0xD6:
                 if payload[3] == 0x01 or payload[4] == 0x01:
                     self.parent.logprint("===Program Len.===")
