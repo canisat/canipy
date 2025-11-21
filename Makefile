@@ -8,7 +8,7 @@ ARCH_FLAGS?=
 PROJECT?=canipy
 SRC=main.py
 REQS?=requirements.txt
-PYINST_ARGS?=--onefile --noconsole
+PYINST_ARGS?=--onefile --noconsole --paths .
 
 # If rebuilding, overrides if dependencies are to not be re-processed
 SKIP_DEPS?=0
