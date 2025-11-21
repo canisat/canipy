@@ -110,9 +110,9 @@ class CaniConductor:
                         self.parent.logprint(f"Exp 12, got {len(payload)}")
                     return
                 # if good, print characters
-                self.parent.radio_id = payload[4:12].decode("utf-8")
+                self.parent.radio_id = payload[4:12].decode("latin-1")
                 self.parent.infoprint(
-                    f"Radio ID\n\n{payload[4:12].decode('utf-8')}"
+                    f"Radio ID\n\n{payload[4:12].decode('latin-1')}"
                 )
             case 0xC1 | 0xC3:
                 self.parent.rx.parse_sig(payload)
@@ -140,7 +140,7 @@ class CaniConductor:
                 if payload[1] == 0x64:
                     self.parent.infoprint(
                         f"WX Version\n\n"
-                        f"{payload[2:].decode('utf-8').rstrip(chr(0))}"
+                        f"{payload[2:].decode('latin-1').rstrip(chr(0))}"
                     )
             case 0xCF | 0xD0:
                 # Usually 50/D0, but 4F/CF may also be used to
@@ -154,10 +154,10 @@ class CaniConductor:
                 if payload[2] == 0x01:
                     # Store only if channel numbers match!
                     if payload[1] == self.parent.ch_num:
-                        self.parent.ch_name = payload[3:19].decode("utf-8").strip()
+                        self.parent.ch_name = payload[3:19].decode("latin-1").strip()
                     self.parent.logprint("===Channel Name===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:19].decode("utf-8"))
+                    self.parent.logprint(payload[3:19].decode("latin-1"))
                     # Trailing bytes, this could be length side effect?
                     # Like with whats happening with extended info?
                     # Treat as debug info for now.
@@ -168,30 +168,30 @@ class CaniConductor:
                 if payload[3] == 0x01:
                     if payload[1] == self.parent.ch_num:
                         self.parent.cat_id = payload[2]
-                        self.parent.cat_name = payload[4:].decode("utf-8").strip()
+                        self.parent.cat_name = payload[4:].decode("latin-1").strip()
                     self.parent.logprint("===Ch. Category===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[4:].decode("utf-8"))
+                    self.parent.logprint(payload[4:].decode("latin-1"))
                     if self.parent.verbose:
                         self.parent.logprint(f"Cat ID: {payload[2]:02X}")
                     self.parent.logprint("==================")
             case 0xD3:
                 if payload[2] == 0x01:
                     if payload[1] == self.parent.ch_num:
-                        self.parent.artist_name = payload[3:19].decode("utf-8").strip()
-                        self.parent.title_name = payload[19:].decode("utf-8").strip()
+                        self.parent.artist_name = payload[3:19].decode("latin-1").strip()
+                        self.parent.title_name = payload[19:].decode("latin-1").strip()
                     self.parent.logprint("===Program Info===")
                     self.parent.logprint(f"Channel {payload[1]}")
-                    self.parent.logprint(payload[3:19].decode("utf-8"))
-                    self.parent.logprint(payload[19:].decode("utf-8"))
+                    self.parent.logprint(payload[3:19].decode("latin-1"))
+                    self.parent.logprint(payload[19:].decode("latin-1"))
                     self.parent.logprint("==================")
             case 0xD4:
                 if payload[2] == 0x01:
                     # if payload[1] == self.parent.ch_num:
-                    #     self.parent.artist_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
+                    #     self.parent.artist_name = payload[3:].decode("latin-1").rstrip(chr(0)).strip()
                     # self.parent.logprint("===Artist Info.===")
                     # self.parent.logprint(f"Channel {payload[1]}")
-                    # self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
+                    # self.parent.logprint(payload[3:].decode("latin-1").rstrip(chr(0)))
                     # self.parent.logprint("==================")
                     # Extinfo monitoring is weird as hell...
                     # Just fetch manually instead
@@ -199,10 +199,10 @@ class CaniConductor:
             case 0xD5:
                 if payload[2] == 0x01:
                     # if payload[1] == self.parent.ch_num:
-                    #     self.parent.title_name = payload[3:].decode("utf-8").rstrip(chr(0)).strip()
+                    #     self.parent.title_name = payload[3:].decode("latin-1").rstrip(chr(0)).strip()
                     # self.parent.logprint("===Title  Info.===")
                     # self.parent.logprint(f"Channel {payload[1]}")
-                    # self.parent.logprint(payload[3:].decode("utf-8").rstrip(chr(0)))
+                    # self.parent.logprint(payload[3:].decode("latin-1").rstrip(chr(0)))
                     # self.parent.logprint("==================")
                     # Extinfo monitoring is weird as hell...
                     # Just fetch manually instead
@@ -251,7 +251,7 @@ class CaniConductor:
                 if self.parent.verbose:
                     # Print out diag info, 9 fields
                     self.parent.logprint("=== DIAGNOSTIC ===")
-                    diaginf = payload[1:].decode("utf-8")
+                    diaginf = payload[1:].decode("latin-1")
                     fields = [diaginf[i:i+8] for i in range(0, len(diaginf), 8)]
                     for field in fields:
                         self.parent.logprint(f"{field[0]}. {field[1:]}")
@@ -268,11 +268,11 @@ class CaniConductor:
                 elif (payload[1], payload[2]) == (0xFF, 0xFF):
                     # If it's all F's, it's something serious!!!
                     # (Likely has a message, print it out!)
-                    errstr += payload[3:].decode("utf-8")
+                    errstr += payload[3:].decode("latin-1")
                 else:
                     errstr += self.parent.rx.fetch_status(payload)
                 if self.parent.verbose:
-                    errstr += f"\n{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('utf-8')}"
+                    errstr += f"\n{payload[1]:02X} {payload[2]:02X} {payload[3:].decode('latin-1')}"
                 self.parent.errorprint(errstr)
             case _:
                 self.parent.logprint(f"Unknown return code {hex(payload[0])}")
