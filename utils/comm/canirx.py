@@ -142,10 +142,7 @@ class CaniRX:
         Relevant program information is stored in respective attributes before printout.
         Verification of the command is by checking if it contains 78 bytes as community 
         implementations read extended length assuming 0x24 label size was passed during
-        power-on. Given how setting it to another length before caused strange results,
-        I think it was deliberately set to 0x24 to work around a glitch with the tuner 
-        firmware. Function will only report 32 of the 36 bytes per line, following what
-        other community projects have done.
+        power-on.
 
         Args:
             payload (bytes): A response, comprised as a set of bytes, to parse the information from.
@@ -159,16 +156,16 @@ class CaniRX:
                 return
             if payload[4] == 0x01:
                 if payload[3] == self.parent.ch_num:
-                    self.parent.artist_name = payload[5:37].decode("utf-8").rstrip(chr(0)).strip()
-                self.parent.logprint(payload[5:37].decode("utf-8").rstrip(chr(0)))
-                if self.parent.verbose:
-                    self.parent.logprint(" ".join(f'{b:02X}' for b in payload[37:41]))
+                    self.parent.artist_name = payload[5:41].decode("utf-8").rstrip(chr(0)).strip()
+                self.parent.logprint(payload[5:41].decode("utf-8").rstrip(chr(0)))
+                # if self.parent.verbose:
+                #     self.parent.logprint(" ".join(f'{b:02X}' for b in payload[37:41]))
             if payload[41] == 0x01:
                 if payload[3] == self.parent.ch_num:
-                    self.parent.title_name = payload[42:74].decode("utf-8").rstrip(chr(0)).strip()
-                self.parent.logprint(payload[42:74].decode("utf-8").rstrip(chr(0)))
-                if self.parent.verbose:
-                    self.parent.logprint(" ".join(f'{b:02X}' for b in payload[74:]))
+                    self.parent.title_name = payload[42:].decode("utf-8").rstrip(chr(0)).strip()
+                self.parent.logprint(payload[42:].decode("utf-8").rstrip(chr(0)))
+                # if self.parent.verbose:
+                #     self.parent.logprint(" ".join(f'{b:02X}' for b in payload[74:]))
             self.parent.logprint("==================")
             return
         self.parent.logprint("Payload not of correct length")
