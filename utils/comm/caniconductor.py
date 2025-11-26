@@ -88,6 +88,8 @@ class CaniConductor:
                 self.parent.logprint("Change channel to resume content")
             case 0x93:
                 self.parent.logprint(f"Mute: { {0x00:'Off',0x01:'On'}.get(payload[3],f'?({payload[3]})') }")
+            case 0xA1:
+                self.parent.rx.parse_catinfo(payload)
             case 0xA2:
                 self.parent.rx.parse_extinfo(payload)
             case 0xA5:

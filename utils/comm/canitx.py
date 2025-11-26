@@ -212,6 +212,27 @@ class CaniTX:
             self.parent.logprint(f"{'' if mute else 'Un-'}Muting Audio")
         return self.send(bytes([0x13, mute]))
 
+    def cat_info(self, cat:int) -> bytes:
+        """
+        Sends in a command to the tuner to report the category name given its ID.
+
+        Example:
+            To check the name of category ID 1, the radio will be provided with "21 01".
+            Report category name of ID 1, which for example would be "Pop".
+        
+        Args:
+            cat (int): The category ID.
+        
+        Returns:
+            bytes: Echoes back the payload it's been given for debugging purposes.
+        """
+        if cat not in range(256):
+            self.parent.errorprint("Invalid ID value")
+            return b""
+        if self.parent.verbose:
+            self.parent.logprint(f"Check RX for catinfo on {cat}")
+        return self.send(bytes([0x21, cat]))
+
     def ext_info(self, channel:int) -> bytes:
         """
         Sends in a command to the tuner to report program information at full char length.
@@ -232,7 +253,6 @@ class CaniTX:
             return b""
         if self.parent.verbose:
             self.parent.logprint(f"Check RX for extinfo on {channel}")
-        # I set title size to 0x24 earlier to see if this fixes out the botched output.
         return self.send(bytes([0x22, channel]))
 
     def channel_info(self, channel:int, is_sid:bool=False, prg_type:int=0) -> bytes:

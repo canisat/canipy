@@ -136,6 +136,32 @@ class CaniRX:
         if self.parent.verbose:
             self.parent.logprint(f"Exp 27, got {len(payload)}")
 
+    def parse_catinfo(self, payload:bytes):
+        """
+        Takes in a category response (A1 hex) to print out relevant information.
+        The category name is stored in respective attributes before printout.
+        Verification of the command is by checking if it contains 21 bytes.
+
+        Args:
+            payload (bytes): A response, comprised as a set of bytes, to parse the information from.
+        """
+        if len(payload) == 21:
+            self.parent.logprint("===  Category  ===")
+            self.parent.logprint(f"Number {payload[3]}")
+            if payload[1] != 0x01:
+                self.parent.warnprint(self.fetch_status(payload))
+                self.parent.logprint("==================")
+                return
+            if payload[4] == 0x01:
+                if payload[3] == self.parent.cat_id:
+                    self.parent.cat_name = payload[5:].decode("latin-1").rstrip(chr(0)).strip()
+                self.parent.logprint(payload[5:].decode("latin-1").rstrip(chr(0)))
+            self.parent.logprint("==================")
+            return
+        self.parent.logprint("Payload not of correct length")
+        if self.parent.verbose:
+            self.parent.logprint(f"Exp 21, got {len(payload)}")
+
     def parse_extinfo(self, payload:bytes):
         """
         Takes in a extended label response (A2 hex) to print out relevant information.

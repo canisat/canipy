@@ -159,6 +159,13 @@ class InterfacePrep:
             command=self.parent.canipy.tx.signal_info,
             underline=0
         )
+        fetch_menu.add_command(
+            label="Category name",
+            command=lambda:self.parent.canipy.tx.cat_info(
+                int(self.parent.chEntry.get())
+            ),
+            underline=2
+        )
         fetch_menu.add_separator()
         # WX specific debug
         wxfetch_menu = Menu(fetch_menu, tearoff=0)
