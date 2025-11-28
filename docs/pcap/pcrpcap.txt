@@ -96,7 +96,7 @@ eded
 RX payload:
 5aa5 - start
 004d - 77 bytes
-a50309de6c01536972697573584d20507265766965770113456e7465727461696e6d656e74202020014772656174204f66666572204e6f77213834342d3731312d383830302020202013000000 - Cannot tune, channel 222 with service ID 108 not subscribed for audio. Printing current channel info instead. Channel:[SiriusXM Preview], Category:[Entertainment   ], Artist:[Great Offer Now!], Song:[844-711-8800    ]
+a50309de6c01... - Cannot tune, channel 222 with service ID 108 not subscribed for audio. Printing current channel info instead.
 
 TX payload:
 5aa5 - start
@@ -123,7 +123,7 @@ d001002a - watching (channel 42)
 RX payload:
 5aa5 - start
 0017 - 23 bytes
-d10101536972697573584d205072657669657700000000 - Channel name change on ch1, [SiriusXM Preview], not sure what's with the extra padding
+d10101... - Channel name change on ch1
 0000 - sum
 
 RX payload:

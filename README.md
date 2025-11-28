@@ -20,13 +20,13 @@ The following are required to run CaniPy:
     * By default at least Ubuntu 22.04, Debian Bookworm, Fedora 35, EL 9, etc.
 * A compatible serial-controlled satellite radio that is listed below, which receives the **XM service** by Sirius XM Radio LLC
 
-| Device                                       | Baud Rate |
-|:---------------------------------------------|----------:|
-| [PCR](https://en.wikipedia.org/wiki/XM_PCR)  |      9600 |
-| Direct                                       |      9600 |
-| Commander                                    |      9600 |
-| [WxWorx](https://www.wxworx.com/) (Portable) |     38400 |
-| WxWorx (Certified)                           |    115200 |
+| Device                                      | Baud Rate |
+|:--------------------------------------------|----------:|
+| [PCR](https://en.wikipedia.org/wiki/XM_PCR) |      9600 |
+| Direct                                      |      9600 |
+| Commander                                   |      9600 |
+| [WX](https://www.wxworx.com/) (Portable)    |     38400 |
+| WX (Certified)                              |    115200 |
 
 (Further support for other devices may be implemented in the future)
 
@@ -116,7 +116,7 @@ This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timot
 
 Serial commands were documented from both current CaniSat research and prior work conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the defunct XM Fan forums.
 
-CaniSat, a non-profit initiative, and its incubator [NetOtt Solutions, LLC](https://netott.com/) are not affiliated with either Sirius XM Holdings Inc., Sirius XM Radio LLC, or any of its products, partners, or subsidiaries. Sirius, XM, SiriusXM and all related indicia are trademarks of Sirius XM Holdings Inc.
+CaniSat, a non-profit initiative, and its incubator [NetOtt Solutions, LLC](https://netott.com/) are not affiliated with either Sirius XM Holdings Inc, Sirius XM Radio LLC, Sirius XM Canada Inc, or any of their products, partners, or subsidiaries. Sirius, XM, SiriusXM, XMWX, and all related indicia are registered trademarks of Sirius XM Radio LLC.
 
 The data products distributed in the service(s) are intended to be supplemental and advisory per the provider. It is not recommended for use in circumstances that require immediate urgency to fulfill safety-critical work. Both CaniSat and the service provider are not responsible for errors and inaccuracies encountered when utilizing the service data products.
 

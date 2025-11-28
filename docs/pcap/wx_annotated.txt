@@ -80,7 +80,7 @@ RX payload:
 TX payload:
 5aa5 - Start
 0003 - 3 bytes
-11f001 - Cancel, preload 240 (XMWX) in data mode
+11f001 - Cancel, preload 240 (WX) in data mode
 eded - End
 RX payload:
 5aa5 - Start
@@ -91,7 +91,7 @@ RX payload:
 TX payload:
 5aa5 - Start
 0006 - 6 bytes
-1001f0010002 - Tune SID 240, DATA MODE (XMWX), route to data port (2)
+1001f0010002 - Tune SID 240, DATA MODE (WX), route to data port (2)
 eded - End
 RX payload:
 5aa5 - Start
