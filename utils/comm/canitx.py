@@ -276,6 +276,7 @@ class CaniTX:
             return b""
         if self.parent.verbose:
             self.parent.logprint(f"Check RX for info on {channel}")
+        # 0x25 is like 0x20, but with SID and trail 
         # 07 allows for checking by SID
         return self.send(bytes([0x25, 0x08 - is_sid, channel, prg_type]))
 

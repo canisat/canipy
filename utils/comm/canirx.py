@@ -241,6 +241,10 @@ class CaniRX:
                 self.parent.logprint(payload[24:40].decode("latin-1"))
                 if self.parent.verbose:
                     self.parent.logprint(f"Cat ID: {payload[23]:02X}")
+            if self.parent.verbose:
+                # Trail bytes, not sure what these do... [73] could be
+                # confirm like the others, but idk about the other 3...
+                self.parent.logprint(" ".join(f'{b:02X}' for b in payload[73:]))
             self.parent.logprint("==================")
             return
         self.parent.logprint("Payload not of correct length")
