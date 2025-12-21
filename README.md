@@ -28,7 +28,7 @@ The following are required to run CaniPy:
 | [WX](https://www.wxworx.com/) (Portable)    |     38400 |
 | WX (Certified)                              |    115200 |
 
-(Further support for other devices may be implemented in the future)
+Further support for other devices may be implemented in the future
 
 ## Usage
 
@@ -109,6 +109,14 @@ make rebuild SKIP_DEPS=1
 To use CaniPy as an extension for your project, if using Git for version tracking, it is possible to add the repo as a submodule (`git submodule add //link/to/canisat.git`). Otherwise, simply clone this repo in your project root.
 
 Once CaniPy is added to a project, import it to the script using `from canipy import CaniPy` and start a `CaniPy()` instance.
+
+## Bug Reporting
+
+To report issues encountered with CaniPy, file a new issue in either [GitHub](https://github.com/canisat/canipy/issues) or [GitLab](https://gitlab.com/canisat/canipy/-/issues).
+
+Before filing, ensure the issue has not yet been reported in these pages before proceeding and that necessary troubleshooting steps are taken, such as running the software in a folder/directory that can be written to and ensuring the serial device is visible to the operating system.
+
+Describe the issue with the sufficient detail necessary to diagnose it. Screenshots, along with error logs and messages, are also beneficial when possible.
 
 ## Notice
 
