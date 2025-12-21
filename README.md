@@ -110,13 +110,17 @@ To use CaniPy as an extension for your project, if using Git for version trackin
 
 Once CaniPy is added to a project, import it to the script using `from canipy import CaniPy` and start a `CaniPy()` instance.
 
-## Bug Reporting
+## Reporting
 
 To report issues encountered with CaniPy, file a new issue in either [GitHub](https://github.com/canisat/canipy/issues) or [GitLab](https://gitlab.com/canisat/canipy/-/issues).
 
 Before filing, ensure the issue has not yet been reported in these pages before proceeding and that necessary troubleshooting steps are taken, such as running the software in a folder/directory that can be written to and ensuring the serial device is visible to the operating system.
 
 Describe the issue with the sufficient detail necessary to diagnose it. Screenshots, along with error logs and messages, are also beneficial when possible.
+
+## Contributing
+
+Figured out an unknown return code or a new command, or want to help with the proram functionality? You can fork the project and submit a PR with your additions or file an issue request with the needed support logs (Ensure verbose output is on).
 
 ## Notice
 
