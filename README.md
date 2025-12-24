@@ -68,7 +68,7 @@ The serial port device path starts with etiher `/dev/cu.usbserial*` or `/dev/cu.
 >
 > In this case, please make sure both `python3-pip` and `python3-tk` are installed through your distro's default package manager before building CaniPy.
 
-If making a standalone CaniPy executable, first [download the released source ZIP or TAR.GZ](https://github.com/canisat/canipy/releases) or clone the repo (`git clone //link/to/canisat.git`), then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
+If making a standalone CaniPy executable, first [download the released source ZIP or TAR.GZ](https://github.com/canisat/canipy/releases) or clone the repo (`git clone //link/to/canipy.git`), then install [pySerial](https://pypi.org/project/pyserial/) and [PyInstaller](https://pypi.org/project/pyinstaller/).
 
 These prerequisites will be installed via `pip` automatically when using either `make all` or `make deps`. They can alternatively be installed manually following the `requirements.txt` list.
 
@@ -106,7 +106,7 @@ make rebuild SKIP_DEPS=1
 
 ## Module
 
-To use CaniPy as an extension for your project, if using Git for version tracking, it is possible to add the repo as a submodule (`git submodule add //link/to/canisat.git`). Otherwise, simply clone this repo in your project root.
+To use CaniPy as an extension for your project, if using Git for version tracking, it is possible to add the repo as a submodule (`git submodule add //link/to/canipy.git`). Otherwise, simply clone this repo in your project root.
 
 Once CaniPy is added to a project, import it to the script using `from canipy import CaniPy` and start a `CaniPy()` instance.
 
