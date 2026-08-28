@@ -4,7 +4,7 @@
 
 <img width="320" height="240" alt="CaniPy GUI" src="https://github.com/user-attachments/assets/cb6152cd-33fd-45df-8c28-e11f3eb5f4e0" />
 
-CaniPy provides a modern foundation for hobbyists to continue using supported satellite radio hardware.
+CaniPy provides a modern foundational reference for hobbyists to continue using supported satellite radio hardware.
 
 The project can either be used by itself with a GUI or as a module that can be imported to support other scripts.
 
@@ -27,8 +27,6 @@ The following are required to run CaniPy:
 | Commander                                   |      9600 |
 | [WX](https://www.wxworx.com/) (Portable)    |     38400 |
 | WX (Certified)                              |    115200 |
-
-Further support for other devices may be implemented in the future
 
 ## Usage
 
@@ -55,11 +53,11 @@ You can verify the COM port corresponding to the radio through the [Device Manag
 
 ### Linux
 
-The serial port device path starts with etiher `/dev/ttyUSB*` or `/dev/ttyS*`.
+The serial port device path starts with either `/dev/ttyUSB*` or `/dev/ttyS*`.
 
 ### Mac
 
-The serial port device path starts with etiher `/dev/cu.usbserial*` or `/dev/cu.*`.
+The serial port device path starts with either `/dev/cu.usbserial*` or `/dev/cu.*`.
 
 ## Packaging
 
@@ -112,7 +110,7 @@ Once CaniPy is added to a project, import it to the script using `from canipy im
 
 ## Reporting
 
-To report issues encountered with CaniPy, file a new issue in either [GitHub](https://github.com/canisat/canipy/issues) or [GitLab](https://gitlab.com/canisat/canipy/-/issues).
+To report issues encountered with CaniPy, file a new issue in [GitHub](https://github.com/canisat/canipy/issues).
 
 Before filing, ensure the issue has not yet been reported in these pages before proceeding and that necessary troubleshooting steps are taken, such as running the software in a folder/directory that can be written to and ensuring the serial device is visible to the operating system.
 
@@ -120,7 +118,7 @@ Describe the issue with the sufficient detail necessary to diagnose it. Screensh
 
 ## Contributing
 
-Figured out an unknown return code or a new command, or want to help with the proram functionality? You can fork the project and submit a PR with your additions or file an issue request with the needed support logs (Ensure verbose output is on).
+Figured out an unknown return code or a new command, or want to help with the program functionality? You can fork the project and submit a PR with your additions or file an issue request with the needed support logs (Ensure verbose output is on).
 
 ## Notice
 
@@ -128,7 +126,7 @@ This codebase is derived from [PyXM](https://github.com/timcanham/PyXM) by Timot
 
 Serial commands were documented from both current CaniSat research and prior work conducted by [Nick Sayer](https://sourceforge.net/u/nsayer/profile/), the linuXMPCR and Perl XM PCR projects, Hybrid Mobile Technologies, and the defunct XM Fan forums.
 
-CaniSat, a non-profit initiative, and its incubator [NetOtt Solutions, LLC](https://netott.com/) are not affiliated with either Sirius XM Holdings Inc, Sirius XM Radio LLC, Sirius XM Canada Inc, or any of their products, partners, or subsidiaries. Sirius, XM, SiriusXM, XMWX, and all related indicia are registered trademarks of Sirius XM Radio LLC.
+CaniSat, a non-profit initiative, is not affiliated with either Sirius XM Holdings Inc, Sirius XM Radio LLC, Sirius XM Canada Inc, or any of their products, partners, or subsidiaries. Sirius, XM, SiriusXM, XMWX, and all related indicia are registered trademarks of Sirius XM Radio LLC.
 
 The data products distributed in the service(s) are intended to be supplemental and advisory per the provider. It is not recommended for use in circumstances that require immediate urgency to fulfill safety-critical work. Both CaniSat and the service provider are not responsible for errors and inaccuracies encountered when utilizing the service data products.
 
